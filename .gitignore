@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Build outputs
+dist/
+build/
+*.local
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+apps/api/.env
+apps/web/.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test / coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Vite
+apps/web/node_modules/.vite/
+
+# GitHub workflows (ignored due to IDE token scope limits)
+.github/

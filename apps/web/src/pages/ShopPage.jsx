@@ -1,0 +1,234 @@
+import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Search } from 'lucide-react';
+import dataClient from '@/lib/dataClient';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const ShopPage = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const categoryParam = searchParams.get('category');
+
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(categoryParam || 'all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('name');
+
+  const categories = [
+    { value: 'all', label: 'Todos' },
+    { value: 'Salud Cognitiva', label: 'Salud Cognitiva' },
+    { value: 'Gestión del Estrés', label: 'Gestión del Estrés' },
+    { value: 'Longevidad', label: 'Longevidad' }
+  ];
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    }
+  }, [categoryParam]);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const records = await dataClient.collection('products').getFullList({
+        sort: 'name',
+        $autoCancel: false
+      });
+      setProducts(records);
+    } catch (err) {
+      console.error('Error fetching products:', err);
+      setError('No se pudieron cargar los productos. Por favor, intenta de nuevo.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredProducts = products
+    .filter(product => {
+      const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+      const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'price-asc') return a.price - b.price;
+      if (sortBy === 'price-desc') return b.price - a.price;
+      return a.name.localeCompare(b.name);
+    });
+
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP',
+      minimumFractionDigits: 0
+    }).format(price);
+  };
+
+  const getStockStatus = (stock) => {
+    if (stock === 0) return { text: 'Agotado', color: 'text-destructive' };
+    if (stock < 10) return { text: `Solo ${stock} disponibles`, color: 'text-amber-600' };
+    return { text: 'En stock', color: 'text-success' };
+  };
+
+  return (
+    <>
+      <Helmet>
+        <title>Catálogo - Nutra Blue</title>
+        <meta name="description" content="Explora nuestra selección de suplementos funcionales premium para salud cognitiva, gestión del estrés y longevidad." />
+      </Helmet>
+
+      <Header />
+
+      <main className="min-h-screen bg-background py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h1
+            className="text-3xl md:text-4xl font-bold text-foreground mb-8"
+            style={{ fontFamily: 'Playfair Display, serif', letterSpacing: '-0.02em' }}
+          >
+            Catálogo de Productos
+          </h1>
+
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            {/* Filters Sidebar */}
+            <aside className="lg:col-span-1">
+              <div className="bg-card rounded-xl p-6 shadow-sm border border-border sticky top-20">
+                <h2 className="text-lg font-semibold text-card-foreground mb-4">Filtros</h2>
+
+                {/* Category Filter */}
+                <div className="mb-6">
+                  <span className="text-sm font-medium text-card-foreground mb-3 block">Categoría</span>
+                  <div className="space-y-2">
+                    {categories.map(category => (
+                      <Button
+                        key={category.value}
+                        onClick={() => setSelectedCategory(category.value)}
+                        variant={selectedCategory === category.value ? 'default' : 'outline'}
+                        className="w-full justify-start transition-all duration-200"
+                      >
+                        {category.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Search */}
+                <div className="mb-6">
+                  <span className="text-sm font-medium text-card-foreground mb-3 block">Buscar</span>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      placeholder="Nombre del producto..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 text-foreground"
+                    />
+                  </div>
+                </div>
+
+                {/* Sort */}
+                <div>
+                  <span className="text-sm font-medium text-card-foreground mb-3 block">Ordenar por</span>
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="text-foreground">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="name">Nombre</SelectItem>
+                      <SelectItem value="price-asc">Precio: Menor a Mayor</SelectItem>
+                      <SelectItem value="price-desc">Precio: Mayor a Menor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </aside>
+
+            {/* Products Grid */}
+            <div className="lg:col-span-3">
+              {loading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="bg-card rounded-xl p-4 border border-border">
+                      <Skeleton className="w-full h-48 rounded-lg mb-4" />
+                      <Skeleton className="h-6 w-3/4 mb-2" />
+                      <Skeleton className="h-4 w-1/2 mb-4" />
+                      <Skeleton className="h-10 w-full" />
+                    </div>
+                  ))}
+                </div>
+              ) : error ? (
+                <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-8 text-center">
+                  <p className="text-destructive mb-4">{error}</p>
+                  <Button onClick={fetchProducts} variant="outline">
+                    Reintentar
+                  </Button>
+                </div>
+              ) : filteredProducts.length === 0 ? (
+                <div className="bg-muted rounded-xl p-12 text-center">
+                  <p className="text-muted-foreground text-lg mb-4">No se encontraron productos</p>
+                  <Button onClick={() => { setSelectedCategory('all'); setSearchQuery(''); }}>
+                    Limpiar filtros
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredProducts.map((product) => {
+                    const stockStatus = getStockStatus(product.stock);
+                    return (
+                      <div
+                        key={product.id}
+                        onClick={() => navigate(`/product/${product.id}`)}
+                        className="bg-card rounded-xl overflow-hidden border border-border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer group"
+                      >
+                        <div className="relative h-48 overflow-hidden">
+                          <img
+                            src={product.image_url}
+                            alt={product.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-all duration-300"
+                          />
+                        </div>
+                        <div className="p-4">
+                          <h3 className="text-lg font-semibold text-card-foreground mb-2 line-clamp-2">
+                            {product.name}
+                          </h3>
+                          <p className="text-2xl font-bold text-primary mb-2">
+                            {formatPrice(product.price)}
+                          </p>
+                          <p className={`text-sm font-medium mb-4 ${stockStatus.color}`}>
+                            {stockStatus.text}
+                          </p>
+                          <Button
+                            className="w-full transition-all duration-200 active:scale-[0.98]"
+                            disabled={product.stock === 0}
+                          >
+                            {product.stock === 0 ? 'Agotado' : 'Ver Detalles'}
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <Footer />
+    </>
+  );
+};
+
+export default ShopPage;
