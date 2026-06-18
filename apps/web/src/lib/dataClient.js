@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { MOCK_PRODUCTS } from './mockData';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -93,6 +94,36 @@ const dataClient = {
             return mappedData;
           } catch (e) {
             console.warn(`API fetch failed for ${tableName}:`, e);
+            if (tableName === 'products') {
+              let mappedData = [...MOCK_PRODUCTS].map(mapCreatedTimestamp);
+              if (options.filter) {
+                const filterStr = options.filter;
+                const categoryMatch = filterStr.match(/category\s*=\s*"([^"]+)"/);
+                if (categoryMatch) {
+                  mappedData = mappedData.filter((p) => p.category === categoryMatch[1]);
+                }
+                const idMatch = filterStr.match(/id\s*!=\s*"([^"]+)"/);
+                if (idMatch) {
+                  mappedData = mappedData.filter((p) => p.id !== idMatch[1]);
+                }
+              }
+              if (options.sort) {
+                const isDescending = options.sort.startsWith('-');
+                const field = isDescending ? options.sort.slice(1) : options.sort;
+                const mappedField = field === 'created' ? 'created_at' : field;
+                mappedData.sort((a, b) => {
+                  const valA = a[mappedField] || a[field] || '';
+                  const valB = b[mappedField] || b[field] || '';
+                  if (typeof valA === 'number' && typeof valB === 'number') {
+                    return isDescending ? valB - valA : valA - valB;
+                  }
+                  return isDescending
+                    ? String(valB).localeCompare(String(valA))
+                    : String(valA).localeCompare(String(valB));
+                });
+              }
+              return mappedData;
+            }
             if (!isSupabaseConfigured) return [];
           }
         }
@@ -138,6 +169,10 @@ const dataClient = {
             return mapCreatedTimestamp(data);
           } catch (e) {
             console.warn(`API fetch failed for ${tableName}/${id}:`, e);
+            if (tableName === 'products') {
+              const product = MOCK_PRODUCTS.find((p) => p.id === id || p.name.toLowerCase() === id.toLowerCase());
+              if (product) return mapCreatedTimestamp(product);
+            }
             if (!isSupabaseConfigured) {
               throw new Error('No connection to database or local API.');
             }
