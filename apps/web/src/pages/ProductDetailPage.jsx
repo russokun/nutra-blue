@@ -235,8 +235,42 @@ const ProductDetailPage = () => {
             </div>
           </div>
 
+          {/* Banner de la Marca Nutra Blue */}
+          <div className="w-full bg-gradient-to-r from-sky-950 via-slate-900 to-sky-950 text-foreground py-6 px-8 rounded-2xl border border-primary/20 shadow-md mb-12 flex flex-col md:flex-row justify-between items-center gap-4 overflow-hidden relative group">
+            {/* Left Decorative Shape */}
+            <div className="absolute top-0 left-0 w-32 h-full bg-gradient-to-r from-primary/5 to-transparent skew-x-12 pointer-events-none"></div>
+            {/* Right Decorative Shape */}
+            <div className="absolute top-0 right-0 w-32 h-full bg-gradient-to-l from-primary/5 to-transparent -skew-x-12 pointer-events-none"></div>
+
+            {/* Left Logo */}
+            <div className="flex items-center space-x-2 shrink-0 z-10 select-none">
+              <span className="text-2xl font-semibold text-primary" style={{ fontFamily: 'Playfair Display, serif' }}>
+                Nutra Blue
+              </span>
+              <span className="text-lg text-emerald-500 font-bold">🌿</span>
+            </div>
+
+            {/* Center Brand Statement */}
+            <div className="text-center z-10 max-w-md">
+              <p className="text-sm md:text-base font-medium tracking-wide text-foreground/90 uppercase" style={{ letterSpacing: '0.1em' }}>
+                Nutrición Consciente y Orgánica
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Fórmulas puras diseñadas para potenciar tu longevidad y bienestar
+              </p>
+            </div>
+
+            {/* Right Logo */}
+            <div className="flex items-center space-x-2 shrink-0 z-10 select-none">
+              <span className="text-lg text-emerald-500 font-bold">🌿</span>
+              <span className="text-2xl font-semibold text-primary" style={{ fontFamily: 'Playfair Display, serif' }}>
+                Nutra Blue
+              </span>
+            </div>
+          </div>
+
           {/* --- SECCIÓN: EL ALMA DEL PRODUCTO --- */}
-          <div className="border-t border-border/40 pt-12 pb-16 mt-6">
+          <div className="pt-4 pb-16">
             <div className="text-center mb-12">
               <h2 className="text-2xl md:text-3xl font-bold text-foreground" style={{ fontFamily: 'Playfair Display, serif' }}>
                 El Alma del Producto
@@ -270,29 +304,45 @@ const ProductDetailPage = () => {
                   </div>
                 </div>
 
-                {/* 3. Acordeón de Detalles Técnicos */}
+                {/* 3. Acordeón de Detalles Técnicos + Imagen */}
                 <div className="bg-card/40 border border-border/40 p-6 rounded-2xl">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Especificaciones Técnicas</h3>
-                  <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="ingredients" className="border-b border-border/40">
-                      <AccordionTrigger className="text-sm font-semibold hover:no-underline py-3.5">Ingredientes</AccordionTrigger>
-                      <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
-                        {extraDetails.technical.ingredients}
-                      </AccordionContent>
-                    </AccordionItem>
-                    <AccordionItem value="usage" className="border-b border-border/40">
-                      <AccordionTrigger className="text-sm font-semibold hover:no-underline py-3.5">Modo de Uso</AccordionTrigger>
-                      <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
-                        {extraDetails.technical.usage}
-                      </AccordionContent>
-                    </AccordionItem>
-                    <AccordionItem value="precautions" className="border-none">
-                      <AccordionTrigger className="text-sm font-semibold hover:no-underline py-3.5">Precauciones</AccordionTrigger>
-                      <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
-                        {extraDetails.technical.precautions}
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-6">Especificaciones Técnicas</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+                    {/* Accordion (7 cols) */}
+                    <div className="md:col-span-7">
+                      <Accordion type="single" collapsible className="w-full">
+                        <AccordionItem value="ingredients" className="border-b border-border/40">
+                          <AccordionTrigger className="text-sm font-semibold hover:no-underline py-3.5">Ingredientes</AccordionTrigger>
+                          <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
+                            {extraDetails.technical.ingredients}
+                          </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="usage" className="border-b border-border/40">
+                          <AccordionTrigger className="text-sm font-semibold hover:no-underline py-3.5">Modo de Uso</AccordionTrigger>
+                          <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
+                            {extraDetails.technical.usage}
+                          </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="precautions" className="border-none">
+                          <AccordionTrigger className="text-sm font-semibold hover:no-underline py-3.5">Precauciones</AccordionTrigger>
+                          <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
+                            {extraDetails.technical.precautions}
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
+                    </div>
+
+                    {/* Image (5 cols) */}
+                    <div className="md:col-span-5 h-[220px] rounded-xl overflow-hidden shadow-sm relative group border border-border/20 bg-background/50">
+                      <img 
+                        src={product.image_url} 
+                        alt={`Detalle de ${product.name}`} 
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent pointer-events-none"></div>
+                    </div>
+                  </div>
                 </div>
 
               </div>
