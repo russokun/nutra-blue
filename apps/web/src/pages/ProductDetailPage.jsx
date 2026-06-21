@@ -11,6 +11,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { getProductExtraDetails } from '@/lib/productExtraDetails';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -19,6 +20,7 @@ const ProductDetailPage = () => {
 
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const [crossSellProducts, setCrossSellProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
@@ -41,6 +43,18 @@ const ProductDetailPage = () => {
         $autoCancel: false
       });
       setRelatedProducts(related.slice(0, 3));
+
+      // Fetch cross-sell matches
+      const extra = getProductExtraDetails(record.name);
+      if (extra.matches && extra.matches.length > 0) {
+        const allProducts = await dataClient.collection('products').getFullList({ $autoCancel: false });
+        const matched = allProducts.filter(p => 
+          extra.matches.includes(p.name.toLowerCase().trim()) && p.id !== id
+        );
+        setCrossSellProducts(matched.length > 0 ? matched.slice(0, 2) : related.slice(0, 2));
+      } else {
+        setCrossSellProducts(related.slice(0, 2));
+      }
     } catch (err) {
       console.error('Error fetching product:', err);
       setError('No se pudo cargar el producto. Por favor, intenta de nuevo.');
@@ -120,6 +134,7 @@ const ProductDetailPage = () => {
   }
 
   const stockStatus = getStockStatus(product.stock);
+  const extraDetails = getProductExtraDetails(product.name);
 
   return (
     <>
@@ -133,18 +148,21 @@ const ProductDetailPage = () => {
       <main className="min-h-screen bg-background py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Product Details */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
             {/* Image */}
-            <div className="relative rounded-2xl overflow-hidden shadow-lg">
+            <div className="relative rounded-2xl overflow-hidden shadow-md border border-border/40">
               <img
                 src={product.image_url}
                 alt={product.name}
-                className="w-full h-[500px] object-cover"
+                className="w-full h-[450px] object-cover"
               />
             </div>
 
             {/* Info */}
-            <div className="flex flex-col">
+            <div className="flex flex-col justify-center">
+              <span className="text-xs uppercase tracking-wider text-primary font-semibold mb-2">
+                {product.category}
+              </span>
               <h1
                 className="text-3xl md:text-4xl font-bold text-foreground mb-4"
                 style={{ fontFamily: 'Playfair Display, serif', letterSpacing: '-0.02em' }}
@@ -152,7 +170,7 @@ const ProductDetailPage = () => {
                 {product.name}
               </h1>
 
-              <p className="text-3xl font-bold text-primary mb-4">
+              <p className="text-3xl font-bold text-foreground mb-3">
                 {formatPrice(product.price)}
               </p>
 
@@ -164,54 +182,32 @@ const ProductDetailPage = () => {
               {product.certifications && product.certifications.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-6">
                   {product.certifications.map((cert, index) => (
-                    <Badge key={index} variant="secondary" className="text-sm">
-                      <CheckCircle2 className="h-3 w-3 mr-1" />
+                    <Badge key={index} variant="secondary" className="text-xs bg-secondary/80 text-secondary-foreground font-medium py-1 px-2.5">
+                      <CheckCircle2 className="h-3.5 w-3.5 mr-1.5 text-success" />
                       {cert}
                     </Badge>
                   ))}
                 </div>
               )}
 
-              {/* Description Accordion */}
-              <Accordion type="single" collapsible className="mb-6">
-                <AccordionItem value="description">
-                  <AccordionTrigger className="text-lg font-semibold">Descripción</AccordionTrigger>
-                  <AccordionContent>
-                    <p className="text-muted-foreground leading-relaxed">
-                      {product.description || 'Sin descripción disponible.'}
-                    </p>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-
-              {/* Benefits */}
-              {product.benefits && product.benefits.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-3">Beneficios</h3>
-                  <ul className="space-y-2">
-                    {product.benefits.map((benefit, index) => (
-                      <li key={index} className="flex items-start">
-                        <CheckCircle2 className="h-5 w-5 text-success mr-2 mt-0.5 flex-shrink-0" />
-                        <span className="text-muted-foreground">{benefit}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              <p className="text-muted-foreground text-sm leading-relaxed mb-6">
+                {product.description || 'Sin descripción disponible.'}
+              </p>
 
               {/* Quantity Selector */}
-              <div className="mb-6">
-                <span className="text-sm font-medium text-foreground mb-3 block">Cantidad</span>
+              <div className="mb-6 border-t border-border/30 pt-6">
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 block">Cantidad</span>
                 <div className="flex items-center space-x-4">
                   <Button
                     variant="outline"
                     size="icon"
                     onClick={() => handleQuantityChange(-1)}
                     disabled={quantity <= 1}
+                    className="h-9 w-9"
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
-                  <span className="text-xl font-semibold text-foreground w-12 text-center">
+                  <span className="text-lg font-bold text-foreground w-10 text-center">
                     {quantity}
                   </span>
                   <Button
@@ -219,6 +215,7 @@ const ProductDetailPage = () => {
                     size="icon"
                     onClick={() => handleQuantityChange(1)}
                     disabled={quantity >= product.stock}
+                    className="h-9 w-9"
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -230,7 +227,7 @@ const ProductDetailPage = () => {
                 size="lg"
                 onClick={handleAddToCart}
                 disabled={product.stock === 0}
-                className="w-full transition-all duration-200 active:scale-[0.98]"
+                className="w-full h-11 text-base font-semibold shadow-md active:scale-[0.98] transition-all duration-150"
               >
                 <ShoppingCart className="h-5 w-5 mr-2" />
                 {product.stock === 0 ? 'Agotado' : 'Añadir al Carrito'}
@@ -238,9 +235,99 @@ const ProductDetailPage = () => {
             </div>
           </div>
 
+          {/* --- SECCIÓN: EL ALMA DEL PRODUCTO --- */}
+          <div className="border-t border-border/40 pt-12 pb-16 mt-6">
+            <div className="text-center mb-12">
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground" style={{ fontFamily: 'Playfair Display, serif' }}>
+                El Alma del Producto
+              </h2>
+              <div className="w-16 h-0.5 bg-primary mx-auto mt-3 rounded-full"></div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Left Column (8 columns): Benefits, Origin, Technical Accordion */}
+              <div className="lg:col-span-8 space-y-8">
+                
+                {/* 1. Bloque de Beneficios Clave (Visual) */}
+                <div className="bg-card/45 border border-border/40 p-6 rounded-2xl">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Beneficios Clave</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {extraDetails.icons.map((item, idx) => (
+                      <div key={idx} className="flex flex-col items-center text-center p-4 rounded-xl bg-background/60 border border-border/20 shadow-sm transition-all duration-200 hover:shadow-md hover:border-primary/20">
+                        <span className="text-3xl mb-2.5">{item.emoji}</span>
+                        <span className="text-xs font-semibold text-foreground leading-tight">{item.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 2. Origen y Trazabilidad (Transparencia) */}
+                <div className="bg-gradient-to-r from-primary/5 via-accent/5 to-transparent p-6 rounded-2xl border border-primary/10 flex flex-col md:flex-row gap-4 items-center">
+                  <div className="text-4xl bg-background p-3 rounded-xl border border-border/20 shadow-sm">🗺️</div>
+                  <div>
+                    <h4 className="text-sm font-bold uppercase tracking-wider text-primary mb-1">Origen y Trazabilidad</h4>
+                    <p className="text-muted-foreground text-sm leading-relaxed">{extraDetails.origin}</p>
+                  </div>
+                </div>
+
+                {/* 3. Acordeón de Detalles Técnicos */}
+                <div className="bg-card/40 border border-border/40 p-6 rounded-2xl">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Especificaciones Técnicas</h3>
+                  <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="ingredients" className="border-b border-border/40">
+                      <AccordionTrigger className="text-sm font-semibold hover:no-underline py-3.5">Ingredientes</AccordionTrigger>
+                      <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
+                        {extraDetails.technical.ingredients}
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="usage" className="border-b border-border/40">
+                      <AccordionTrigger className="text-sm font-semibold hover:no-underline py-3.5">Modo de Uso</AccordionTrigger>
+                      <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
+                        {extraDetails.technical.usage}
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="precautions" className="border-none">
+                      <AccordionTrigger className="text-sm font-semibold hover:no-underline py-3.5">Precauciones</AccordionTrigger>
+                      <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
+                        {extraDetails.technical.precautions}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </div>
+
+              </div>
+
+              {/* Right Column (4 columns): El Match Perfecto (Cross-selling) */}
+              <div className="lg:col-span-4 bg-card/60 border border-border/40 p-6 rounded-2xl shadow-sm">
+                <h3 className="text-lg font-bold text-foreground mb-1" style={{ fontFamily: 'Playfair Display, serif' }}>El Match Perfecto</h3>
+                <p className="text-xs text-muted-foreground mb-6">Completa tu rutina natural</p>
+                
+                <div className="space-y-4">
+                  {crossSellProducts.map((p) => (
+                    <div 
+                      key={p.id} 
+                      onClick={() => {
+                        navigate(`/product/${p.id}`);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      className="flex items-center gap-3 p-3 rounded-xl border border-border/40 hover:border-primary/40 bg-background/50 hover:bg-background/80 transition-all duration-200 cursor-pointer group"
+                    >
+                      <img src={p.image_url} alt={p.name} className="w-14 h-14 rounded-lg object-cover" />
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">{p.name}</h4>
+                        <p className="text-xs text-muted-foreground mt-0.5">{p.category}</p>
+                        <p className="text-sm font-bold text-primary mt-1">{formatPrice(p.price)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Related Products */}
           {relatedProducts.length > 0 && (
-            <div>
+            <div className="border-t border-border/40 pt-12">
               <h2
                 className="text-2xl md:text-3xl font-bold text-foreground mb-8"
                 style={{ fontFamily: 'Playfair Display, serif' }}
@@ -251,7 +338,10 @@ const ProductDetailPage = () => {
                 {relatedProducts.map((relatedProduct) => (
                   <div
                     key={relatedProduct.id}
-                    onClick={() => navigate(`/product/${relatedProduct.id}`)}
+                    onClick={() => {
+                      navigate(`/product/${relatedProduct.id}`);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
                     className="bg-card rounded-xl overflow-hidden border border-border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer group"
                   >
                     <div className="relative h-48 overflow-hidden">
