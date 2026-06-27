@@ -11,10 +11,16 @@ from supabase import create_client, Client
 load_dotenv()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY") or os.getenv("SUPABASE_KEY")
+service_key = os.getenv("SUPABASE_SERVICE_KEY")
+anon_key = os.getenv("SUPABASE_KEY")
+
+if service_key and "your-" not in service_key.lower():
+    SUPABASE_SERVICE_KEY = service_key
+else:
+    SUPABASE_SERVICE_KEY = anon_key
 
 if not SUPABASE_URL or not SUPABASE_SERVICE_KEY or "your-project" in SUPABASE_URL:
-    print("❌ ERROR: Please configure your active SUPABASE_URL and SUPABASE_SERVICE_KEY in 'apps/api/.env' first.")
+    print("❌ ERROR: Please configure your active SUPABASE_URL and SUPABASE_KEY in 'apps/api/.env' first.")
     sys.exit(1)
 
 print(f"Connecting to Supabase at: {SUPABASE_URL}...")

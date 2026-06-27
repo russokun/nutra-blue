@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, User, LogOut } from 'lucide-react';
+import { Menu, User, LogOut, Lock } from 'lucide-react';
 import CartIcon from '@/components/CartIcon';
 import { useAuth } from '@/hooks/useAuth';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 
-const Header = () => {
+const Header = ({ minimal = false }) => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isAuthenticated, isAdmin, logout, authAvailable } = useAuth();
@@ -15,7 +15,6 @@ const Header = () => {
     { name: 'Inicio', path: '/' },
     { name: 'Catálogo', path: '/shop' },
     { name: 'Impacto', path: '/impacto' },
-    { name: 'Carrito', path: '/cart' },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -28,12 +27,39 @@ const Header = () => {
 
   const allLinks = authLink ? [...navLinks, authLink] : navLinks;
 
+  if (minimal) {
+    return (
+      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between py-4 min-h-[96px]">
+            {/* Center Logo */}
+            <div className="flex-1 flex justify-center sm:justify-start">
+              <Link to="/" className="flex items-center space-x-3">
+                <img src="/logo.png" alt="Nutra Blue Logo" style={{ height: '80px', width: 'auto' }} />
+                <span className="text-2xl font-bold text-primary tracking-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
+                  Nutra Blue
+                </span>
+              </Link>
+            </div>
+
+            {/* Right Secure Lock */}
+            <div className="flex items-center gap-1.5 text-xs md:text-sm font-semibold text-muted-foreground bg-muted/65 px-4 py-2 rounded-full border border-border/50">
+              <Lock className="h-4 w-4 text-success" />
+              <span>Pago Seguro SSL</span>
+            </div>
+          </div>
+        </div>
+      </header>
+    );
+  }
+
   return (
-    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
+    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold text-primary" style={{ fontFamily: 'Playfair Display, serif' }}>
+        <div className="flex items-center justify-between py-3 min-h-[88px]">
+          <Link to="/" className="flex items-center space-x-3">
+            <img src="/logo.png" alt="Nutra Blue Logo" style={{ height: '72px', width: 'auto' }} />
+            <span className="text-2xl font-bold text-primary tracking-tight hidden sm:block" style={{ fontFamily: 'Playfair Display, serif' }}>
               Nutra Blue
             </span>
           </Link>
@@ -43,20 +69,20 @@ const Header = () => {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`text-sm font-medium transition-all duration-200 relative ${
+                className={`text-sm font-semibold transition-all duration-200 relative ${
                   isActive(link.path)
-                    ? 'text-primary font-semibold'
+                    ? 'text-primary font-bold'
                     : 'text-foreground/80 hover:text-primary'
                 }`}
               >
                 {link.name}
                 {isActive(link.path) && (
-                  <span className="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-primary" />
+                  <span className="absolute -bottom-[37px] left-0 right-0 h-0.5 bg-primary" />
                 )}
               </Link>
             ))}
             {isAdmin && (
-              <Link to="/admin" className="text-sm font-medium text-primary hover:text-primary/80">
+              <Link to="/admin" className="text-sm font-semibold text-primary hover:text-primary/80">
                 Admin
               </Link>
             )}

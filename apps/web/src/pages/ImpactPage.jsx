@@ -18,12 +18,17 @@ const ImpactPage = () => {
 
       <Header />
 
-      <main className="min-h-screen bg-background overflow-hidden">
-        {/* Seductive Hero Section with Glassmorphism */}
-        <section className="relative py-24 md:py-32 flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/5">
-          <div className="absolute inset-0 z-0 opacity-30">
-            <div className="absolute top-10 left-10 w-72 h-72 rounded-full bg-primary/20 blur-3xl" />
-            <div className="absolute bottom-10 right-10 w-96 h-96 rounded-full bg-accent/20 blur-3xl" />
+      <main className="min-h-screen bg-white overflow-hidden">
+        {/* Cinematic Hero Section with Glacial Lake Background */}
+        <section className="relative py-28 md:py-40 flex items-center justify-center overflow-hidden">
+          <div className="absolute inset-0 z-0">
+            <img
+              src="/impact_bg.png"
+              alt="Pristine valley and glacial lake background"
+              className="w-full h-full object-cover"
+            />
+            {/* Smooth transition from dark image overlay to pure white at the bottom */}
+            <div className="absolute inset-0 bg-black/40 bg-gradient-to-b from-transparent via-slate-950/50 to-[#ffffff]" />
           </div>
 
           <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -33,33 +38,33 @@ const ImpactPage = () => {
               transition={{ duration: 0.8 }}
               className="space-y-6"
             >
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 uppercase tracking-widest">
-                <Sparkles className="h-3.5 w-3.5 animate-pulse" /> Redefiniendo la Longevidad
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/15 text-white border border-white/20 uppercase tracking-widest">
+                <Sparkles className="h-3.5 w-3.5 animate-pulse text-accent" /> Redefiniendo la Longevidad
               </span>
               
               <h1
-                className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-foreground leading-tight tracking-tight"
-                style={{ fontFamily: 'Playfair Display, serif', letterSpacing: '-0.02em' }}
+                className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white leading-tight tracking-tight"
+                style={{ fontFamily: 'Playfair Display, serif', letterSpacing: '-0.02em', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}
               >
                 Queremos optimizar el <br />
-                <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                <span className="text-accent font-black">
                   Potencial Humano
                 </span>
               </h1>
 
-              <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              <p className="text-lg md:text-xl text-white/95 max-w-3xl mx-auto leading-relaxed" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.2)' }}>
                 No existimos para vender pastillas; existimos para democratizar el biohacking. 
                 Nuestra meta es otorgar claridad mental, equilibrio nervioso y longevidad activa a cada persona en Chile, 
                 fusionando la pureza de la naturaleza con el rigor de la ciencia moderna.
               </p>
 
               <div className="flex flex-wrap justify-center gap-4 pt-4">
-                <Button asChild size="lg" className="rounded-xl px-8 py-6 text-base shadow-md">
+                <Button asChild size="lg" className="rounded-xl px-8 py-6 text-base bg-accent text-white hover:bg-accent/90 shadow-xl transition-all duration-200 active:scale-[0.98]">
                   <Link to="/shop" className="flex items-center gap-2">
                     Únete a la Revolución <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="lg" className="rounded-xl px-8 py-6 text-base bg-transparent border-primary/45 text-primary hover:bg-primary/5">
+                <Button asChild variant="outline" size="lg" className="rounded-xl px-8 py-6 text-base bg-white/10 backdrop-blur-md border-white/20 text-white hover:bg-white/20 transition-all duration-200 active:scale-[0.98]">
                   <a href="#manifiesto">Leer Manifiesto</a>
                 </Button>
               </div>
@@ -67,8 +72,8 @@ const ImpactPage = () => {
           </div>
         </section>
 
-        {/* Big Seductive Stat/Metric Callouts */}
-        <section className="py-12 border-y border-border bg-card/40">
+        {/* Big Seductive Stat/Metric Callouts on White background */}
+        <section className="py-12 border-y border-border/80 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
               <div className="space-y-1">
@@ -76,7 +81,7 @@ const ImpactPage = () => {
                 <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Ingredientes Bioactivos</p>
                 <p className="text-xs text-muted-foreground/80 max-w-xs mx-auto">Sin rellenos, saborizantes artificiales ni excipientes químicos perjudiciales.</p>
               </div>
-              <div className="space-y-1 border-y md:border-y-0 md:border-x border-border py-6 md:py-0">
+              <div className="space-y-1 border-y md:border-y-0 md:border-x border-border/60 py-6 md:py-0">
                 <p className="text-4xl md:text-5xl font-extrabold text-accent" style={{ fontFamily: 'Playfair Display, serif' }}>0%</p>
                 <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Compromisos con la Calidad</p>
                 <p className="text-xs text-muted-foreground/80 max-w-xs mx-auto">Fórmulas testeadas en laboratorios independientes para validar su potencia.</p>
@@ -90,8 +95,8 @@ const ImpactPage = () => {
           </div>
         </section>
 
-        {/* The Manifiesto / Seductive Vision Section */}
-        <section id="manifiesto" className="py-24 bg-card/20">
+        {/* The Manifiesto / Seductive Vision Section on White background */}
+        <section id="manifiesto" className="py-24 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               
@@ -137,7 +142,7 @@ const ImpactPage = () => {
                 transition={{ duration: 0.6 }}
                 className="grid grid-cols-1 sm:grid-cols-2 gap-6"
               >
-                <Card className="bg-card border-border hover:border-primary/50 transition-all duration-300 shadow-sm hover:shadow-md">
+                <Card className="bg-[#fcfbf9] border-border/80 hover:border-primary/50 transition-all duration-300 shadow-sm hover:shadow-md">
                   <CardContent className="p-6 space-y-4">
                     <div className="p-3 w-fit rounded-xl bg-primary/10 text-primary">
                       <Brain className="h-6 w-6" />
@@ -151,7 +156,7 @@ const ImpactPage = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-card border-border hover:border-primary/50 transition-all duration-300 shadow-sm hover:shadow-md">
+                <Card className="bg-[#fcfbf9] border-border/80 hover:border-primary/50 transition-all duration-300 shadow-sm hover:shadow-md">
                   <CardContent className="p-6 space-y-4">
                     <div className="p-3 w-fit rounded-xl bg-accent/10 text-accent">
                       <Zap className="h-6 w-6" />
@@ -165,7 +170,7 @@ const ImpactPage = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-card border-border hover:border-primary/50 transition-all duration-300 shadow-sm hover:shadow-md">
+                <Card className="bg-[#fcfbf9] border-border/80 hover:border-primary/50 transition-all duration-300 shadow-sm hover:shadow-md">
                   <CardContent className="p-6 space-y-4">
                     <div className="p-3 w-fit rounded-xl bg-primary/10 text-primary">
                       <Leaf className="h-6 w-6" />
@@ -179,7 +184,7 @@ const ImpactPage = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-card border-border hover:border-primary/50 transition-all duration-300 shadow-sm hover:shadow-md">
+                <Card className="bg-[#fcfbf9] border-border/80 hover:border-primary/50 transition-all duration-300 shadow-sm hover:shadow-md">
                   <CardContent className="p-6 space-y-4">
                     <div className="p-3 w-fit rounded-xl bg-accent/10 text-accent">
                       <Users className="h-6 w-6" />
@@ -199,7 +204,7 @@ const ImpactPage = () => {
         </section>
 
         {/* Seductive Callout - The Promise of Pure Formulations */}
-        <section className="py-24 bg-gradient-to-b from-card to-background relative overflow-hidden">
+        <section className="py-24 bg-white border-t border-border/50 relative overflow-hidden">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8 relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -223,15 +228,15 @@ const ImpactPage = () => {
 
             {/* Guarantees Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto">
-              <div className="p-5 bg-card/60 rounded-2xl border border-border/50 text-center">
+              <div className="p-5 bg-slate-50/50 rounded-2xl border border-border/60 text-center">
                 <h4 className="font-bold text-sm text-foreground mb-1">Sin Excipientes Dañinos</h4>
                 <p className="text-[11px] text-muted-foreground">Cero estearato de magnesio, maltodextrinas o azúcares ocultos en los polvos.</p>
               </div>
-              <div className="p-5 bg-card/60 rounded-2xl border border-border/50 text-center">
+              <div className="p-5 bg-slate-50/50 rounded-2xl border border-border/60 text-center">
                 <h4 className="font-bold text-sm text-foreground mb-1">Dosis Terapéuticas</h4>
                 <p className="text-[11px] text-muted-foreground">Concentraciones activas que de verdad generan un impacto medible en tu biología.</p>
               </div>
-              <div className="p-5 bg-card/60 rounded-2xl border border-border/50 text-center">
+              <div className="p-5 bg-slate-50/50 rounded-2xl border border-border/60 text-center">
                 <h4 className="font-bold text-sm text-foreground mb-1">Certificación Local</h4>
                 <p className="text-[11px] text-muted-foreground">Elaborados en instalaciones bajo resolución sanitaria y resoluciones vigentes en Chile.</p>
               </div>
@@ -247,7 +252,7 @@ const ImpactPage = () => {
             >
               <Button asChild size="lg" className="rounded-xl px-10 py-7 text-lg bg-accent text-white hover:bg-accent/90 shadow-xl transition-all duration-200 active:scale-[0.98]">
                 <Link to="/shop">
-                  Elige optimizar tu vida hoy
+                  Empieza tu Transformación
                 </Link>
               </Button>
               <p className="text-xs text-muted-foreground mt-3">Envío gratis en compras sobre $50.000 a todo Chile</p>

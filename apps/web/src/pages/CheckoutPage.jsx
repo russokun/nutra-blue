@@ -66,7 +66,7 @@ const CheckoutPage = () => {
   const cartTotalAmount = getCartTotal();
   const tax = Math.round(cartTotalAmount - (cartTotalAmount / 1.19)); // 19% IVA incluido
   const subtotal = cartTotalAmount - tax;
-  const shippingCost = formData.region ? calculateShipping(formData.region) : 0;
+  const shippingCost = (formData.region && cartTotalAmount < 50000) ? calculateShipping(formData.region) : 0;
   const total = cartTotalAmount + shippingCost;
 
   const handleInputChange = (e) => {
@@ -200,7 +200,7 @@ const CheckoutPage = () => {
         <meta name="description" content="Completa tu compra en Nutra Blue" />
       </Helmet>
 
-      <Header />
+      <Header minimal />
 
       <main className="min-h-screen bg-background py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -383,7 +383,7 @@ const CheckoutPage = () => {
         </div>
       </main>
 
-      <Footer />
+      <Footer minimal />
     </>
   );
 };

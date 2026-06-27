@@ -2,7 +2,9 @@ from supabase import create_client, Client
 from app.core.config import settings
 
 supabase_url = settings.supabase_url
-supabase_key = settings.supabase_service_key or settings.supabase_key
+supabase_key = settings.supabase_key
+if settings.supabase_service_key and "your-" not in settings.supabase_service_key.lower():
+    supabase_key = settings.supabase_service_key
 
 supabase_client = None
 
