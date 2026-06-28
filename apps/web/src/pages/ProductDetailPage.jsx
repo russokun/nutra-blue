@@ -134,7 +134,23 @@ const ProductDetailPage = () => {
   }
 
   const stockStatus = getStockStatus(product.stock);
-  const extraDetails = getProductExtraDetails(product.name);
+  const staticDetails = getProductExtraDetails(product.name);
+  const extraDetails = {
+    origin: product.origin || staticDetails.origin,
+    icons: product.benefits && product.benefits.length > 0
+      ? product.benefits.map((b) => {
+          // If the benefit is already a structured label or starts with an emoji, use it, else default emoji
+          const match = b.match(/^([\ud800-\udbff][\udc00-\udfff]|\S+)\s+(.+)$/);
+          return { emoji: match ? match[1] : "🌱", text: match ? match[2] : b };
+        })
+      : staticDetails.icons,
+    technical: {
+      ingredients: product.ingredients || staticDetails.technical.ingredients,
+      usage: product.usage || staticDetails.technical.usage,
+      precautions: product.precautions || staticDetails.technical.precautions,
+    },
+    matches: product.matches || staticDetails.matches
+  };
 
   return (
     <>

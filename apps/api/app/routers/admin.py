@@ -268,17 +268,17 @@ async def sync_products_from_sheets(
     # Parsear y mapear columnas de forma flexible
     def normalize_key(key: str) -> str:
         k = key.lower().strip()
-        if k in ("name", "nombre"): return "name"
-        if k in ("price", "precio"): return "price"
-        if k in ("stock", "inventario"): return "stock"
-        if k in ("category", "categoria", "categoría"): return "category"
+        if k in ("name", "nombre", "suplemento / alimento", "suplemento/alimento", "suplemento", "alimento"): return "name"
+        if k in ("price", "precio", "$ venta", "venta", "$venta"): return "price"
+        if k in ("stock", "inventario", "stock disponible"): return "stock"
+        if k in ("category", "categoria", "categoría", "categoría / objetivo", "categoria/objetivo", "objetivo"): return "category"
         if k in ("image_url", "image", "imagen", "imagen_url", "url imagen", "url_imagen"): return "image_url"
         if k in ("benefits", "beneficios"): return "benefits"
         if k in ("certifications", "certificaciones"): return "certifications"
-        if k in ("google_doc_url", "ficha_url", "ficha", "documento", "google doc url"): return "google_doc_url"
+        if k in ("google_doc_url", "ficha_url", "ficha", "documento", "google doc url", "link doc", "link_doc", "linkdoc"): return "google_doc_url"
         return k
 
-    report = {"created": 0, "updated": 0, "errors": []}
+    report = {"created": 0, "updated": 0, "errors": [], "warnings": []}
 
     try:
         reader = csv.DictReader(io.StringIO(csv_text))
@@ -296,7 +296,7 @@ async def sync_products_from_sheets(
             report["errors"].append({
                 "row": index + 1,
                 "product": "Desconocido",
-                "error": "El nombre del producto es obligatorio y no puede estar vacío"
+                "error": "El nombre del producto (Suplemento / Alimento) es obligatorio y no puede estar vacío"
             })
             continue
 
@@ -304,15 +304,18 @@ async def sync_products_from_sheets(
             # Limpiar precio: quitar $, puntos, espacios y convertir a int
             raw_price = str(row.get("price") or "").replace("$", "").replace(".", "").replace(",", "").strip()
             if raw_price and not raw_price.isdigit():
-                raise ValueError("El precio debe ser un número entero válido")
+                raise ValueError("El precio de venta debe ser un número entero válido")
             price = int(raw_price) if raw_price else 0
             
-            # Limpiar stock
+            # Limpiar stock (si no viene en la planilla, por defecto usamos 100 para evitar errores)
             raw_stock = str(row.get("stock") or "").strip()
-            if raw_stock and not raw_stock.isdigit():
-                raise ValueError("El stock debe ser un número entero válido")
-            stock = int(raw_stock) if raw_stock else 0
-
+            if not raw_stock:
+                stock = 100
+            else:
+                if not raw_stock.isdigit():
+                    raise ValueError("El stock debe ser un número entero válido")
+                stock = int(raw_stock)
+ 
             # Procesar arreglos separados por punto y coma (o coma si no hay punto y coma)
             def parse_list(val: Optional[str]) -> List[str]:
                 if not val:
@@ -324,8 +327,24 @@ async def sync_products_from_sheets(
             certifications = parse_list(row.get("certifications"))
             
             category = row.get("category", "Otros").strip()
-            image_url = row.get("image_url", "").strip() or None
+            image_url = row.get("image_url", "").strip() or "/logo.png"
             google_doc_url = row.get("google_doc_url", "").strip() or None
+
+            # Si hay google_doc_url, intentar descargar y parsear el documento Word
+            doc_details = {}
+            if google_doc_url:
+                try:
+                    from app.services.doc_parser import parse_google_doc
+                    doc_details = parse_google_doc(google_doc_url)
+                except Exception as doc_err:
+                    # Registramos el error como advertencia pero permitimos continuar con la validación del producto
+                    if "warnings" not in report:
+                        report["warnings"] = []
+                    report["warnings"].append({
+                        "row": index + 1,
+                        "product": name,
+                        "error": f"Advertencia al parsear Google Doc: {str(doc_err)}"
+                    })
 
             # Validar con Pydantic
             product_to_validate = ProductCreate(
@@ -336,7 +355,12 @@ async def sync_products_from_sheets(
                 image_url=image_url,
                 benefits=benefits,
                 certifications=certifications,
-                google_doc_url=google_doc_url
+                google_doc_url=google_doc_url,
+                description=doc_details.get("description") or row.get("description", "").strip() or None,
+                origin=doc_details.get("origin") or None,
+                ingredients=doc_details.get("ingredients") or None,
+                usage=doc_details.get("usage") or None,
+                precautions=doc_details.get("precautions") or None
             )
 
         except Exception as e:

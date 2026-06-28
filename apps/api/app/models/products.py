@@ -10,6 +10,11 @@ class ProductBase(BaseModel):
     benefits: List[str] = []
     certifications: List[str] = []
     google_doc_url: Optional[str] = None
+    description: Optional[str] = None
+    origin: Optional[str] = None
+    ingredients: Optional[str] = None
+    usage: Optional[str] = None
+    precautions: Optional[str] = None
 
 class ProductCreate(ProductBase):
     pass
@@ -23,6 +28,11 @@ class ProductUpdate(BaseModel):
     benefits: Optional[List[str]] = None
     certifications: Optional[List[str]] = None
     google_doc_url: Optional[str] = None
+    description: Optional[str] = None
+    origin: Optional[str] = None
+    ingredients: Optional[str] = None
+    usage: Optional[str] = None
+    precautions: Optional[str] = None
 
 class Product(ProductBase):
     id: str
