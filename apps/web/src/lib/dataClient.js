@@ -185,6 +185,30 @@ const dataClient = {
         if (error) throw new Error(error.message);
         return mapCreatedTimestamp(data);
       },
+
+      create: async (payload) => {
+        if (!isSupabaseConfigured) {
+          try {
+            return await fetchFromApi(`/${tableName}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+          } catch (e) {
+            console.warn(`Local API create failed for ${tableName}:`, e);
+            return payload;
+          }
+        }
+        
+        if (!supabase) throw new Error('Database client not initialized');
+        
+        const { data, error } = await supabase.from(tableName).insert([payload]).select().single();
+        if (error) {
+          console.error(`Supabase error writing to ${tableName}:`, error);
+          throw new Error(error.message);
+        }
+        return data;
+      },
     };
   },
 };
