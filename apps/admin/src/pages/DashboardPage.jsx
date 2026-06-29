@@ -92,6 +92,8 @@ const DashboardPage = () => {
 
   useEffect(() => {
     fetchData();
+    
+    // Load local subscribers
     const localSubs = JSON.parse(localStorage.getItem('nutra_blue_subscribers') || '[]');
     if (localSubs.length > 0) {
       const addedLeads = localSubs.map(email => ({
@@ -102,6 +104,16 @@ const DashboardPage = () => {
       setLeads(prev => {
         const existingEmails = prev.map(l => l.email);
         const uniqueAdded = addedLeads.filter(l => !existingEmails.includes(l.email));
+        return [...uniqueAdded, ...prev];
+      });
+    }
+
+    // Load local suggestions
+    const localSugs = JSON.parse(localStorage.getItem('nutra_blue_suggestions') || '[]');
+    if (localSugs.length > 0) {
+      setSuggestions(prev => {
+        const existingIds = prev.map(s => s.id);
+        const uniqueAdded = localSugs.filter(s => !existingIds.includes(s.id));
         return [...uniqueAdded, ...prev];
       });
     }
