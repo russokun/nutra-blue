@@ -16,6 +16,51 @@ const HomePage = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeArticle, setActiveArticle] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupEmail, setPopupEmail] = useState('');
+
+  useEffect(() => {
+    const isDismissed = localStorage.getItem('nutra_blue_popup_dismissed');
+    if (isDismissed) return;
+
+    // Trigger 1: Timed (10 seconds)
+    const timer = setTimeout(() => {
+      setShowPopup(true);
+    }, 10000);
+
+    // Trigger 2: Exit Intent
+    const handleMouseLeave = (e) => {
+      if (e.clientY < 50) {
+        setShowPopup(true);
+      }
+    };
+    document.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, []);
+
+  const handlePopupSubmit = (e) => {
+    e.preventDefault();
+    if (!popupEmail) return;
+    
+    const subscribers = JSON.parse(localStorage.getItem('nutra_blue_subscribers') || '[]');
+    if (!subscribers.includes(popupEmail)) {
+      subscribers.push(popupEmail);
+      localStorage.setItem('nutra_blue_subscribers', JSON.stringify(subscribers));
+    }
+    
+    localStorage.setItem('nutra_blue_popup_dismissed', 'true');
+    setShowPopup(false);
+    toast.success('¡Excelente! Código de 15% de descuento enviado a tu correo.');
+  };
+
+  const handleClosePopup = () => {
+    localStorage.setItem('nutra_blue_popup_dismissed', 'true');
+    setShowPopup(false);
+  };
 
   const pillars = [
     {
@@ -415,6 +460,67 @@ const HomePage = () => {
           </div>
         </section>
       </main>
+
+      {/* Lead Magnet Pop-up */}
+      <AnimatePresence>
+        {showPopup && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-lg bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 border border-white/10 rounded-3xl p-8 text-white shadow-2xl overflow-hidden"
+            >
+              {/* Blur elements */}
+              <div className="absolute -top-24 -left-24 w-48 h-48 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-accent/20 rounded-full blur-3xl pointer-events-none" />
+
+              <button
+                onClick={handleClosePopup}
+                className="absolute top-5 right-5 text-slate-400 hover:text-white transition-colors p-1.5 rounded-full hover:bg-white/10"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+              <div className="space-y-6 text-center">
+                <div className="mx-auto w-12 h-12 rounded-full bg-accent/15 flex items-center justify-center text-accent">
+                  <Sparkles className="h-6 w-6" />
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black tracking-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
+                    Optimiza tu rendimiento desde hoy
+                  </h3>
+                  <p className="text-sm text-slate-300 leading-relaxed max-w-md mx-auto">
+                    Suscríbete y desbloquea un <strong className="text-accent">15% de descuento</strong> en tu primera compra. Además, recibe nuestras guías de optimización biológica directo en tu bandeja de entrada.
+                  </p>
+                </div>
+
+                <form onSubmit={handlePopupSubmit} className="space-y-3 max-w-sm mx-auto">
+                  <input
+                    type="email"
+                    required
+                    value={popupEmail}
+                    onChange={(e) => setPopupEmail(e.target.value)}
+                    placeholder="Tu correo electrónico"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-950/80 border border-white/25 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                  />
+                  <Button
+                    type="submit"
+                    className="w-full bg-accent hover:bg-accent/90 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all duration-200"
+                  >
+                    Quiero mi descuento y optimizarme
+                  </Button>
+                </form>
+
+                <p className="text-[10px] text-slate-500">
+                  Respetamos tu privacidad. Puedes darte de baja cuando quieras.
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <Footer />
     </>

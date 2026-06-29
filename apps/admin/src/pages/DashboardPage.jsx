@@ -92,6 +92,19 @@ const DashboardPage = () => {
 
   useEffect(() => {
     fetchData();
+    const localSubs = JSON.parse(localStorage.getItem('nutra_blue_subscribers') || '[]');
+    if (localSubs.length > 0) {
+      const addedLeads = localSubs.map(email => ({
+        email,
+        date: 'Hoy',
+        source: 'Pop-up Magnet'
+      }));
+      setLeads(prev => {
+        const existingEmails = prev.map(l => l.email);
+        const uniqueAdded = addedLeads.filter(l => !existingEmails.includes(l.email));
+        return [...uniqueAdded, ...prev];
+      });
+    }
   }, []);
 
   // Quick Action: Add Product
