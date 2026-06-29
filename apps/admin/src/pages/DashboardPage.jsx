@@ -27,6 +27,29 @@ const DashboardPage = () => {
   const [alerts, setAlerts] = useState({ low_stock: [], expiration: [] });
   const [loading, setLoading] = useState(true);
 
+  // Leads & Suggestions States
+  const [leads, setLeads] = useState([
+    { email: 'contacto@ignacio.cl', date: '29 de Junio, 2026', source: 'Footer' },
+    { email: 'pablo.valenzuela@gmail.com', date: '28 de Junio, 2026', source: 'Footer' },
+    { email: 'constanza.vargas@outlook.com', date: '27 de Junio, 2026', source: 'Footer' }
+  ]);
+
+  const [suggestions, setSuggestions] = useState([
+    { id: 1, text: 'Creatina Monohidratada Micronizada', date: '29 de Junio, 2026', status: 'Pendiente' },
+    { id: 2, text: 'Ashwagandha KSM-66 en cápsulas', date: '28 de Junio, 2026', status: 'Pendiente' },
+    { id: 3, text: 'Colágeno Hidrolizado Marino', date: '25 de Junio, 2026', status: 'Considerado' }
+  ]);
+
+  const handleArchiveSuggestion = (id) => {
+    setSuggestions(prev => prev.filter(s => s.id !== id));
+    toast.success('Sugerencia archivada');
+  };
+
+  const handleConsiderSuggestion = (id) => {
+    setSuggestions(prev => prev.map(s => s.id === id ? { ...s, status: 'Considerado' } : s));
+    toast.success('Sugerencia marcada como Considerada para desarrollo clínico');
+  };
+
   // Modal States
   const [modalQuickAdd, setModalQuickAdd] = useState(false);
   const [modalCoupon, setModalCoupon] = useState(false);
@@ -325,6 +348,69 @@ const DashboardPage = () => {
                   </div>
                 ))}
               </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Leads & Suggestions Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
+        {/* Leads Table */}
+        <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-sm space-y-4">
+          <h2 className="text-lg font-bold text-foreground">Base de Clientes (Leads de Suscripción)</h2>
+          <p className="text-xs text-muted-foreground">Correos recolectados del Footer para campañas exclusivas y descuentos.</p>
+          <div className="overflow-x-auto rounded-xl border border-border/60">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-muted/40 font-medium text-muted-foreground">
+                <tr>
+                  <th className="p-3">Correo Electrónico</th>
+                  <th className="p-3">Fecha Captura</th>
+                  <th className="p-3">Origen</th>
+                </tr>
+              </thead>
+              <tbody>
+                {leads.map((lead, idx) => (
+                  <tr key={idx} className="border-t border-border/60 hover:bg-muted/10 transition-colors">
+                    <td className="p-3 font-semibold text-foreground">{lead.email}</td>
+                    <td className="p-3 text-xs text-muted-foreground">{lead.date}</td>
+                    <td className="p-3">
+                      <span className="text-[10px] bg-primary/10 text-primary border border-primary/20 font-bold px-2.5 py-0.5 rounded-full">
+                        {lead.source}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Suggestions Box */}
+        <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-sm space-y-4">
+          <h2 className="text-lg font-bold text-foreground">Buzón de Sugerencias (Fórmulas Requeridas)</h2>
+          <p className="text-xs text-muted-foreground">Suplementos sugeridos por clientes cuando no encontraron stock en el catálogo.</p>
+          <div className="space-y-3">
+            {suggestions.length === 0 ? (
+              <p className="text-xs text-muted-foreground py-8 text-center bg-muted/10 rounded-xl border border-dashed">
+                No hay sugerencias registradas.
+              </p>
+            ) : (
+              suggestions.map((s) => (
+                <div key={s.id} className="p-4 bg-slate-50 border border-border rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs">
+                  <div className="space-y-1">
+                    <p className="font-bold text-foreground">"{s.text}"</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      Sugerido el {s.date} • <strong className={s.status === 'Considerado' ? 'text-emerald-600' : 'text-amber-600'}>{s.status}</strong>
+                    </p>
+                  </div>
+                  {s.status === 'Pendiente' && (
+                    <div className="flex gap-2 w-full sm:w-auto">
+                      <Button onClick={() => handleConsiderSuggestion(s.id)} size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] px-2.5 py-1">Considerar</Button>
+                      <Button onClick={() => handleArchiveSuggestion(s.id)} variant="ghost" size="sm" className="hover:bg-destructive/10 hover:text-destructive rounded-lg text-[10px] px-2.5 py-1 text-muted-foreground">Archivar</Button>
+                    </div>
+                  )}
+                </div>
+              ))
             )}
           </div>
         </div>
