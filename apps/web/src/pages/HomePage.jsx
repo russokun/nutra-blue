@@ -137,25 +137,58 @@ const HomePage = () => {
         </section>
 
         {/* Carrusel de Confianza (Trust Bar) */}
-        <section className="bg-slate-950 border-y border-white/15 py-5 text-white/90">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center text-xs md:text-sm font-semibold tracking-wide">
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-lg">⚡</span>
-                <span>Envío Rápido</span>
+        <section className="bg-slate-950 border-y border-white/15 py-4 text-white/90 overflow-hidden relative w-full select-none">
+          <div className="w-full">
+            <div className="animate-marquee-ltr flex items-center whitespace-nowrap gap-12 text-xs md:text-sm font-semibold tracking-wide py-1">
+              
+              {/* Copy 1 */}
+              <div className="flex items-center gap-12">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">⚡</span>
+                  <span>Envío Rápido</span>
+                </div>
+                <span className="text-white/20">|</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">🛡️</span>
+                  <span>Calidad Premium (Ingredientes testeados)</span>
+                </div>
+                <span className="text-white/20">|</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">🧬</span>
+                  <span>Fórmulas de Nutrición Avanzada</span>
+                </div>
+                <span className="text-white/20">|</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">📦</span>
+                  <span>Envío Gratis (Sobre $50.000)</span>
+                </div>
+                <span className="text-white/20">|</span>
               </div>
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-lg">🛡️</span>
-                <span>Calidad Premium (Ingredientes testeados)</span>
+
+              {/* Copy 2 */}
+              <div className="flex items-center gap-12">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">⚡</span>
+                  <span>Envío Rápido</span>
+                </div>
+                <span className="text-white/20">|</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">🛡️</span>
+                  <span>Calidad Premium (Ingredientes testeados)</span>
+                </div>
+                <span className="text-white/20">|</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">🧬</span>
+                  <span>Fórmulas de Nutrición Avanzada</span>
+                </div>
+                <span className="text-white/20">|</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">📦</span>
+                  <span>Envío Gratis (Sobre $50.000)</span>
+                </div>
+                <span className="text-white/20">|</span>
               </div>
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-lg">🧬</span>
-                <span>Fórmulas de Biohacking</span>
-              </div>
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-lg">📦</span>
-                <span>Envío Gratis (Sobre $50.000)</span>
-              </div>
+
             </div>
           </div>
         </section>

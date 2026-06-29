@@ -50,42 +50,12 @@ const Footer = ({ minimal = false }) => {
       />
       
       <div className="relative z-10">
-        {/* Upper Section: Newsletter Banner */}
-        <div className="border-b border-white/10 bg-slate-900/40 py-10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="space-y-1 text-center md:text-left">
-              <h3 className="text-xl md:text-2xl font-black text-white">
-                Optimiza tu bandeja de entrada.
-              </h3>
-              <p className="text-sm text-slate-300">
-                Únete y recibe estrategias de nutrición avanzada y descuentos exclusivos.
-              </p>
-            </div>
-            <form onSubmit={handleSubscribe} className="flex w-full max-w-md gap-2">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Tu correo electrónico"
-                required
-                className="flex-grow px-4 py-3 rounded-xl bg-slate-950/80 border border-white/20 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-              />
-              <button
-                type="submit"
-                className="bg-primary hover:bg-primary/95 text-primary-foreground font-semibold px-6 py-3 rounded-xl text-sm transition-all duration-200 active:scale-[0.98] shrink-0"
-              >
-                Suscribirme
-              </button>
-            </form>
-          </div>
-        </div>
-
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Brand */}
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
-                <img src="/logo.png" alt="Nutra Blue Logo" className="h-8 w-auto brightness-0 invert" />
+                <img src="/logo.png" alt="Nutra Blue Logo" className="h-12 w-auto brightness-0 invert" />
                 <span className="text-xl font-bold text-white">
                   Nutra Blue
                 </span>
@@ -117,8 +87,31 @@ const Footer = ({ minimal = false }) => {
               </nav>
             </div>
 
-            {/* Certifications */}
-            <div className="space-y-4 flex flex-col justify-end">
+            {/* Certifications & newsletter */}
+            <div className="space-y-6 flex flex-col justify-between">
+              <div className="space-y-3">
+                <span className="text-sm font-bold tracking-wider uppercase text-white">Únete y recibe estrategias</span>
+                <p className="text-xs text-slate-300">
+                  Estrategias de nutrición avanzada y descuentos exclusivos.
+                </p>
+                <form onSubmit={handleSubscribe} className="flex gap-2">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Tu correo"
+                    required
+                    className="flex-grow px-3 py-2 rounded-xl bg-slate-950/80 border border-white/20 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                  />
+                  <button
+                    type="submit"
+                    className="bg-primary hover:bg-primary/95 text-primary-foreground font-semibold px-4 py-2 rounded-xl text-xs transition-all duration-200 active:scale-[0.98] shrink-0"
+                  >
+                    Suscribirme
+                  </button>
+                </form>
+              </div>
+
               <div className="pt-2 flex items-center gap-2 text-xs text-slate-400">
                 <ShieldCheck className="h-4 w-4 text-primary" />
                 <span>Distribuidor Oficial de Nutra Blue</span>
