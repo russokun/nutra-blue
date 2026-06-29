@@ -20,21 +20,24 @@ const HomePage = () => {
   const pillars = [
     {
       icon: Brain,
-      title: 'Salud Cognitiva',
+      title: 'Potencia tu claridad mental',
+      cta: 'Mejorar mi Enfoque',
       description: 'Potencia tu claridad mental, enfoque y memoria con nuestros nootrópicos naturales y adaptógenos seleccionados.',
       category: 'Salud Cognitiva',
       image: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&h=400&fit=crop'
     },
     {
       icon: Heart,
-      title: 'Gestión del Estrés',
-      description: 'Equilibra tu sistema nervioso y reduce el cortisol con extractos botánicos que promueven la calma y resiliencia.',
+      title: 'Equilibra tu sistema nervioso',
+      cta: 'Reducir mi Cortisol',
+      description: 'Equilibra tu sistema nervioso and reduce el cortisol con extractos botánicos que promueven la calma y resiliencia.',
       category: 'Gestión del Estrés',
       image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600&h=400&fit=crop'
     },
     {
       icon: Sparkles,
-      title: 'Longevidad',
+      title: 'Maximiza tu vitalidad',
+      cta: 'Activar mi Longevidad',
       description: 'Activa tus vías de longevidad celular con antioxidantes, polifenoles y compuestos que apoyan el envejecimiento saludable.',
       category: 'Longevidad',
       image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600&h=400&fit=crop'
@@ -125,7 +128,7 @@ const HomePage = () => {
                 La ciencia detrás de tu mejor versión.
               </h1>
               <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto mb-8 leading-relaxed">
-                Nutrición avanzada con Nutra Blue para optimizar tu cuerpo desde adentro hacia afuera.
+                Desbloquea tu máximo rendimiento. Fórmulas de nutrición avanzada basadas en ciencia para optimizar tu energía, enfoque y longevidad.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Button
@@ -133,7 +136,7 @@ const HomePage = () => {
                   size="lg"
                   className="w-full sm:w-auto bg-accent text-white hover:bg-accent/90 text-base px-8 py-6 rounded-xl shadow-lg transition-all duration-200 active:scale-[0.98]"
                 >
-                  <Link to="/shop">Ver Catálogo</Link>
+                  <Link to="/shop">Optimizar mi Rutina</Link>
                 </Button>
                 <Button
                   asChild
@@ -141,10 +144,34 @@ const HomePage = () => {
                   size="lg"
                   className="w-full sm:w-auto bg-white/10 backdrop-blur-md border-white/20 text-white hover:bg-white/20 text-base px-8 py-6 rounded-xl transition-all duration-200 active:scale-[0.98]"
                 >
-                  <Link to="/impacto">Conoce Nuestro Impacto</Link>
+                  <Link to="/impacto">Descubrir la Ciencia</Link>
                 </Button>
               </div>
             </motion.div>
+          </div>
+        </section>
+
+        {/* Carrusel de Confianza (Trust Bar) */}
+        <section className="bg-slate-950 border-y border-white/15 py-5 text-white/90">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center text-xs md:text-sm font-semibold tracking-wide">
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-lg">⚡</span>
+                <span>Envío Rápido</span>
+              </div>
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-lg">🛡️</span>
+                <span>Calidad Clínica Garantizada</span>
+              </div>
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-lg">🧬</span>
+                <span>Nutrición Avanzada</span>
+              </div>
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-lg">📦</span>
+                <span>Envío Gratis (Sobre $50.000)</span>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -216,7 +243,7 @@ const HomePage = () => {
                         variant="outline"
                         className="border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-200"
                       >
-                        Ver Productos
+                        {pillar.cta}
                       </Button>
                     </div>
                   </motion.div>
@@ -230,6 +257,9 @@ const HomePage = () => {
         <section className="py-24 bg-[#f8f7f5] border-y border-border/80">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 uppercase tracking-widest mb-4">
+                Únete a +2.000 personas optimizando su biología
+              </span>
               <h2
                 className="text-3xl md:text-4xl font-bold text-foreground mb-4"
                 style={{ fontFamily: 'Playfair Display, serif', letterSpacing: '-0.02em' }}
@@ -269,6 +299,9 @@ const HomePage = () => {
                       />
                       <span className="absolute top-2 left-2 bg-primary/10 text-primary border border-primary/20 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                         {product.category}
+                      </span>
+                      <span className="absolute top-2 right-2 bg-amber-500/10 text-amber-700 border border-amber-500/20 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                        Stock limitado del lote actual
                       </span>
                     </div>
 

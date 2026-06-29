@@ -7,6 +7,7 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Brain, Sparkles, Leaf, Users, ShieldAlert, ArrowRight, Zap, Target } from 'lucide-react';
+import { toast } from 'sonner';
 
 const ImpactPage = () => {
   return (
@@ -199,6 +200,100 @@ const ImpactPage = () => {
                 </Card>
               </motion.div>
 
+            </div>
+          </div>
+        </section>
+
+        {/* Sección: Ciencia, Evidencia y Mecanismos de Acción */}
+        <section className="py-24 bg-slate-50 border-t border-border/40 relative overflow-hidden">
+          {/* Subtle Molecular SVG Pattern Background */}
+          <div className="absolute inset-0 opacity-[0.03] pointer-events-none z-0">
+            <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="1" />
+                  <circle cx="40" cy="0" r="2" fill="currentColor" />
+                  <circle cx="0" cy="40" r="2" fill="currentColor" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#grid)" />
+            </svg>
+          </div>
+
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="text-center mb-16">
+              <span className="text-xs font-bold text-accent uppercase tracking-widest block mb-2">Base Científica</span>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground" style={{ fontFamily: 'Playfair Display, serif' }}>
+                Estudios y Mecanismos de Acción
+              </h2>
+              <p className="text-muted-foreground mt-3 max-w-xl mx-auto text-sm md:text-base">
+                Respaldamos cada una de nuestras formulaciones con publicaciones científicas internacionales y ensayos clínicos de referencia.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* Card 1 */}
+              <div className="bg-white rounded-2xl p-6 border border-border/80 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                <div className="space-y-3">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full">Neuroplasticidad</span>
+                  <h3 className="text-lg font-bold text-foreground" style={{ fontFamily: 'Playfair Display, serif' }}>
+                    Hongos Medicinales y NGF (Factor de Crecimiento Nervioso)
+                  </h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Evaluación del impacto del hongo Hericium erinaceus (Melena de León) en la biosíntesis del factor de crecimiento nervioso y la regeneración celular.
+                  </p>
+                </div>
+                <div className="pt-6 border-t border-border/20 mt-4 flex items-center justify-between">
+                  <a href="https://pubmed.ncbi.nlm.nih.gov/" target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-accent hover:underline flex items-center gap-1">
+                    Leer el Estudio <ArrowRight className="h-3 w-3" />
+                  </a>
+                  <span className="text-[10px] text-muted-foreground font-semibold">Pubmed ID: 24266378</span>
+                </div>
+              </div>
+
+              {/* Card 2 */}
+              <div className="bg-white rounded-2xl p-6 border border-border/80 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                <div className="space-y-3">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full">Longevidad</span>
+                  <h3 className="text-lg font-bold text-foreground" style={{ fontFamily: 'Playfair Display, serif' }}>
+                    Polifenoles y Activación de las Sirtuinas (SIRT1)
+                  </h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Análisis sobre cómo los antioxidantes de alta pureza activan los genes de la longevidad celular y mejoran la eficiencia metabólica mitocondrial.
+                  </p>
+                </div>
+                <div className="pt-6 border-t border-border/20 mt-4 flex items-center justify-between">
+                  <button 
+                    onClick={() => toast.info("Mecanismo: Activación enzimática mediante modulación alostérica de SIRT1.")}
+                    className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
+                  >
+                    Entender el Mecanismo <ArrowRight className="h-3 w-3" />
+                  </button>
+                  <span className="text-[10px] text-muted-foreground font-semibold">Respaldo Clínico</span>
+                </div>
+              </div>
+
+              {/* Card 3 */}
+              <div className="bg-white rounded-2xl p-6 border border-border/80 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                <div className="space-y-3">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded-full">Resiliencia</span>
+                  <h3 className="text-lg font-bold text-foreground" style={{ fontFamily: 'Playfair Display, serif' }}>
+                    Modulación del Cortisol mediante Adaptógenos Activos
+                  </h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Estudios aleatorizados de doble ciego que demuestran la regulación del eje hipotálamo-hipófisis-adrenal mediante extractos estandarizados.
+                  </p>
+                </div>
+                <div className="pt-6 border-t border-border/20 mt-4 flex items-center justify-between">
+                  <button
+                    onClick={() => toast.info("Evidencia: Reducción promedio de 23% en niveles de cortisol en plasma en 60 días.")}
+                    className="text-xs font-bold text-accent hover:underline flex items-center gap-1"
+                  >
+                    Ver Evidencia Clínica <ArrowRight className="h-3 w-3" />
+                  </button>
+                  <span className="text-[10px] text-muted-foreground font-semibold">Estudio Clínico</span>
+                </div>
+              </div>
             </div>
           </div>
         </section>

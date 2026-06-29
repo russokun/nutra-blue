@@ -212,19 +212,19 @@ const CartPage = () => {
                     </div>
                     <div>
                       <h4 className="font-bold text-base text-card-foreground flex items-center gap-1.5 justify-center md:justify-start">
-                        ¿Quieres complementar tu fórmula?
+                        Completa tu rutina de optimización
                       </h4>
                       <p className="text-xs text-muted-foreground text-center md:text-left">
-                        Agrega <strong className="text-foreground">{upsellProduct.name}</strong> por solo <strong className="text-primary">{formatPrice(upsellProduct.price)}</strong>
+                        Agrega <strong className="text-foreground">{upsellProduct.name}</strong> por <strong className="text-primary">{formatPrice(upsellProduct.price)}</strong> y completa tu rutina
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <Button
                       onClick={() => handleAddUpsell(upsellProduct)}
-                      className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 text-xs py-4 px-5 rounded-xl transition-all duration-200 active:scale-[0.98] flex items-center gap-1.5"
+                      className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 text-xs py-4 px-5 rounded-xl transition-all duration-200 active:scale-[0.98] flex items-center gap-1.5 font-bold"
                     >
-                      <PlusCircle className="h-4 w-4" /> Agregar al Carrito
+                      <PlusCircle className="h-4 w-4" /> Agregar en 1-Clic
                     </Button>
                   </div>
                 </div>

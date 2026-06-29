@@ -55,10 +55,10 @@ const Footer = ({ minimal = false }) => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="space-y-1 text-center md:text-left">
               <h3 className="text-xl md:text-2xl font-black text-white" style={{ fontFamily: 'Playfair Display, serif' }}>
-                Únete a la nutrición avanzada
+                Optimiza tu bandeja de entrada.
               </h3>
               <p className="text-sm text-slate-300">
-                Recibe los últimos descubrimientos en biohacking y ofertas exclusivas.
+                Únete a la vanguardia de la nutrición avanzada. Recibe descubrimientos en optimización biológica y ofertas exclusivas.
               </p>
             </div>
             <form onSubmit={handleSubscribe} className="flex w-full max-w-md gap-2">
@@ -72,9 +72,9 @@ const Footer = ({ minimal = false }) => {
               />
               <button
                 type="submit"
-                className="bg-primary hover:bg-primary/95 text-primary-foreground font-semibold px-6 py-3 rounded-xl text-sm transition-all duration-200 active:scale-[0.98]"
+                className="bg-primary hover:bg-primary/95 text-primary-foreground font-semibold px-6 py-3 rounded-xl text-sm transition-all duration-200 active:scale-[0.98] shrink-0"
               >
-                Suscribirme
+                Recibir Claves Científicas
               </button>
             </form>
           </div>
