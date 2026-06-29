@@ -112,23 +112,18 @@ const ImpactPage = () => {
                   className="text-3xl md:text-4xl font-bold text-foreground"
                   style={{ letterSpacing: '-0.01em' }}
                 >
-                  Vivimos en un mundo que drena tu energía. Nosotros la restauramos.
+                  ¿Cansado de pedirle energía prestada a tu cuerpo?
                 </h2>
-                <p className="text-muted-foreground leading-relaxed">
-                  El ritmo actual nos exige rendimiento cognitivo óptimo, resiliencia al estrés extremo y una longevidad libre de enfermedades. 
-                  Sin embargo, el mercado tradicional ofrece soluciones rápidas basadas en estimulantes sintéticos (cafeína excesiva, azúcares, energizantes) 
-                  que causan colapsos de energía, alteran el sueño e inflaman tus células a largo plazo.
+                <p className="text-foreground font-semibold text-base leading-relaxed">
+                  Vivimos a un ritmo que nos drena, y los estimulantes sintéticos solo te hacen pagar el precio después con más fatiga. Tu biología no necesita parches, necesita optimización real.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
-                  En **Nutra Blue** abordamos la salud desde el **Biohacking Celular**. 
-                  Estudiamos las moléculas que la naturaleza ha diseñado en adaptógenos y nootrópicos, 
-                  y las empaquetamos en dosis clínicamente activas. No queremos parchar tus síntomas; 
-                  queremos mejorar la eficiencia de tus mitocondrias y nutrir tu cerebro.
+                  En Nutra Blue, cambiamos los estimulantes por ciencia. Diseñamos fórmulas de alta biodisponibilidad que no solo te despiertan, sino que nutren tu cerebro y restauran tu capacidad de rendir al máximo, de forma natural y constante.
                 </p>
                 
                 <div className="pt-4">
                   <blockquote className="border-l-4 border-accent pl-4 py-2 italic text-foreground bg-accent/5 rounded-r-lg">
-                    "El envejecimiento no es una condena de declive inevitable. Es un proceso biológico modulable que podemos hackear."
+                    "No eres tú, es el combustible. Es hora de hackear tu energía desde la raíz."
                   </blockquote>
                 </div>
               </motion.div>
