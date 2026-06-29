@@ -53,7 +53,7 @@ const Header = ({ minimal = false }) => {
             {/* Center Logo */}
             <div className="flex-1 flex justify-center sm:justify-start">
               <Link to="/" className="flex items-center space-x-3">
-                <img src="/logo.png" alt="Nutra Blue Logo" style={{ height: '80px', width: 'auto' }} />
+                <img src="/logo.png" alt="Nutra Blue Logo" style={{ height: '120px', width: 'auto' }} />
                 <span className="text-2xl font-bold text-primary tracking-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
                   Nutra Blue
                 </span>
@@ -76,7 +76,7 @@ const Header = ({ minimal = false }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between py-3 min-h-[88px]">
           <Link to="/" className="flex items-center space-x-3">
-            <img src="/logo.png" alt="Nutra Blue Logo" style={{ height: '72px', width: 'auto' }} />
+            <img src="/logo.png" alt="Nutra Blue Logo" style={{ height: '108px', width: 'auto' }} />
             <span className="text-2xl font-bold text-primary tracking-tight hidden sm:block" style={{ fontFamily: 'Playfair Display, serif' }}>
               Nutra Blue
             </span>
