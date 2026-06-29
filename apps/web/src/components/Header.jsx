@@ -11,6 +11,24 @@ const Header = ({ minimal = false }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isAuthenticated, isAdmin, logout, authAvailable } = useAuth();
 
+  if (minimal) {
+    return (
+      <header className="bg-background border-b border-border py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+          <Link to="/" className="flex items-center space-x-2">
+            <span className="text-2xl font-bold text-primary" style={{ fontFamily: 'Playfair Display, serif' }}>
+              Nutra Blue
+            </span>
+          </Link>
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-semibold">
+            <Lock className="h-3.5 w-3.5 text-success" />
+            <span>Pago 100% Seguro</span>
+          </div>
+        </div>
+      </header>
+    );
+  }
+
   const navLinks = [
     { name: 'Inicio', path: '/' },
     { name: 'Catálogo', path: '/shop' },

@@ -243,10 +243,17 @@ const ShopPage = () => {
                             <Button
                               onClick={(e) => handleAddToCart(product, e)}
                               disabled={product.stock === 0}
-                              className="w-full text-xs bg-accent text-white hover:bg-accent/90 py-4 rounded-xl transition-all duration-200"
+                              className="w-full text-xs bg-accent text-white hover:bg-accent/90 py-4 rounded-xl transition-all duration-200 font-semibold"
                             >
-                              {product.stock === 0 ? 'Agotado' : 'Al Carrito'}
+                              {product.stock === 0 ? 'Agotado' : 'Añadir a mi Rutina'}
                             </Button>
+                          </div>
+
+                          {/* Micro-copy de Confianza */}
+                          <div className="flex flex-wrap gap-1 mt-3 pt-2 border-t border-border/30 text-[9px] text-muted-foreground justify-center">
+                            <span className="bg-slate-100 px-1.5 py-0.5 rounded-md font-medium">✨ Alta Biodisponibilidad</span>
+                            <span className="bg-slate-100 px-1.5 py-0.5 rounded-md font-medium">🇨🇱 Envío Rápido a Chile</span>
+                            <span className="bg-slate-100 px-1.5 py-0.5 rounded-md font-medium">🛡️ Calidad Clínica Garantizada</span>
                           </div>
                         </div>
                       </div>
@@ -254,6 +261,28 @@ const ShopPage = () => {
                   })}
                 </div>
               )}
+
+              {/* Caja de Sugerencias (Failsafe) */}
+              <div className="mt-12 bg-gradient-to-r from-sky-950 via-slate-900 to-sky-950 text-white rounded-2xl p-8 border border-white/10 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-6 shadow-md relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-32 h-full bg-gradient-to-r from-primary/5 to-transparent skew-x-12 pointer-events-none"></div>
+                <div className="z-10 space-y-2">
+                  <h3 className="text-lg font-bold" style={{ fontFamily: 'Playfair Display, serif' }}>
+                    ¿No encontraste la fórmula que necesitas?
+                  </h3>
+                  <p className="text-sm text-slate-300 max-w-xl">
+                    Cuéntanos qué buscas y nuestro equipo clínico evaluará su desarrollo.
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => {
+                    const msg = encodeURIComponent("Hola Nutra Blue, me gustaría sugerir el desarrollo de una fórmula...");
+                    window.open(`https://wa.me/56912345678?text=${msg}`, '_blank');
+                  }}
+                  className="z-10 bg-accent hover:bg-accent/90 text-white font-semibold px-6 py-5 rounded-xl text-sm shrink-0 shadow-sm active:scale-[0.98] transition-all"
+                >
+                  Proponer Fórmula
+                </Button>
+              </div>
             </div>
           </div>
         </div>
