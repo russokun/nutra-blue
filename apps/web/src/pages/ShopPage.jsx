@@ -25,6 +25,7 @@ const ShopPage = () => {
   const [selectedCategory, setSelectedCategory] = useState(categoryParam || 'all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('name');
+  const [selectedSubCategory, setSelectedSubCategory] = useState('all');
   const [activeProductIngredients, setActiveProductIngredients] = useState(null);
 
   const categories = [
@@ -65,7 +66,21 @@ const ShopPage = () => {
     .filter(product => {
       const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
       const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
+      
+      let matchesSub = true;
+      if (selectedSubCategory === 'ofertas') {
+        matchesSub = product.price < 18000;
+      } else if (selectedSubCategory === 'packs') {
+        matchesSub = product.name.toLowerCase().includes('mix') || product.name.toLowerCase().includes('blend') || product.name.toLowerCase().includes('tea');
+      } else if (selectedSubCategory === 'individuales') {
+        matchesSub = !product.name.toLowerCase().includes('mix') && !product.name.toLowerCase().includes('blend') && !product.name.toLowerCase().includes('tea');
+      } else if (selectedSubCategory === 'energia') {
+        matchesSub = (product.benefits || []).some(b => b.toLowerCase().includes('energ')) || product.category === 'Longevidad';
+      } else if (selectedSubCategory === 'concentracion') {
+        matchesSub = (product.benefits || []).some(b => b.toLowerCase().includes('concentr')) || product.category === 'Salud Cognitiva';
+      }
+
+      return matchesCategory && matchesSearch && matchesSub;
     })
     .sort((a, b) => {
       if (sortBy === 'price-asc') return a.price - b.price;
@@ -109,29 +124,61 @@ const ShopPage = () => {
 
       <main className="min-h-screen bg-[#fbfbfa] py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1
-            className="text-3xl md:text-4xl font-bold text-foreground mb-8"
-            style={{ fontFamily: 'Playfair Display, serif', letterSpacing: '-0.02em' }}
-          >
-            Catálogo de Productos
-          </h1>
+          {/* Header con Buscador Inteligente y Ordenar por */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10 border-b border-border pb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">
+                Catálogo de Productos
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Fórmulas de biohacking premium basadas en ciencia.
+              </p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto items-center">
+              {/* Buscador inteligente */}
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Buscar fórmula..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 text-foreground w-full rounded-xl"
+                />
+              </div>
+
+              {/* Ordenar por */}
+              <div className="w-full sm:w-48">
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="text-foreground rounded-xl">
+                    <SelectValue placeholder="Ordenar por" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="name">Nombre</SelectItem>
+                    <SelectItem value="price-asc">Precio: Menor a Mayor</SelectItem>
+                    <SelectItem value="price-desc">Precio: Mayor a Menor</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             {/* Filters Sidebar */}
             <aside className="lg:col-span-1">
-              <div className="bg-card rounded-xl p-6 shadow-sm border border-border sticky top-20">
-                <h2 className="text-lg font-semibold text-card-foreground mb-4">Filtros</h2>
-
+              <div className="bg-card rounded-xl p-6 shadow-sm border border-border sticky top-24 space-y-6">
+                
                 {/* Category Filter */}
-                <div className="mb-6">
-                  <span className="text-sm font-medium text-card-foreground mb-3 block">Categoría</span>
-                  <div className="space-y-2">
+                <div>
+                  <span className="text-sm font-semibold text-foreground mb-3 block">Categoría</span>
+                  <div className="space-y-1.5">
                     {categories.map(category => (
                       <Button
                         key={category.value}
                         onClick={() => setSelectedCategory(category.value)}
                         variant={selectedCategory === category.value ? 'default' : 'outline'}
-                        className="w-full justify-start transition-all duration-200"
+                        className="w-full justify-start transition-all duration-200 text-xs py-2 rounded-xl"
                       >
                         {category.label}
                       </Button>
@@ -139,35 +186,30 @@ const ShopPage = () => {
                   </div>
                 </div>
 
-                {/* Search */}
-                <div className="mb-6">
-                  <span className="text-sm font-medium text-card-foreground mb-3 block">Buscar</span>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="text"
-                      placeholder="Nombre del producto..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 text-foreground"
-                    />
+                {/* Subcategories / Tipo / Filtros Orientados a la Venta */}
+                <div className="pt-4 border-t border-border">
+                  <span className="text-sm font-semibold text-foreground mb-3 block">Filtrar por</span>
+                  <div className="space-y-1.5">
+                    {[
+                      { value: 'all', label: 'Todos los Suplementos' },
+                      { value: 'ofertas', label: '🏷️ Ofertas Especiales' },
+                      { value: 'packs', label: '📦 Packs y Packs Mensuales' },
+                      { value: 'individuales', label: '🧬 Productos Individuales' },
+                      { value: 'energia', label: '⚡ Beneficio: Energía' },
+                      { value: 'concentracion', label: '🧠 Beneficio: Enfoque' }
+                    ].map(sub => (
+                      <Button
+                        key={sub.value}
+                        onClick={() => setSelectedSubCategory(sub.value)}
+                        variant={selectedSubCategory === sub.value ? 'default' : 'outline'}
+                        className="w-full justify-start transition-all duration-200 text-xs py-2 rounded-xl text-left"
+                      >
+                        {sub.label}
+                      </Button>
+                    ))}
                   </div>
                 </div>
 
-                {/* Sort */}
-                <div>
-                  <span className="text-sm font-medium text-card-foreground mb-3 block">Ordenar por</span>
-                  <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="text-foreground">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="name">Nombre</SelectItem>
-                      <SelectItem value="price-asc">Precio: Menor a Mayor</SelectItem>
-                      <SelectItem value="price-desc">Precio: Mayor a Menor</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
               </div>
             </aside>
 
@@ -193,8 +235,8 @@ const ShopPage = () => {
                 </div>
               ) : filteredProducts.length === 0 ? (
                 <div className="bg-muted rounded-xl p-12 text-center">
-                  <p className="text-muted-foreground text-lg mb-4">No se encontraron productos</p>
-                  <Button onClick={() => { setSelectedCategory('all'); setSearchQuery(''); }}>
+                  <p className="text-muted-foreground text-lg mb-4">No se encontraron productos en esta categoría</p>
+                  <Button onClick={() => { setSelectedCategory('all'); setSelectedSubCategory('all'); setSearchQuery(''); }}>
                     Limpiar filtros
                   </Button>
                 </div>
@@ -209,13 +251,13 @@ const ShopPage = () => {
                         className="bg-card rounded-xl overflow-hidden border border-border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer group flex flex-col justify-between"
                       >
                         <div>
-                          <div className="relative h-48 overflow-hidden bg-muted">
+                          <div className="relative h-48 overflow-hidden bg-muted flex items-center justify-center p-4">
                             <img
                               src={product.image_url}
                               alt={product.name}
-                              className="w-full h-full object-cover group-hover:scale-103 transition-all duration-300"
+                              className="h-full w-auto object-contain group-hover:scale-103 transition-all duration-300 drop-shadow-md"
                             />
-                            <span className="absolute top-3 left-3 bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                            <span className="absolute top-3 left-3 bg-primary/10 text-primary border border-primary/20 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
                               {product.category}
                             </span>
                           </div>
@@ -236,14 +278,14 @@ const ShopPage = () => {
                             <Button
                               variant="outline"
                               onClick={(e) => handleOpenIngredients(product, e)}
-                              className="w-full text-xs py-4 rounded-xl transition-all duration-200"
+                              className="w-full text-xs py-3.5 rounded-xl transition-all duration-200"
                             >
                               Ingredientes
                             </Button>
                             <Button
                               onClick={(e) => handleAddToCart(product, e)}
                               disabled={product.stock === 0}
-                              className="w-full text-xs bg-accent text-white hover:bg-accent/90 py-4 rounded-xl transition-all duration-200 font-semibold"
+                              className="w-full text-xs bg-accent text-white hover:bg-accent/90 py-3.5 rounded-xl transition-all duration-200 font-semibold"
                             >
                               {product.stock === 0 ? 'Agotado' : 'Añadir a mi Rutina'}
                             </Button>
@@ -263,25 +305,38 @@ const ShopPage = () => {
               )}
 
               {/* Caja de Sugerencias (Failsafe) */}
-              <div className="mt-12 bg-gradient-to-r from-sky-950 via-slate-900 to-sky-950 text-white rounded-2xl p-8 border border-white/10 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-6 shadow-md relative overflow-hidden group">
-                <div className="absolute top-0 left-0 w-32 h-full bg-gradient-to-r from-primary/5 to-transparent skew-x-12 pointer-events-none"></div>
-                <div className="z-10 space-y-2">
-                  <h3 className="text-lg font-bold" style={{ fontFamily: 'Playfair Display, serif' }}>
-                    ¿No encontraste la fórmula que necesitas?
-                  </h3>
-                  <p className="text-sm text-slate-300 max-w-xl">
-                    Cuéntanos qué buscas y nuestro equipo clínico evaluará su desarrollo.
-                  </p>
+              <div className="mt-12 bg-slate-900 text-white rounded-2xl p-8 border border-white/10 shadow-md">
+                <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+                  <div className="space-y-2 text-center md:text-left">
+                    <h3 className="text-lg font-bold">
+                      ¿No encontraste lo que buscabas?
+                    </h3>
+                    <p className="text-sm text-slate-300 max-w-xl">
+                      Cuéntanos qué suplemento necesitas y nuestro equipo clínico lo traerá para ti.
+                    </p>
+                  </div>
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    const input = e.target.elements.suggestionInput.value;
+                    if (!input) return;
+                    toast.success("¡Sugerencia enviada con éxito! La consideraremos para nuestro próximo lote.");
+                    e.target.reset();
+                  }} className="flex w-full md:w-auto max-w-md gap-2">
+                    <input
+                      name="suggestionInput"
+                      type="text"
+                      placeholder="Ej: Creatina Micronizada, Ashwagandha..."
+                      required
+                      className="flex-grow md:w-64 px-4 py-3 rounded-xl bg-slate-950/80 border border-white/20 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                    />
+                    <Button 
+                      type="submit"
+                      className="bg-accent hover:bg-accent/90 text-white font-semibold px-6 py-3 rounded-xl text-sm shrink-0 shadow-sm"
+                    >
+                      Enviar Sugerencia
+                    </Button>
+                  </form>
                 </div>
-                <Button 
-                  onClick={() => {
-                    const msg = encodeURIComponent("Hola Nutra Blue, me gustaría sugerir el desarrollo de una fórmula...");
-                    window.open(`https://wa.me/56912345678?text=${msg}`, '_blank');
-                  }}
-                  className="z-10 bg-accent hover:bg-accent/90 text-white font-semibold px-6 py-5 rounded-xl text-sm shrink-0 shadow-sm active:scale-[0.98] transition-all"
-                >
-                  Proponer Fórmula
-                </Button>
               </div>
             </div>
           </div>

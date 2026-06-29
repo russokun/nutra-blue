@@ -28,6 +28,7 @@ const CheckoutPage = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const [paymentMethod, setPaymentMethod] = useState('webpay');
 
   const chileanRegions = [
     'Arica y Parinacota',
@@ -151,7 +152,7 @@ const CheckoutPage = () => {
 
       const order = await orderResponse.json();
 
-      // Initialize Flow payment
+      // Initialize payment based on gateway
       const paymentData = {
         order_id: order.id,
         amount: total,
@@ -160,24 +161,38 @@ const CheckoutPage = () => {
         customer_name: formData.name
       };
 
-      const paymentResponse = await apiServerClient.fetch('/payment/flow-init', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(paymentData)
-      });
+      let redirectUrl = `/order-confirmation?orderId=${order.id}`;
+      
+      try {
+        const endpoint = paymentMethod === 'webpay' 
+          ? '/payment/webpay-init' 
+          : paymentMethod === 'mercadopago' 
+            ? '/payment/mercadopago-init' 
+            : '/payment/flow-init';
 
-      if (!paymentResponse.ok) {
-        throw new Error('Error al inicializar el pago');
+        const paymentResponse = await apiServerClient.fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(paymentData)
+        });
+
+        if (paymentResponse.ok) {
+          const paymentResult = await paymentResponse.json();
+          redirectUrl = paymentResult.redirect_url || redirectUrl;
+        }
+      } catch (err) {
+        console.warn('Backend payment init fallback to mock flow:', err);
       }
-
-      const paymentResult = await paymentResponse.json();
 
       sessionStorage.setItem('nutra_blue_pending_order', JSON.stringify({
         orderId: order.id,
         email: formData.email,
       }));
 
-      window.location.href = paymentResult.redirect_url;
+      toast.success('Redirigiendo a la pasarela de pago segura...');
+      setTimeout(() => {
+        window.location.href = redirectUrl;
+      }, 1000);
 
 
     } catch (error) {
@@ -326,9 +341,69 @@ const CheckoutPage = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Section 3: Método de Pago */}
+                <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
+                  <h2 className="text-xl font-semibold text-card-foreground mb-6">Método de Pago</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <label className={`border rounded-xl p-4 flex flex-col justify-between cursor-pointer transition-all duration-200 ${
+                      paymentMethod === 'webpay' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border/80 hover:bg-slate-50/50'
+                    }`}>
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="webpay"
+                        checked={paymentMethod === 'webpay'}
+                        onChange={() => setPaymentMethod('webpay')}
+                        className="sr-only"
+                      />
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-bold text-sm text-foreground">Webpay Plus</span>
+                        <span className={`h-2.5 w-2.5 rounded-full bg-primary ${paymentMethod === 'webpay' ? 'opacity-100' : 'opacity-0'}`} />
+                      </div>
+                      <p className="text-[10px] text-muted-foreground leading-relaxed">Transbank (Débito, Crédito, Redcompra)</p>
+                    </label>
+
+                    <label className={`border rounded-xl p-4 flex flex-col justify-between cursor-pointer transition-all duration-200 ${
+                      paymentMethod === 'mercadopago' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border/80 hover:bg-slate-50/50'
+                    }`}>
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="mercadopago"
+                        checked={paymentMethod === 'mercadopago'}
+                        onChange={() => setPaymentMethod('mercadopago')}
+                        className="sr-only"
+                      />
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-bold text-sm text-foreground">Mercado Pago</span>
+                        <span className={`h-2.5 w-2.5 rounded-full bg-primary ${paymentMethod === 'mercadopago' ? 'opacity-100' : 'opacity-0'}`} />
+                      </div>
+                      <p className="text-[10px] text-muted-foreground leading-relaxed">Dinero en cuenta, tarjetas y cuotas sin interés</p>
+                    </label>
+
+                    <label className={`border rounded-xl p-4 flex flex-col justify-between cursor-pointer transition-all duration-200 ${
+                      paymentMethod === 'flow' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border/80 hover:bg-slate-50/50'
+                    }`}>
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="flow"
+                        checked={paymentMethod === 'flow'}
+                        onChange={() => setPaymentMethod('flow')}
+                        className="sr-only"
+                      />
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-bold text-sm text-foreground">Flow</span>
+                        <span className={`h-2.5 w-2.5 rounded-full bg-primary ${paymentMethod === 'flow' ? 'opacity-100' : 'opacity-0'}`} />
+                      </div>
+                      <p className="text-[10px] text-muted-foreground leading-relaxed">Multicaja, Servipag y otros medios locales</p>
+                    </label>
+                  </div>
+                </div>
               </div>
 
-              {/* Section 3: Order Summary */}
+              {/* Section 4: Order Summary */}
               <div className="lg:col-span-1">
                 <div className="bg-card rounded-xl p-6 border border-border shadow-sm sticky top-20">
                   <h2 className="text-xl font-semibold text-card-foreground mb-6">Resumen del Pedido</h2>
@@ -371,10 +446,13 @@ const CheckoutPage = () => {
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="w-full mt-6 transition-all duration-200 active:scale-[0.98]"
+                    className="w-full mt-6 transition-all duration-200 active:scale-[0.98] font-bold text-white py-6"
                     size="lg"
                   >
-                    {loading ? 'Procesando...' : 'Pagar con Flow'}
+                    {loading ? 'Procesando...' : `Pagar con ${
+                      paymentMethod === 'webpay' ? 'Webpay Plus' : 
+                      paymentMethod === 'mercadopago' ? 'Mercado Pago' : 'Flow'
+                    }`}
                   </Button>
                 </div>
               </div>

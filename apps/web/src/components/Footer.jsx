@@ -54,11 +54,11 @@ const Footer = ({ minimal = false }) => {
         <div className="border-b border-white/10 bg-slate-900/40 py-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="space-y-1 text-center md:text-left">
-              <h3 className="text-xl md:text-2xl font-black text-white" style={{ fontFamily: 'Playfair Display, serif' }}>
+              <h3 className="text-xl md:text-2xl font-black text-white">
                 Optimiza tu bandeja de entrada.
               </h3>
               <p className="text-sm text-slate-300">
-                Únete a la vanguardia de la nutrición avanzada. Recibe descubrimientos en optimización biológica y ofertas exclusivas.
+                Únete y recibe estrategias de nutrición avanzada y descuentos exclusivos.
               </p>
             </div>
             <form onSubmit={handleSubscribe} className="flex w-full max-w-md gap-2">
@@ -74,7 +74,7 @@ const Footer = ({ minimal = false }) => {
                 type="submit"
                 className="bg-primary hover:bg-primary/95 text-primary-foreground font-semibold px-6 py-3 rounded-xl text-sm transition-all duration-200 active:scale-[0.98] shrink-0"
               >
-                Recibir Claves Científicas
+                Suscribirme
               </button>
             </form>
           </div>
@@ -86,7 +86,7 @@ const Footer = ({ minimal = false }) => {
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
                 <img src="/logo.png" alt="Nutra Blue Logo" className="h-8 w-auto brightness-0 invert" />
-                <span className="text-xl font-bold text-white" style={{ fontFamily: 'Playfair Display, serif' }}>
+                <span className="text-xl font-bold text-white">
                   Nutra Blue
                 </span>
               </div>
@@ -117,22 +117,8 @@ const Footer = ({ minimal = false }) => {
               </nav>
             </div>
 
-            {/* Social & Certifications */}
-            <div className="space-y-4">
-              <div>
-                <span className="text-sm font-bold tracking-wider uppercase text-white">Síguenos</span>
-                <div className="mt-4 flex space-x-4">
-                  <a href="#" className="text-slate-300 hover:text-primary transition-all duration-200">
-                    <Facebook className="h-5 w-5" />
-                  </a>
-                  <a href="#" className="text-slate-300 hover:text-primary transition-all duration-200">
-                    <Instagram className="h-5 w-5" />
-                  </a>
-                  <a href="#" className="text-slate-300 hover:text-primary transition-all duration-200">
-                    <Twitter className="h-5 w-5" />
-                  </a>
-                </div>
-              </div>
+            {/* Certifications */}
+            <div className="space-y-4 flex flex-col justify-end">
               <div className="pt-2 flex items-center gap-2 text-xs text-slate-400">
                 <ShieldCheck className="h-4 w-4 text-primary" />
                 <span>Distribuidor Oficial de Nutra Blue</span>
