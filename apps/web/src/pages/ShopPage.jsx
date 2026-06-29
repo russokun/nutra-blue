@@ -108,6 +108,36 @@ const ShopPage = () => {
     toast.success(`${product.name} añadido al carrito`);
   };
 
+  const handleSuggestionSubmit = async (e) => {
+    e.preventDefault();
+    const inputVal = e.target.elements.suggestionInput.value;
+    if (!inputVal) return;
+
+    try {
+      const suggestions = JSON.parse(localStorage.getItem('nutra_blue_suggestions') || '[]');
+      const newSug = {
+        id: Date.now(),
+        text: inputVal,
+        date: new Date().toLocaleDateString('es-CL', { day: '2-digit', month: 'long', year: 'numeric' }),
+        status: 'Pendiente'
+      };
+      suggestions.push(newSug);
+      localStorage.setItem('nutra_blue_suggestions', JSON.stringify(suggestions));
+
+      if (dataClient && dataClient.collection) {
+        await dataClient.collection('product_suggestions').create({
+          text: inputVal,
+          status: 'pendiente'
+        }).catch(() => {});
+      }
+
+      toast.success("¡Gracias! Tu solicitud ha sido enviada al equipo clínico.");
+      e.target.reset();
+    } catch (err) {
+      toast.error("Error al procesar sugerencia.");
+    }
+  };
+
   const handleOpenIngredients = (product, e) => {
     e.stopPropagation();
     setActiveProductIngredients(product);
@@ -234,11 +264,45 @@ const ShopPage = () => {
                   </Button>
                 </div>
               ) : filteredProducts.length === 0 ? (
-                <div className="bg-muted rounded-xl p-12 text-center">
-                  <p className="text-muted-foreground text-lg mb-4">No se encontraron productos en esta categoría</p>
-                  <Button onClick={() => { setSelectedCategory('all'); setSelectedSubCategory('all'); setSearchQuery(''); }}>
-                    Limpiar filtros
-                  </Button>
+                <div className="space-y-8">
+                  <div className="bg-muted rounded-xl p-12 text-center">
+                    <p className="text-muted-foreground text-lg mb-4">No se encontraron productos para tu búsqueda o filtros.</p>
+                    <Button onClick={() => { setSelectedCategory('all'); setSelectedSubCategory('all'); setSearchQuery(''); }} className="rounded-xl">
+                      Limpiar filtros
+                    </Button>
+                  </div>
+                  
+                  {/* Dynamic Suggestions Box (Trigger A) */}
+                  <div className="bg-slate-900 text-white rounded-2xl p-8 border border-white/10 shadow-md">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+                      <div className="space-y-2 text-center md:text-left">
+                        <span className="text-[10px] bg-accent/20 text-accent border border-accent/30 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                          Asistente de Búsqueda
+                        </span>
+                        <h3 className="text-lg font-bold">
+                          ¿No encontraste la fórmula que necesitas?
+                        </h3>
+                        <p className="text-sm text-slate-300 max-w-xl">
+                          Cuéntanos qué buscas y nuestro equipo clínico evaluará su desarrollo.
+                        </p>
+                      </div>
+                      <form onSubmit={handleSuggestionSubmit} className="flex w-full md:w-auto max-w-md gap-2">
+                        <input
+                          name="suggestionInput"
+                          type="text"
+                          placeholder="Ej: Nootrópico de Melena de León..."
+                          required
+                          className="flex-grow md:w-64 px-4 py-3 rounded-xl bg-slate-950/80 border border-white/20 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                        />
+                        <Button 
+                          type="submit"
+                          className="bg-accent hover:bg-accent/90 text-white font-semibold px-6 py-3 rounded-xl text-sm shrink-0 shadow-sm"
+                        >
+                          Enviar sugerencia
+                        </Button>
+                      </form>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -304,24 +368,18 @@ const ShopPage = () => {
                 </div>
               )}
 
-              {/* Caja de Sugerencias (Failsafe) */}
+              {/* Permanent Suggestions Box (Trigger B) */}
               <div className="mt-12 bg-slate-900 text-white rounded-2xl p-8 border border-white/10 shadow-md">
                 <div className="flex flex-col md:flex-row justify-between items-center gap-6">
                   <div className="space-y-2 text-center md:text-left">
                     <h3 className="text-lg font-bold">
-                      ¿No encontraste lo que buscabas?
+                      ¿No encontraste la fórmula que necesitas?
                     </h3>
                     <p className="text-sm text-slate-300 max-w-xl">
-                      Cuéntanos qué suplemento necesitas y nuestro equipo clínico lo traerá para ti.
+                      Cuéntanos qué buscas y nuestro equipo clínico evaluará su desarrollo.
                     </p>
                   </div>
-                  <form onSubmit={(e) => {
-                    e.preventDefault();
-                    const input = e.target.elements.suggestionInput.value;
-                    if (!input) return;
-                    toast.success("¡Sugerencia enviada con éxito! La consideraremos para nuestro próximo lote.");
-                    e.target.reset();
-                  }} className="flex w-full md:w-auto max-w-md gap-2">
+                  <form onSubmit={handleSuggestionSubmit} className="flex w-full md:w-auto max-w-md gap-2">
                     <input
                       name="suggestionInput"
                       type="text"
@@ -333,7 +391,7 @@ const ShopPage = () => {
                       type="submit"
                       className="bg-accent hover:bg-accent/90 text-white font-semibold px-6 py-3 rounded-xl text-sm shrink-0 shadow-sm"
                     >
-                      Enviar Sugerencia
+                      Enviar sugerencia
                     </Button>
                   </form>
                 </div>
