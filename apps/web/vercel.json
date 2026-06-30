@@ -2,6 +2,10 @@
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/hcgi/api/(.*)",
+      "destination": "https://api-test.nutrablue.cl/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
