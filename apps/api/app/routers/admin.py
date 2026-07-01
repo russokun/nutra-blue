@@ -233,6 +233,31 @@ async def quick_add_product(product: ProductCreate, _: dict = Depends(verify_adm
         if "duplicate" in str(e).lower() or "unique" in str(e).lower():
             raise HTTPException(status_code=400, detail="Product name already exists")
         raise HTTPException(status_code=500, detail="Failed to create product")
+@router.post("/products/upsert", response_model=Product)
+async def upsert_product(product: ProductCreate, _: dict = Depends(verify_admin_user)):
+    if supabase_client is None:
+        for idx, p in enumerate(MOCK_PRODUCTS):
+            if p["name"].lower() == product.name.lower():
+                MOCK_PRODUCTS[idx].update(product.model_dump())
+                return MOCK_PRODUCTS[idx]
+        new_product = {
+            "id": str(uuid.uuid4()),
+            **product.model_dump(),
+        }
+        MOCK_PRODUCTS.append(new_product)
+        return new_product
+
+    try:
+        response = supabase_client.from_("products").upsert(
+            product.model_dump(),
+            on_conflict="name"
+        ).execute()
+        if not response.data:
+            raise HTTPException(status_code=500, detail="Failed to upsert product")
+        return response.data[0]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to upsert product: {str(e)}")
+
 
 
 from pydantic import BaseModel
