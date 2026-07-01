@@ -17,6 +17,25 @@ from app.services.orders_service import (
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
 
+@router.get("")
+async def list_orders(
+    email: str = Query(..., description="Customer email to filter orders"),
+):
+    if supabase_client is None:
+        return [
+            order for order in MOCK_ORDERS.values()
+            if order.get("email", "").lower() == email.lower()
+        ]
+    try:
+        response = supabase_client.from_("orders").select("*").eq("email", email.lower()).order("created_at", desc=True).execute()
+        return response.data
+    except Exception:
+        return [
+            order for order in MOCK_ORDERS.values()
+            if order.get("email", "").lower() == email.lower()
+        ]
+
+
 @router.post("")
 async def create_order(order_data: OrderCreate):
     try:
