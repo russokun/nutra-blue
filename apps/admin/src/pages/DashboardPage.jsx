@@ -27,27 +27,39 @@ const DashboardPage = () => {
   const [alerts, setAlerts] = useState({ low_stock: [], expiration: [] });
   const [loading, setLoading] = useState(true);
 
-  // Leads & Suggestions States
-  const [leads, setLeads] = useState([
-    { email: 'contacto@ignacio.cl', date: '29 de Junio, 2026', source: 'Footer' },
-    { email: 'pablo.valenzuela@gmail.com', date: '28 de Junio, 2026', source: 'Footer' },
-    { email: 'constanza.vargas@outlook.com', date: '27 de Junio, 2026', source: 'Footer' }
-  ]);
-
-  const [suggestions, setSuggestions] = useState([
-    { id: 1, text: 'Creatina Monohidratada Micronizada', date: '29 de Junio, 2026', status: 'Pendiente' },
-    { id: 2, text: 'Ashwagandha KSM-66 en cápsulas', date: '28 de Junio, 2026', status: 'Pendiente' },
-    { id: 3, text: 'Colágeno Hidrolizado Marino', date: '25 de Junio, 2026', status: 'Considerado' }
-  ]);
-
-  const handleArchiveSuggestion = (id) => {
-    setSuggestions(prev => prev.filter(s => s.id !== id));
-    toast.success('Sugerencia archivada');
+  const formatDate = (dateStr) => {
+    if (!dateStr) return 'Hoy';
+    if (dateStr === 'Hoy') return 'Hoy';
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' });
+    } catch {
+      return dateStr;
+    }
   };
 
-  const handleConsiderSuggestion = (id) => {
-    setSuggestions(prev => prev.map(s => s.id === id ? { ...s, status: 'Considerado' } : s));
-    toast.success('Sugerencia marcada como Considerada para desarrollo clínico');
+  // Leads & Suggestions States
+  const [leads, setLeads] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
+
+  const handleArchiveSuggestion = async (id) => {
+    try {
+      await adminClient.updateSuggestionStatus(id, 'Archivado');
+      setSuggestions(prev => prev.filter(s => s.id !== id));
+      toast.success('Sugerencia archivada');
+    } catch (err) {
+      toast.error(err.message || 'Error al archivar sugerencia');
+    }
+  };
+
+  const handleConsiderSuggestion = async (id) => {
+    try {
+      await adminClient.updateSuggestionStatus(id, 'Considerado');
+      setSuggestions(prev => prev.map(s => s.id === id ? { ...s, status: 'Considerado' } : s));
+      toast.success('Sugerencia marcada como Considerada para desarrollo clínico');
+    } catch (err) {
+      toast.error(err.message || 'Error al considerar sugerencia');
+    }
   };
 
   // Modal States
@@ -63,8 +75,6 @@ const DashboardPage = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      // Fetch concurrently
-      const token = localStorage.getItem('sb-auth-token') || 'mock'; // guard
       
       const metricsData = await fetch('/hcgi/api/admin/dashboard/metrics').then(r => r.json()).catch(() => ({
         revenue: 28990 * 15,
@@ -80,9 +90,14 @@ const DashboardPage = () => {
         expiration: []
       }));
 
+      const leadsData = await adminClient.getLeads().catch(() => []);
+      const suggestionsData = await adminClient.getSuggestions().catch(() => []);
+
       setMetrics(metricsData);
       setRecentOrders(ordersData);
       setAlerts(alertsData);
+      setLeads(leadsData);
+      setSuggestions(suggestionsData);
     } catch (err) {
       toast.error('Error al cargar datos del dashboard');
     } finally {
@@ -92,32 +107,8 @@ const DashboardPage = () => {
 
   useEffect(() => {
     fetchData();
-    
-    // Load local subscribers
-    const localSubs = JSON.parse(localStorage.getItem('nutra_blue_subscribers') || '[]');
-    if (localSubs.length > 0) {
-      const addedLeads = localSubs.map(email => ({
-        email,
-        date: 'Hoy',
-        source: 'Pop-up Magnet'
-      }));
-      setLeads(prev => {
-        const existingEmails = prev.map(l => l.email);
-        const uniqueAdded = addedLeads.filter(l => !existingEmails.includes(l.email));
-        return [...uniqueAdded, ...prev];
-      });
-    }
-
-    // Load local suggestions
-    const localSugs = JSON.parse(localStorage.getItem('nutra_blue_suggestions') || '[]');
-    if (localSugs.length > 0) {
-      setSuggestions(prev => {
-        const existingIds = prev.map(s => s.id);
-        const uniqueAdded = localSugs.filter(s => !existingIds.includes(s.id));
-        return [...uniqueAdded, ...prev];
-      });
-    }
   }, []);
+
 
   // Quick Action: Add Product
   const handleQuickAdd = async (e) => {
@@ -152,15 +143,24 @@ const DashboardPage = () => {
     setCouponForm(prev => ({ ...prev, code }));
   };
 
-  const handleCreateCoupon = (e) => {
+  const handleCreateCoupon = async (e) => {
     e.preventDefault();
     if (!couponForm.code) {
       toast.error('Por favor genera o escribe un código');
       return;
     }
-    toast.success(`Cupón ${couponForm.code} creado con ${couponForm.discount}% de descuento`);
-    setModalCoupon(false);
-    setCouponForm({ code: '', discount: '15', expiry: '' });
+    try {
+      await adminClient.createCoupon({
+        code: couponForm.code,
+        discount: parseInt(couponForm.discount, 10),
+        expiry: couponForm.expiry
+      });
+      toast.success(`Cupón ${couponForm.code} creado con ${couponForm.discount}% de descuento`);
+      setModalCoupon(false);
+      setCouponForm({ code: '', discount: '15', expiry: '' });
+    } catch (err) {
+      toast.error(err.message || 'Error al crear el cupón');
+    }
   };
 
   // Quick Action: Scan Tracking
@@ -397,7 +397,7 @@ const DashboardPage = () => {
                 {leads.map((lead, idx) => (
                   <tr key={idx} className="border-t border-border/60 hover:bg-muted/10 transition-colors">
                     <td className="p-3 font-semibold text-foreground">{lead.email}</td>
-                    <td className="p-3 text-xs text-muted-foreground">{lead.date}</td>
+                    <td className="p-3 text-xs text-muted-foreground">{formatDate(lead.created_at || lead.date)}</td>
                     <td className="p-3">
                       <span className="text-[10px] bg-primary/10 text-primary border border-primary/20 font-bold px-2.5 py-0.5 rounded-full">
                         {lead.source}
@@ -425,7 +425,7 @@ const DashboardPage = () => {
                   <div className="space-y-1">
                     <p className="font-bold text-foreground">"{s.text}"</p>
                     <p className="text-[10px] text-muted-foreground">
-                      Sugerido el {s.date} • <strong className={s.status === 'Considerado' ? 'text-emerald-600' : 'text-amber-600'}>{s.status}</strong>
+                      Sugerido el {formatDate(s.created_at || s.date)} • <strong className={s.status === 'Considerado' ? 'text-emerald-600' : 'text-amber-600'}>{s.status}</strong>
                     </p>
                   </div>
                   {s.status === 'Pendiente' && (

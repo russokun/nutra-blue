@@ -30,6 +30,35 @@ const CheckoutPage = () => {
   const [errors, setErrors] = useState({});
   const [paymentMethod, setPaymentMethod] = useState('webpay');
 
+  // Coupon States
+  const [couponCode, setCouponCode] = useState('');
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const [appliedCoupon, setAppliedCoupon] = useState('');
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
+
+  const handleApplyCoupon = async () => {
+    const code = couponCode.trim();
+    if (!code) return;
+    setValidatingCoupon(true);
+    try {
+      const res = await fetch(`/hcgi/api/coupons/validate/${code}`);
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.detail || errorData.message || 'Cupón no válido');
+      }
+      const data = await res.json();
+      setDiscountPercent(data.discount);
+      setAppliedCoupon(data.code);
+      toast.success(`Cupón ${data.code} aplicado: ${data.discount}% de descuento`);
+    } catch (err) {
+      toast.error(err.message || 'Cupón no válido');
+      setDiscountPercent(0);
+      setAppliedCoupon('');
+    } finally {
+      setValidatingCoupon(false);
+    }
+  };
+
   const chileanRegions = [
     'Arica y Parinacota',
     'Tarapacá',
@@ -65,10 +94,12 @@ const CheckoutPage = () => {
   };
 
   const cartTotalAmount = getCartTotal();
-  const tax = Math.round(cartTotalAmount - (cartTotalAmount / 1.19)); // 19% IVA incluido
-  const subtotal = cartTotalAmount - tax;
-  const shippingCost = (formData.region && cartTotalAmount < 50000) ? calculateShipping(formData.region) : 0;
-  const total = cartTotalAmount + shippingCost;
+  const discountAmount = Math.round(cartTotalAmount * (discountPercent / 100));
+  const cartTotalAmountAfterDiscount = cartTotalAmount - discountAmount;
+  const tax = Math.round(cartTotalAmountAfterDiscount - (cartTotalAmountAfterDiscount / 1.19)); // 19% IVA incluido
+  const subtotal = cartTotalAmountAfterDiscount - tax;
+  const shippingCost = (formData.region && cartTotalAmountAfterDiscount < 50000) ? calculateShipping(formData.region) : 0;
+  const total = cartTotalAmountAfterDiscount + shippingCost;
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -136,7 +167,8 @@ const CheckoutPage = () => {
         subtotal,
         tax,
         shipping_cost: shippingCost,
-        total
+        total,
+        coupon_code: appliedCoupon || null
       };
 
       const orderResponse = await apiServerClient.fetch('/orders', {
@@ -418,12 +450,57 @@ const CheckoutPage = () => {
                     ))}
                   </div>
 
+                  {/* Coupon Code Input */}
+                  <div className="my-6 pt-4 border-t border-border space-y-2">
+                    <Label htmlFor="coupon" className="text-xs font-semibold text-muted-foreground uppercase">Cupón de Descuento</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="coupon"
+                        type="text"
+                        placeholder="Ingresa tu cupón"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        disabled={!!appliedCoupon}
+                        className="text-gray-900 h-9"
+                      />
+                      {appliedCoupon ? (
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          onClick={() => {
+                            setAppliedCoupon('');
+                            setDiscountPercent(0);
+                            setCouponCode('');
+                          }}
+                          className="h-9 text-rose-600 hover:bg-rose-50 px-3 text-xs"
+                        >
+                          Quitar
+                        </Button>
+                      ) : (
+                        <Button 
+                          type="button" 
+                          onClick={handleApplyCoupon}
+                          disabled={validatingCoupon || !couponCode}
+                          className="h-9 text-xs"
+                        >
+                          {validatingCoupon ? '...' : 'Aplicar'}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
                   {/* Totals */}
                   <div className="space-y-3 border-t border-border pt-4">
                     <div className="flex justify-between text-card-foreground">
                       <span>Subtotal</span>
                       <span className="font-medium">{formatPrice(subtotal)}</span>
                     </div>
+                    {discountPercent > 0 && (
+                      <div className="flex justify-between text-emerald-600 font-medium">
+                        <span>Descuento ({appliedCoupon})</span>
+                        <span>-{formatPrice(discountAmount)}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between text-card-foreground">
                       <span>IVA (19%)</span>
                       <span className="font-medium">{formatPrice(tax)}</span>
