@@ -55,3 +55,21 @@ async def verify_admin_user(user: Optional[dict] = Depends(get_current_user)) ->
 
     return user
 
+
+async def verify_admin_or_internal_key(
+    authorization: Optional[str] = Header(None),
+    x_internal_api_key: Optional[str] = Header(None, alias="X-Internal-API-Key")
+) -> dict:
+    if x_internal_api_key and settings.internal_api_key and x_internal_api_key == settings.internal_api_key:
+        return {"role": "internal_sync"}
+        
+    user = await get_current_user(authorization)
+    if user:
+        if supabase_client is None:
+            return user
+        if settings.admin_emails and user.get("email", "").lower() in settings.admin_emails:
+            return user
+            
+    raise HTTPException(status_code=401, detail="Invalid or missing authentication credentials")
+
+
