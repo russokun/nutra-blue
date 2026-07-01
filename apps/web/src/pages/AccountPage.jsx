@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,6 +13,62 @@ const AccountContent = () => {
   const { currentUser, isAdmin, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('orders');
   const displayName = currentUser?.user_metadata?.full_name || currentUser?.email.split('@')[0];
+
+  const [orders, setOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (!currentUser?.email) return;
+      try {
+        const res = await fetch(`/hcgi/api/orders?email=${encodeURIComponent(currentUser.email)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setOrders(data);
+        }
+      } catch (err) {
+        console.error('Error fetching orders:', err);
+      } finally {
+        setLoadingOrders(false);
+      }
+    };
+    fetchOrders();
+  }, [currentUser]);
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('es-CL', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'pending': return 'Pendiente';
+      case 'paid': return 'Pagado';
+      case 'shipped': return 'Enviado';
+      case 'delivered': return 'Entregado';
+      case 'cancelled': return 'Cancelado';
+      default: return status || 'Pendiente';
+    }
+  };
+
+  const getTrackingStep = (status) => {
+    switch (status) {
+      case 'pending': return 1;
+      case 'paid': return 2;
+      case 'shipped': return 3;
+      case 'delivered': return 4;
+      default: return 1;
+    }
+  };
 
   // Mock Orders with Tracking for the Client Dashboard
   const mockOrders = [
@@ -133,60 +189,85 @@ const AccountContent = () => {
               {activeTab === 'orders' && (
                 <div className="space-y-6">
                   <h2 className="text-xl font-bold text-foreground">Historial de Pedidos & Tracking</h2>
-                  {mockOrders.map((order) => (
-                    <div key={order.id} className="bg-card rounded-2xl p-6 border border-border shadow-sm space-y-6">
-                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-border/40 pb-4 gap-2">
-                        <div>
-                          <p className="text-sm font-black text-primary">{order.id}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">Realizado el {order.date}</p>
-                        </div>
-                        <div className="text-right sm:text-right">
-                          <p className="text-sm font-bold text-foreground">{formatPrice(order.total)}</p>
-                          <span className={`inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mt-1 ${
-                            order.status === 'Entregado' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-blue-500/10 text-blue-600'
-                          }`}>
-                            {order.status}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Items */}
-                      <div className="space-y-2">
-                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Detalle del Pedido</p>
-                        {order.items.map((item, i) => (
-                          <div key={i} className="flex justify-between items-center text-sm">
-                            <span className="text-foreground">{item.name} <span className="text-xs text-muted-foreground font-semibold">x{item.qty}</span></span>
-                            <span className="font-semibold text-foreground">{formatPrice(item.price * item.qty)}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Tracking Progress Visualizer */}
-                      <div className="pt-4 border-t border-border/45 space-y-4">
-                        <div className="flex justify-between items-center text-xs text-muted-foreground">
-                          <span>Courier: <strong className="text-foreground">{order.courier}</strong></span>
-                          <span>Código de Seguimiento: <strong className="text-foreground flex items-center gap-1 cursor-pointer hover:underline" onClick={() => toast.info(`Código copiado: ${order.trackingCode}`)}>{order.trackingCode} <ExternalLink className="h-3 w-3" /></strong></span>
-                        </div>
-
-                        {/* Progress Bar */}
-                        <div className="relative pt-2">
-                          <div className="overflow-hidden h-2 text-xs flex rounded-full bg-slate-100">
-                            <div
-                              style={{ width: `${(order.trackingStep / 4) * 100}%` }}
-                              className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-primary transition-all duration-500"
-                            />
-                          </div>
-                          
-                          <div className="flex justify-between items-center text-[10px] text-muted-foreground font-bold mt-3">
-                            <span className={order.trackingStep >= 1 ? 'text-primary font-black' : ''}>1. PROCESANDO</span>
-                            <span className={order.trackingStep >= 2 ? 'text-primary font-black' : ''}>2. DESPACHADO</span>
-                            <span className={order.trackingStep >= 3 ? 'text-primary font-black' : ''}>3. EN TRÁNSITO</span>
-                            <span className={order.trackingStep >= 4 ? 'text-primary font-black' : ''}>4. ENTREGADO</span>
-                          </div>
-                        </div>
-                      </div>
+                  {loadingOrders ? (
+                    <div className="bg-card rounded-2xl p-6 border border-border shadow-sm text-center py-12">
+                      <p className="text-sm text-muted-foreground">Cargando tus pedidos...</p>
                     </div>
-                  ))}
+                  ) : orders.length === 0 ? (
+                    <div className="bg-card rounded-2xl p-6 border border-border shadow-sm text-center py-12 space-y-4">
+                      <Package className="h-12 w-12 text-muted-foreground/60 mx-auto animate-bounce" />
+                      <p className="text-sm text-muted-foreground">Aún no has realizado ningún pedido.</p>
+                      <Button asChild className="rounded-xl">
+                        <Link to="/shop">Ir a la Tienda</Link>
+                      </Button>
+                    </div>
+                  ) : (
+                    orders.map((order) => {
+                      const step = getTrackingStep(order.status);
+                      return (
+                        <div key={order.id} className="bg-card rounded-2xl p-6 border border-border shadow-sm space-y-6">
+                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-border/40 pb-4 gap-2">
+                            <div>
+                              <p className="text-sm font-black text-primary">ID: {order.id.slice(0, 8).toUpperCase()}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">Realizado el {formatDate(order.created_at || order.date)}</p>
+                            </div>
+                            <div className="text-right sm:text-right">
+                              <p className="text-sm font-bold text-foreground">{formatPrice(order.total)}</p>
+                              <span className={`inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mt-1 ${
+                                order.status === 'delivered' || order.status === 'paid' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-blue-500/10 text-blue-600'
+                              }`}>
+                                {getStatusText(order.status)}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Items */}
+                          <div className="space-y-2">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Detalle del Pedido</p>
+                            {(order.items || []).map((item, i) => (
+                              <div key={i} className="flex justify-between items-center text-sm">
+                                <span className="text-foreground">{item.name} <span className="text-xs text-muted-foreground font-semibold">x{item.quantity || item.qty}</span></span>
+                                <span className="font-semibold text-foreground">{formatPrice((item.unit_price || item.price) * (item.quantity || item.qty))}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Tracking Progress Visualizer */}
+                          <div className="pt-4 border-t border-border/45 space-y-4">
+                            <div className="flex justify-between items-center text-xs text-muted-foreground">
+                              <span>Courier: <strong className="text-foreground">{order.courier || 'Despacho Nutra Blue'}</strong></span>
+                              <span>Código de Seguimiento: <strong className="text-foreground flex items-center gap-1 cursor-pointer hover:underline" onClick={() => {
+                                const trackingCode = order.tracking_code || order.trackingCode || 'Pendiente';
+                                if (trackingCode !== 'Pendiente') {
+                                  navigator.clipboard.writeText(trackingCode);
+                                  toast.success('Código copiado al portapapeles');
+                                } else {
+                                  toast.info('Código de seguimiento pendiente de asignación');
+                                }
+                              }}>{order.tracking_code || order.trackingCode || 'Pendiente'} <ExternalLink className="h-3 w-3" /></strong></span>
+                            </div>
+
+                            {/* Progress Bar */}
+                            <div className="relative pt-2">
+                              <div className="overflow-hidden h-2 text-xs flex rounded-full bg-slate-100">
+                                <div
+                                  style={{ width: `${(step / 4) * 100}%` }}
+                                  className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-primary transition-all duration-500"
+                                />
+                              </div>
+                              
+                              <div className="flex justify-between items-center text-[10px] text-muted-foreground font-bold mt-3">
+                                <span className={step >= 1 ? 'text-primary font-black' : ''}>1. PROCESANDO</span>
+                                <span className={step >= 2 ? 'text-primary font-black' : ''}>2. PAGADO</span>
+                                <span className={step >= 3 ? 'text-primary font-black' : ''}>3. ENVIADO</span>
+                                <span className={step >= 4 ? 'text-primary font-black' : ''}>4. ENTREGADO</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               )}
 

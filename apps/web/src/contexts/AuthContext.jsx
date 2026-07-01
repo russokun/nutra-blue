@@ -43,6 +43,18 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (!supabase) {
+      const localSessionRaw = localStorage.getItem('nutra_blue_customer_session');
+      if (localSessionRaw) {
+        try {
+          const user = JSON.parse(localSessionRaw);
+          setCurrentUser(user);
+          setIsAuthenticated(true);
+          const adminEmails = ['admin@nutrablue.cl', 'rodrigo@dentameet.net'];
+          setIsAdmin(adminEmails.includes(user.email.toLowerCase()));
+        } catch {
+          // ignore
+        }
+      }
       setLoading(false);
       return;
     }
@@ -59,14 +71,43 @@ export const AuthProvider = ({ children }) => {
   }, [syncSession]);
 
   const login = async (email, password) => {
-    if (!supabase) throw new Error('Autenticación no disponible. Configura Supabase.');
+    if (!supabase) {
+      const users = JSON.parse(localStorage.getItem('nutra_blue_mock_users') || '[]');
+      const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+      if (!user || user.password !== password) {
+        throw new Error('Email o contraseña incorrectos.');
+      }
+      const sessionUser = { email: user.email, id: user.id, user_metadata: { full_name: user.name } };
+      localStorage.setItem('nutra_blue_customer_session', JSON.stringify(sessionUser));
+      setCurrentUser(sessionUser);
+      setIsAuthenticated(true);
+      const adminEmails = ['admin@nutrablue.cl', 'rodrigo@dentameet.net'];
+      setIsAdmin(adminEmails.includes(email.toLowerCase()));
+      return { user: sessionUser };
+    }
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
     return data;
   };
 
   const register = async (email, password, name) => {
-    if (!supabase) throw new Error('Autenticación no disponible. Configura Supabase.');
+    if (!supabase) {
+      const users = JSON.parse(localStorage.getItem('nutra_blue_mock_users') || '[]');
+      if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+        throw new Error('El correo ya se encuentra registrado.');
+      }
+      const newUser = { id: 'mock-' + Math.random().toString(36).substr(2, 9), email, password, name };
+      users.push(newUser);
+      localStorage.setItem('nutra_blue_mock_users', JSON.stringify(users));
+      
+      const sessionUser = { email, id: newUser.id, user_metadata: { full_name: name } };
+      localStorage.setItem('nutra_blue_customer_session', JSON.stringify(sessionUser));
+      setCurrentUser(sessionUser);
+      setIsAuthenticated(true);
+      const adminEmails = ['admin@nutrablue.cl', 'rodrigo@dentameet.net'];
+      setIsAdmin(adminEmails.includes(email.toLowerCase()));
+      return { user: sessionUser };
+    }
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -79,6 +120,8 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     if (supabase) {
       await supabase.auth.signOut();
+    } else {
+      localStorage.removeItem('nutra_blue_customer_session');
     }
     setCurrentUser(null);
     setIsAuthenticated(false);
@@ -92,7 +135,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated,
         isAdmin,
         loading,
-        authAvailable: !!supabase,
+        authAvailable: true,
         login,
         logout,
         register,
