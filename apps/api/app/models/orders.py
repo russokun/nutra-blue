@@ -17,6 +17,7 @@ class OrderCreate(BaseModel):
     tax: int
     shipping_cost: int
     total: int
+    coupon_code: Optional[str] = None
 
 class OrderUpdateStatus(BaseModel):
     status: str
@@ -28,3 +29,4 @@ class Order(OrderCreate):
 
     class Config:
         from_attributes = True
+

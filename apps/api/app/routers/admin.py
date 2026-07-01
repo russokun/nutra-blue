@@ -423,3 +423,115 @@ async def sync_products_from_sheets(
         "message": f"Sincronización finalizada. Creados/Actualizados con éxito: {report['created'] + report['updated']}. Errores: {len(report['errors'])}"
     }
 
+
+class SuggestionUpdateStatus(BaseModel):
+    status: str
+
+
+class CouponCreate(BaseModel):
+    code: str
+    discount: int
+    expiry: str
+
+
+@router.get("/leads")
+async def list_leads(_: dict = Depends(verify_admin_user)):
+    if supabase_client is None:
+        from app.core.mock_store import MOCK_LEADS
+        return MOCK_LEADS
+    try:
+        res = supabase_client.from_("leads").select("*").order("created_at", desc=True).execute()
+        return res.data or []
+    except Exception:
+        from app.core.mock_store import MOCK_LEADS
+        return MOCK_LEADS
+
+
+@router.get("/suggestions")
+async def list_suggestions(_: dict = Depends(verify_admin_user)):
+    if supabase_client is None:
+        from app.core.mock_store import MOCK_SUGGESTIONS
+        return MOCK_SUGGESTIONS
+    try:
+        res = supabase_client.from_("product_suggestions").select("*").order("created_at", desc=True).execute()
+        return res.data or []
+    except Exception:
+        from app.core.mock_store import MOCK_SUGGESTIONS
+        return MOCK_SUGGESTIONS
+
+
+@router.patch("/suggestions/{suggestion_id}/status")
+async def update_suggestion_status(
+    suggestion_id: str,
+    status_data: SuggestionUpdateStatus,
+    _: dict = Depends(verify_admin_user),
+):
+    if supabase_client is None:
+        from app.core.mock_store import MOCK_SUGGESTIONS
+        for s in MOCK_SUGGESTIONS:
+            if str(s.get("id")) == str(suggestion_id):
+                s["status"] = status_data.status
+                return s
+        raise HTTPException(status_code=404, detail="Suggestion not found")
+    try:
+        res = supabase_client.from_("product_suggestions").update(
+            {"status": status_data.status}
+        ).eq("id", suggestion_id).execute()
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Suggestion not found")
+        return res.data[0]
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/coupons")
+async def list_coupons(_: dict = Depends(verify_admin_user)):
+    if supabase_client is None:
+        from app.core.mock_store import MOCK_COUPONS
+        return MOCK_COUPONS
+    try:
+        res = supabase_client.from_("coupons").select("*").order("created_at", desc=True).execute()
+        return res.data or []
+    except Exception:
+        from app.core.mock_store import MOCK_COUPONS
+        return MOCK_COUPONS
+
+
+@router.post("/coupons")
+async def create_coupon(
+    coupon: CouponCreate,
+    _: dict = Depends(verify_admin_user),
+):
+    if supabase_client is None:
+        from app.core.mock_store import MOCK_COUPONS
+        import datetime
+        new_coupon = {
+            "id": str(uuid.uuid4()),
+            "code": coupon.code.upper(),
+            "discount": coupon.discount,
+            "expiry": coupon.expiry,
+            "created_at": datetime.datetime.now().isoformat()
+        }
+        MOCK_COUPONS.append(new_coupon)
+        return new_coupon
+    try:
+        check = supabase_client.from_("coupons").select("id").eq("code", coupon.code.upper()).execute()
+        if check.data:
+            raise HTTPException(status_code=400, detail="Coupon code already exists")
+        
+        res = supabase_client.from_("coupons").insert({
+            "code": coupon.code.upper(),
+            "discount": coupon.discount,
+            "expiry": coupon.expiry
+        }).execute()
+        if not res.data:
+            raise HTTPException(status_code=500, detail="Failed to create coupon")
+        return res.data[0]
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+

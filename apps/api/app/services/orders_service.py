@@ -50,6 +50,42 @@ def validate_and_build_order(order_data: OrderCreate) -> dict:
             "unit_price": product["price"],
         })
 
+    # Validate and apply coupon discount
+    discount_percent = 0
+    if order_data.coupon_code:
+        code_upper = order_data.coupon_code.upper().strip()
+        if supabase_client is None:
+            from app.core.mock_store import MOCK_COUPONS
+            coupon = next((c for c in MOCK_COUPONS if c["code"] == code_upper), None)
+            if coupon:
+                discount_percent = coupon["discount"]
+        else:
+            try:
+                res = supabase_client.from_("coupons").select("*").eq("code", code_upper).execute()
+                if res.data:
+                    coupon = res.data[0]
+                    # Check expiry date
+                    import datetime
+                    expiry_str = coupon.get("expiry")
+                    valid = True
+                    if expiry_str:
+                        # Parse date string
+                        expiry_date = datetime.date.fromisoformat(expiry_str.split("T")[0])
+                        if expiry_date < datetime.date.today():
+                            valid = False
+                    if valid:
+                        discount_percent = coupon["discount"]
+            except Exception:
+                # Fallback to local memory if Supabase has issues or table doesn't exist
+                from app.core.mock_store import MOCK_COUPONS
+                coupon = next((c for c in MOCK_COUPONS if c["code"] == code_upper), None)
+                if coupon:
+                    discount_percent = coupon["discount"]
+
+    if discount_percent > 0:
+        discount_amount = int(cart_total * (discount_percent / 100))
+        cart_total = cart_total - discount_amount
+
     totals = calculate_order_totals(cart_total, order_data.region)
 
     return {

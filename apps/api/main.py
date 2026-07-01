@@ -8,7 +8,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from starlette.middleware.base import BaseHTTPMiddleware
 from app.core.config import settings
-from app.routers import health, products, orders, payments, chat, admin, auth
+from app.routers import health, products, orders, payments, chat, admin, auth, public
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -56,6 +56,8 @@ app.include_router(payments.router)
 app.include_router(chat.router)
 app.include_router(admin.router)
 app.include_router(auth.router)
+app.include_router(public.router)
+
 
 
 @app.exception_handler(Exception)

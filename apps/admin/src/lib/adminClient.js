@@ -39,6 +39,19 @@ const adminClient = {
   updateProduct: (id, data) =>
     adminFetch(`/products/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   deleteProduct: (id) => adminFetch(`/products/${id}`, { method: 'DELETE' }),
+  
+  // Leads, Suggestions, Coupons
+  getLeads: () => adminFetch('/leads'),
+  getSuggestions: () => adminFetch('/suggestions'),
+  updateSuggestionStatus: (id, status) =>
+    adminFetch(`/suggestions/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    }),
+  getCoupons: () => adminFetch('/coupons'),
+  createCoupon: (data) =>
+    adminFetch('/coupons', { method: 'POST', body: JSON.stringify(data) }),
 };
+
 
 export default adminClient;

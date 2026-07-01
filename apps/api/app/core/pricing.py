@@ -28,7 +28,7 @@ def calculate_tax_breakdown(cart_total: int) -> tuple[int, int]:
 
 def calculate_order_totals(cart_total: int, region: str) -> dict:
     subtotal, tax = calculate_tax_breakdown(cart_total)
-    shipping_cost = calculate_shipping(region)
+    shipping_cost = calculate_shipping(region) if cart_total < 50000 else 0
     total = cart_total + shipping_cost
     return {
         "subtotal": subtotal,

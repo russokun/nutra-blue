@@ -42,9 +42,18 @@ const HomePage = () => {
     };
   }, []);
 
-  const handlePopupSubmit = (e) => {
+  const handlePopupSubmit = async (e) => {
     e.preventDefault();
     if (!popupEmail) return;
+    
+    try {
+      await dataClient.collection('leads').create({
+        email: popupEmail,
+        source: 'Pop-up Magnet'
+      });
+    } catch (err) {
+      console.warn('Failed to save subscriber to database:', err);
+    }
     
     const subscribers = JSON.parse(localStorage.getItem('nutra_blue_subscribers') || '[]');
     if (!subscribers.includes(popupEmail)) {
@@ -61,6 +70,7 @@ const HomePage = () => {
     localStorage.setItem('nutra_blue_popup_dismissed', 'true');
     setShowPopup(false);
   };
+
 
   const pillars = [
     {
