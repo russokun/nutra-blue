@@ -1,7 +1,7 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Body
 from app.database.supabase import supabase_client
-from app.core.security import verify_admin_user
+from app.core.security import verify_admin_user, verify_admin_or_internal_key
 from app.core.mock_store import MOCK_ORDERS
 from app.core.mock_data import MOCK_PRODUCTS
 from app.models.products import Product, ProductCreate, ProductUpdate
@@ -234,7 +234,7 @@ async def quick_add_product(product: ProductCreate, _: dict = Depends(verify_adm
             raise HTTPException(status_code=400, detail="Product name already exists")
         raise HTTPException(status_code=500, detail="Failed to create product")
 @router.post("/products/upsert", response_model=Product)
-async def upsert_product(product: ProductCreate, _: dict = Depends(verify_admin_user)):
+async def upsert_product(product: ProductCreate, _: dict = Depends(verify_admin_or_internal_key)):
     if supabase_client is None:
         for idx, p in enumerate(MOCK_PRODUCTS):
             if p["name"].lower() == product.name.lower():
@@ -269,7 +269,7 @@ class SyncSheetsRequest(BaseModel):
 @router.post("/products/sync-sheets")
 async def sync_products_from_sheets(
     request_data: Optional[SyncSheetsRequest] = None,
-    _: dict = Depends(verify_admin_user),
+    _: dict = Depends(verify_admin_or_internal_key),
 ):
     """
     Sincroniza el catálogo de productos desde un Google Sheet publicado en la web como CSV.
