@@ -5,9 +5,10 @@ from app.core.config import settings
 class MockPayment(PaymentGateway):
     def create_transaction(self, order_id: str, amount: int, email: str, phone: str, customer_name: str) -> Dict[str, Any]:
         token = f"mock_token_{order_id}_{amount}"
+        protocol = "http" if "localhost" in settings.website_domain or "127.0.0.1" in settings.website_domain else "https"
         return {
             "token": token,
-            "redirect_url": f"http://localhost:3000/order-confirmation/{order_id}?token={token}"
+            "redirect_url": f"{protocol}://{settings.website_domain}/order-confirmation/{order_id}?token={token}"
         }
 
     def verify_webhook(self, payload: Dict[str, Any], headers: Dict[str, Any]) -> Dict[str, Any]:

@@ -164,14 +164,7 @@ const AccountContent = () => {
                 >
                   <MapPin className="h-4 w-4" /> Direcciones
                 </button>
-                <button
-                  onClick={() => setActiveTab('payment')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                    activeTab === 'payment' ? 'bg-primary text-white' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                  }`}
-                >
-                  <CreditCard className="h-4 w-4" /> Métodos de Pago
-                </button>
+
                 <button
                   onClick={() => setActiveTab('profile')}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
@@ -325,28 +318,7 @@ const AccountContent = () => {
                 </div>
               )}
 
-              {/* Tab: Payment */}
-              {activeTab === 'payment' && (
-                <div className="bg-card rounded-2xl p-6 border border-border shadow-sm space-y-6">
-                  <h2 className="text-xl font-bold text-foreground">Métodos de Pago Guardados</h2>
-                  <div className="border border-border/80 rounded-xl p-5 flex items-center justify-between bg-slate-50/50">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-primary/10 p-3 rounded-xl text-primary">
-                        <CreditCard className="h-6 w-6" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-foreground">•••• •••• •••• 9482</p>
-                        <p className="text-xs text-muted-foreground">Visa - Vence el 12/29</p>
-                      </div>
-                    </div>
-                    <span className="text-xs font-bold text-muted-foreground bg-slate-100 border px-2.5 py-1 rounded-md uppercase">Predeterminada</span>
-                  </div>
-                  
-                  <Button onClick={() => toast.info('Integración de pasarela segura para agregar tarjeta en desarrollo.')} variant="outline" className="rounded-xl w-full py-6 flex items-center justify-center gap-2 border-dashed">
-                    + Agregar Nuevo Método de Pago
-                  </Button>
-                </div>
-              )}
+
 
               {/* Tab: Profile */}
               {activeTab === 'profile' && (
