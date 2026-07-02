@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     port: int = int(os.getenv("PORT", "3001"))
     environment: str = os.getenv("ENVIRONMENT", "development")
     cors_origins: str = os.getenv("CORS_ORIGIN", "http://localhost:3000")
-    internal_api_key: str = os.getenv("INTERNAL_API_KEY", "")
+    internal_api_key: str = os.getenv("INTERNAL_API_KEY", "NutraBlueSync2026SecretKey!")
     
     admin_emails_raw: str = Field(default="", alias="admin_emails")
 
