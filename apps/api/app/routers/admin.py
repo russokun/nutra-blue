@@ -306,17 +306,80 @@ async def sync_products_from_sheets(
     report = {"created": 0, "updated": 0, "errors": [], "warnings": []}
 
     try:
-        reader = csv.DictReader(io.StringIO(csv_text))
-        rows = list(reader)
+        raw_reader = csv.reader(io.StringIO(csv_text))
+        rows_list = list(raw_reader)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Error al estructurar el CSV: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Error al parsear el CSV: {str(e)}")
 
-    for index, raw_row in enumerate(rows):
+    # Encontrar la fila de cabecera principal y secundaria
+    header_row_idx = -1
+    for idx, row in enumerate(rows_list[:5]):
+        row_lower = [cell.strip().lower() for cell in row]
+        if "suplemento / alimento" in row_lower:
+            header_row_idx = idx
+            break
+
+    if header_row_idx == -1:
+        # Fallback si no encuentra la estructura exacta
+        header_row_idx = 0
+
+    # Construir mapa de indices
+    headers_main = [cell.strip().lower() for cell in rows_list[header_row_idx]]
+    headers_sub = [cell.strip().lower() for cell in rows_list[header_row_idx + 1]] if (header_row_idx + 1) < len(rows_list) else []
+
+    # Asignar indices fijos o detectados
+    idx_name = -1
+    idx_price = -1
+    idx_stock = -1
+    idx_category = -1
+    idx_doc = -1
+
+    for i, h in enumerate(headers_main):
+        if "suplemento / alimento" in h or h == "suplemento" or h == "alimento":
+            idx_name = i
+        elif "categor" in h or h == "categoria" or h == "objetivo":
+            idx_category = i
+        elif "venta" in h or h == "$ venta":
+            idx_price = i
+        elif "link" in h or "doc" in h:
+            idx_doc = i
+
+    # Buscar "inventario" en la subcabecera
+    for i, h in enumerate(headers_sub):
+        if "inventario" in h or "stock" in h:
+            idx_stock = i
+
+    # Fallbacks de indices
+    if idx_name == -1: idx_name = 1
+    if idx_category == -1: idx_category = 0
+    if idx_price == -1: idx_price = 5
+    if idx_stock == -1: idx_stock = 7
+    if idx_doc == -1: idx_doc = 8
+
+    # Procesar filas de productos a partir de la fila de productos (despues de subcabeceras)
+    start_row = header_row_idx + 2 if header_row_idx + 1 < len(rows_list) else header_row_idx + 1
+
+    for index, raw_row in enumerate(rows_list[start_row:]):
+        if len(raw_row) <= idx_name:
+            continue
+            
+        name = raw_row[idx_name].strip()
+        if not name or name.lower() == "suplemento / alimento":
+            continue
+
+        category = raw_row[idx_category].strip() if idx_category < len(raw_row) else "Otros"
+        price_val = raw_row[idx_price].strip() if idx_price < len(raw_row) else "0"
+        stock_val = raw_row[idx_stock].strip() if idx_stock < len(raw_row) else "20"
+        doc_val = raw_row[idx_doc].strip() if idx_doc < len(raw_row) else ""
+
         # Mapear llaves normalizadas
-        row = {normalize_key(k): v for k, v in raw_row.items() if k}
-        
-        # Validar campos obligatorios básicos
-        name = row.get("name")
+        row = {
+            "name": name,
+            "category": category,
+            "price": price_val,
+            "stock": stock_val,
+            "google_doc_url": doc_val
+        }
         if not name:
             report["errors"].append({
                 "row": index + 1,
