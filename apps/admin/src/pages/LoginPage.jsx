@@ -55,10 +55,16 @@ const LoginPage = () => {
         </div>
 
         {!authAvailable && (
-          <div className="mb-6 p-4 bg-destructive/10 border border-destructive/25 text-destructive rounded-xl flex items-start gap-3 text-sm">
-            <ShieldAlert className="h-5 w-5 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-semibold">Atención:</span> Supabase no está configurado localmente. La autenticación fallará.
+          <div className="mb-6 p-4 bg-destructive/10 border border-destructive/25 text-destructive rounded-xl flex items-start gap-3 text-sm flex-col">
+            <div className="flex items-start gap-3">
+              <ShieldAlert className="h-5 w-5 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-semibold">Atención:</span> Supabase no está configurado localmente. La autenticación fallará.
+              </div>
+            </div>
+            <div className="mt-2 text-xs font-mono bg-black/20 p-2 rounded w-full break-all space-y-1">
+              <div>VITE_SUPABASE_URL: {import.meta.env.VITE_SUPABASE_URL ? `${import.meta.env.VITE_SUPABASE_URL.slice(0, 25)}...` : 'Vacio'}</div>
+              <div>VITE_SUPABASE_ANON_KEY: {import.meta.env.VITE_SUPABASE_ANON_KEY ? `${import.meta.env.VITE_SUPABASE_ANON_KEY.slice(0, 15)}...` : 'Vacio'}</div>
             </div>
           </div>
         )}
