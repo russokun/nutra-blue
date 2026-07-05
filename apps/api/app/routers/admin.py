@@ -517,7 +517,7 @@ async def sync_products_from_sheets(
                 })
 
     return {
-        "success": len(report["errors"]) < len(rows),
+        "success": len(report["errors"]) < len(rows_list),
         "summary": report,
         "message": f"Sincronización finalizada. Creados/Actualizados con éxito: {report['created'] + report['updated']}. Errores: {len(report['errors'])}"
     }
