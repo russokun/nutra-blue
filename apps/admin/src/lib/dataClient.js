@@ -23,8 +23,10 @@ const mapCreatedTimestamp = (item) => {
 
 const API_BASE = '/hcgi/api';
 
+import { getAccessToken } from './authClient';
+
 async function fetchFromApi(path, options = {}) {
-  const token = localStorage.getItem('sb-auth-token'); // Simple token extraction for admin sessions
+  const token = await getAccessToken();
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers || {}),
