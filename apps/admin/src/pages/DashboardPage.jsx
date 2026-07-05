@@ -76,12 +76,20 @@ const DashboardPage = () => {
     try {
       setLoading(true);
       
-      const metricsData = await fetch('/hcgi/api/admin/dashboard/metrics').then(r => r.json()).catch(() => ({
-        revenue: 28990 * 15,
-        pending_orders: 3,
-        visits: 1250,
-        conversion_rate: 2.4
-      }));
+      const metricsData = await fetch('/hcgi/api/admin/dashboard/metrics')
+        .then(r => r.json())
+        .then(data => ({
+          revenue: data?.revenue ?? 0,
+          pending_orders: data?.pending_orders ?? 0,
+          visits: data?.visits ?? 0,
+          conversion_rate: data?.conversion_rate ?? 0
+        }))
+        .catch(() => ({
+          revenue: 28990 * 15,
+          pending_orders: 3,
+          visits: 1250,
+          conversion_rate: 2.4
+        }));
 
       const ordersData = await fetch('/hcgi/api/admin/orders/recent?limit=10').then(r => r.json()).catch(() => []);
       
@@ -241,7 +249,7 @@ const DashboardPage = () => {
           <div className="flex justify-between items-start">
             <div className="space-y-1">
               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Visitas Únicas</span>
-              <p className="text-2xl font-bold text-foreground">{metrics.visits.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-foreground">{(metrics?.visits ?? 0).toLocaleString()}</p>
             </div>
             <div className="p-2.5 bg-blue-500/10 rounded-xl text-blue-600">
               <Users className="h-5 w-5" />
@@ -258,7 +266,7 @@ const DashboardPage = () => {
           <div className="flex justify-between items-start">
             <div className="space-y-1">
               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tasa de Conversión</span>
-              <p className="text-2xl font-bold text-foreground">{metrics.conversion_rate}%</p>
+              <p className="text-2xl font-bold text-foreground">{(metrics?.conversion_rate ?? 0)}%</p>
             </div>
             <div className="p-2.5 bg-indigo-500/10 rounded-xl text-indigo-600">
               <Percent className="h-5 w-5" />
