@@ -378,7 +378,10 @@ async def sync_products_from_sheets(
             "category": category,
             "price": price_val,
             "stock": stock_val,
-            "google_doc_url": doc_val
+            "google_doc_url": doc_val,
+            "benefits": "",
+            "certifications": "",
+            "image_url": ""
         }
         if not name:
             report["errors"].append({
