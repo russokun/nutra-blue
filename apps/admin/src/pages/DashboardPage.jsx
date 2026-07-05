@@ -300,10 +300,8 @@ const DashboardPage = () => {
         {/* Left Side: Recent Orders Table */}
         <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-sm lg:col-span-2 space-y-4">
           <h2 className="text-lg font-bold text-foreground">Pedidos Recientes</h2>
-          {recentOrders.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center bg-muted/20 rounded-xl border border-dashed border-border/60">
-              No hay pedidos recientes registrados.
-            </p>
+          {(!recentOrders || (Array.isArray(recentOrders) && recentOrders.length === 0)) ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">No hay pedidos recientes</p>
           ) : (
             <div className="overflow-x-auto rounded-xl border border-border/60">
               <table className="w-full text-sm text-left">
@@ -348,8 +346,8 @@ const DashboardPage = () => {
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
               <AlertTriangle className="h-4 w-4 text-amber-500" /> Stock Crítico (Menor a 10 unidades)
             </span>
-            {alerts.low_stock.length === 0 ? (
-              <p className="text-xs text-muted-foreground py-2">Todos los productos tienen stock adecuado.</p>
+            {(!alerts?.low_stock || alerts.low_stock.length === 0) ? (
+              <p className="text-sm text-muted-foreground text-center py-2">Sin alertas de stock</p>
             ) : (
               <div className="space-y-2">
                 {alerts.low_stock.map((p) => (
@@ -367,8 +365,8 @@ const DashboardPage = () => {
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
               <Calendar className="h-4 w-4 text-rose-500" /> Advertencias de Vencimiento
             </span>
-            {alerts.expiration.length === 0 ? (
-              <p className="text-xs text-muted-foreground py-2">No hay lotes próximos a vencer.</p>
+            {(!alerts?.expiration || alerts.expiration.length === 0) ? (
+              <p className="text-sm text-muted-foreground text-center py-2">Sin productos por vencer</p>
             ) : (
               <div className="space-y-2">
                 {alerts.expiration.map((item, idx) => (
@@ -423,10 +421,8 @@ const DashboardPage = () => {
           <h2 className="text-lg font-bold text-foreground">Buzón de Sugerencias (Fórmulas Requeridas)</h2>
           <p className="text-xs text-muted-foreground">Suplementos sugeridos por clientes cuando no encontraron stock en el catálogo.</p>
           <div className="space-y-3">
-            {suggestions.length === 0 ? (
-              <p className="text-xs text-muted-foreground py-8 text-center bg-muted/10 rounded-xl border border-dashed">
-                No hay sugerencias registradas.
-              </p>
+            {(!suggestions || suggestions.length === 0) ? (
+              <p className="text-sm text-muted-foreground text-center py-8">No hay sugerencias pendientes</p>
             ) : (
               suggestions.map((s) => (
                 <div key={s.id} className="p-4 bg-slate-50 border border-border rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs">
