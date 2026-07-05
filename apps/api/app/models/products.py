@@ -11,6 +11,8 @@ class ProductBase(BaseModel):
     benefits: List[str] = []
     certifications: List[str] = []
     google_doc_url: Optional[str] = None
+    description: Optional[str] = None
+    origin: Optional[str] = None
 
     @field_validator("price", "stock", mode="before")
     @classmethod
