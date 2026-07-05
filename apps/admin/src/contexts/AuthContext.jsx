@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
     setCurrentUser(user);
     setIsAuthenticated(!!user);
     if (user) {
-      const defaultAdmins = ['admin@nutrablue.cl', 'rodrigo@dentameet.net', 'rodrigo@dentameet.cl'];
+      const defaultAdmins = ['admin@nutrablue.cl', 'rodrigo@dentameet.net', 'rodrigo@dentameet.cl', 'rohidalgo@alumnos.uai.cl'];
       const envAdmins = (import.meta.env.VITE_ADMIN_EMAILS || '')
         .split(',')
         .map(e => e.trim().toLowerCase())
