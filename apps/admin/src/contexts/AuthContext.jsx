@@ -34,9 +34,13 @@ export const AuthProvider = ({ children }) => {
     setCurrentUser(user);
     setIsAuthenticated(!!user);
     if (user) {
-      const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || 'admin@nutrablue.cl')
+      const defaultAdmins = ['admin@nutrablue.cl', 'rodrigo@dentameet.net', 'rodrigo@dentameet.cl'];
+      const envAdmins = (import.meta.env.VITE_ADMIN_EMAILS || '')
         .split(',')
-        .map(e => e.trim().toLowerCase());
+        .map(e => e.trim().toLowerCase())
+        .filter(Boolean);
+      
+      const adminEmails = [...new Set([...defaultAdmins, ...envAdmins])];
       
       if (user.email && adminEmails.includes(user.email.toLowerCase())) {
         setIsAdmin(true);
