@@ -371,6 +371,14 @@ async def sync_products_from_sheets(
                         "error": f"Advertencia al parsear Google Doc: {str(doc_err)}"
                     })
 
+            # Combinar los beneficios del Excel con los extraidos del Google Doc
+            all_benefits = benefits.copy()
+            if doc_details.get("extracted_benefits"):
+                # Agregar solo los que no existan para evitar duplicados
+                for b in doc_details["extracted_benefits"]:
+                    if b not in all_benefits:
+                        all_benefits.append(b)
+
             # Validar con Pydantic
             product_to_validate = ProductCreate(
                 name=name,
@@ -378,7 +386,7 @@ async def sync_products_from_sheets(
                 stock=stock,
                 category=category,
                 image_url=image_url,
-                benefits=benefits,
+                benefits=all_benefits,
                 certifications=certifications,
                 google_doc_url=google_doc_url,
                 description=doc_details.get("description") or row.get("description", "").strip() or None,

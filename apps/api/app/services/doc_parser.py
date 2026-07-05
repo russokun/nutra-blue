@@ -43,11 +43,13 @@ def parse_google_doc(url: str) -> dict:
         "origin": "",
         "ingredients": "",
         "usage": "",
-        "precautions": ""
+        "precautions": "",
+        "extracted_benefits": []
     }
     
     # Recorrer párrafos y clasificar el texto por palabras clave
-    current_key = None  # Iniciamos en None para ignorar la introducción y el título
+    current_key = None
+    intro_captured = False
     
     for paragraph in doc.paragraphs:
         text = paragraph.text.strip()
@@ -56,9 +58,15 @@ def parse_google_doc(url: str) -> dict:
             
         lower_text = text.lower()
         
+        # Detectar viñetas de beneficios en cualquier parte del documento
+        if text.startswith("•") or text.startswith("-") or text.startswith("*"):
+            clean_benefit = re.sub(r"^[•\-*]\s*", "", text)
+            sections["extracted_benefits"].append(clean_benefit)
+        
         # Detectar cabeceras o secciones y cambiar el foco
         if any(h in lower_text for h in ["descripción del tipo de producto", "descripcion del tipo de producto", "descripción del producto", "descripcion del producto"]):
             current_key = "description"
+            # Si el titulo incluye texto despues de dos puntos
             if ":" in text:
                 sections[current_key] += text.split(":", 1)[1].strip() + "\n"
             continue
@@ -83,9 +91,18 @@ def parse_google_doc(url: str) -> dict:
                 sections[current_key] += text.split(":", 1)[1].strip() + "\n"
             continue
             
-        # Acumular texto en la sección actual solo si ya estamos dentro de una sección válida
+        # Capturar el primer parrafo largo (introduccion) como "Alma de Producto"
+        if current_key is None and not intro_captured:
+            # Si no es un titulo y es un parrafo descriptivo largo
+            if len(text) > 60 and not "ficha comercial:" in lower_text and not lower_text.startswith("ficha"):
+                sections["description"] = text
+                intro_captured = True
+            continue
+
+        # Acumular texto en la sección actual
         if current_key:
             sections[current_key] += text + "\n"
         
     # Limpiar espacios en blanco al inicio/final de cada sección
-    return {k: v.strip() for k, v in sections.items()}
+    cleaned_sections = {k: v.strip() if isinstance(v, str) else v for k, v in sections.items()}
+    return cleaned_sections
