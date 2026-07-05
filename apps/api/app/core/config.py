@@ -15,11 +15,14 @@ class Settings(BaseSettings):
 
     @property
     def admin_emails(self) -> list[str]:
-        return [
+        # Permite fallback a correos especificos de administracion si la variable no esta definida
+        default_admins = ["admin@nutrablue.cl", "rodrigo@dentameet.net", "rodrigo@dentameet.cl"]
+        from_env = [
             e.strip().lower()
             for e in self.admin_emails_raw.split(",")
             if e.strip()
         ]
+        return list(set(default_admins + from_env))
 
     # Email (Resend)
     resend_api_key: str = os.getenv("RESEND_API_KEY", "")
