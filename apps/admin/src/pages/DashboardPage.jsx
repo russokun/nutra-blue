@@ -316,9 +316,9 @@ const DashboardPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {recentOrders.slice(0, 7).map((order) => (
-                    <tr key={order.id} className="border-t border-border/60 hover:bg-muted/10 transition-colors">
-                      <td className="p-3 font-mono text-xs text-primary font-semibold">{order.id.slice(0, 8)}…</td>
+                  {Array.isArray(recentOrders) && recentOrders.slice(0, 7).map((order) => (
+                    <tr key={order?.id} className="border-t border-border/60 hover:bg-muted/10 transition-colors">
+                      <td className="p-3 font-mono text-xs text-primary font-semibold">{String(order?.id || '').slice(0, 8)}…</td>
                       <td className="p-3 truncate max-w-[150px]">{order.customer_name || order.email}</td>
                       <td className="p-3 font-medium">{formatPrice(order.total || order.total_amount || 0)}</td>
                       <td className="p-3">
