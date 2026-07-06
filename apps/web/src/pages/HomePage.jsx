@@ -190,124 +190,8 @@ const HomePage = () => {
       <Header />
 
       <main className="overflow-x-hidden bg-background">
-        {/* Hero Product Showcase Carousel Section */}
-        <section className="relative min-h-[70vh] flex items-center justify-center bg-white py-16 md:py-24 border-b border-slate-100 overflow-hidden">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-              
-              {/* Left Column (30%): Marketing Hook */}
-              <div className="lg:col-span-4 space-y-6 text-left">
-                <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-[#0284c7]/10 text-[#0284c7] border border-[#0284c7]/20 uppercase tracking-widest">
-                  🧬 Ciencia de Alto Rendimiento
-                </span>
-                <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
-                  La ciencia detrás de tu mejor versión.
-                </h1>
-                <p className="text-base text-slate-600 leading-relaxed">
-                  Fórmulas de nutrición avanzada basadas en evidencia clínica para optimizar tu energía, enfoque mental y longevidad activa.
-                </p>
-                <div className="pt-2 flex flex-wrap gap-4">
-                  <Button
-                    asChild
-                    size="lg"
-                    className="bg-[#0284c7] hover:bg-[#0284c7]/95 text-white font-bold px-8 py-6 rounded-xl shadow-md transition-all duration-200 active:scale-[0.98]"
-                  >
-                    <Link to="/shop">Optimizar mi Rutina</Link>
-                  </Button>
-                </div>
-              </div>
-
-              {/* Right Column (70%): Carousel */}
-              <div className="lg:col-span-8 w-full overflow-hidden min-h-[430px] relative">
-                {loadingHero ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <Skeleton className="h-[420px] w-full rounded-2xl" />
-                    <Skeleton className="h-[420px] w-full rounded-2xl hidden sm:block" />
-                    <Skeleton className="h-[420px] w-full rounded-2xl hidden lg:block" />
-                  </div>
-                ) : (
-                  <Swiper
-                    modules={[Autoplay, Pagination, Navigation]}
-                    autoplay={{ delay: 4000, disableOnInteraction: false, pauseOnMouseEnter: true }}
-                    pagination={{ clickable: true, el: '.swiper-custom-pagination' }}
-                    navigation={{ nextEl: '.swiper-button-next-custom', prevEl: '.swiper-button-prev-custom' }}
-                    spaceBetween={24}
-                    slidesPerView={1}
-                    breakpoints={{
-                      640: { slidesPerView: 1 },
-                      768: { slidesPerView: 2 },
-                      1024: { slidesPerView: 3 }
-                    }}
-                    className="hero-swiper pb-12"
-                  >
-                    {heroProducts.map((product) => (
-                      <SwiperSlide key={product.id}>
-                        <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between h-[420px] text-center relative overflow-hidden group">
-                          
-                          {/* Image Container with Fixed Dimensions to Prevent Layout Shift */}
-                          <div className="relative w-full h-44 flex items-center justify-center bg-slate-50 rounded-xl overflow-hidden mb-4">
-                            <img
-                              src={product.image_url}
-                              alt={product.name}
-                              loading="lazy"
-                              className="max-h-36 object-contain transition-transform duration-500 group-hover:scale-105"
-                              style={{ width: 'auto', height: '144px' }}
-                            />
-                            <span className="absolute top-2 left-2 px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#0284c7]/10 text-[#0284c7] uppercase tracking-wider">
-                              {product.benefit_tag}
-                            </span>
-                          </div>
-
-                          {/* Card Body */}
-                          <div className="space-y-2 flex-grow flex flex-col justify-center">
-                            <h3 className="font-bold text-slate-800 text-lg group-hover:text-[#0284c7] transition-colors line-clamp-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                              {product.name}
-                            </h3>
-                            <p className="text-xl font-black text-slate-900">
-                              {formatPrice(product.price)}
-                            </p>
-                          </div>
-
-                          {/* Action CTA */}
-                          <div className="mt-4">
-                            <Button
-                              onClick={() => {
-                                addToCart(product, 1);
-                                toast.success(`¡${product.name} agregado al carrito!`);
-                              }}
-                              className="w-full bg-[#0284c7] hover:bg-[#0284c7]/90 text-white font-bold py-2.5 rounded-xl transition-all duration-200 active:scale-[0.98]"
-                            >
-                              Llevar Ahora
-                            </Button>
-                          </div>
-                        </div>
-                      </SwiperSlide>
-                    ))}
-                  </Swiper>
-                )}
-
-                {/* Custom Navigation buttons */}
-                {!loadingHero && heroProducts.length > 3 && (
-                  <>
-                    <button className="swiper-button-prev-custom absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-slate-100 shadow-sm flex items-center justify-center hover:bg-slate-50 transition-colors">
-                      <span className="text-slate-600 text-base">◀</span>
-                    </button>
-                    <button className="swiper-button-next-custom absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-slate-100 shadow-sm flex items-center justify-center hover:bg-slate-50 transition-colors">
-                      <span className="text-slate-600 text-base">▶</span>
-                    </button>
-                  </>
-                )}
-                
-                {/* Custom Pagination container */}
-                <div className="swiper-custom-pagination flex justify-center gap-1.5 mt-4" />
-              </div>
-
-            </div>
-          </div>
-        </section>
-
-        {/* Carrusel de Confianza (Trust Bar) */}
-        <section className="bg-slate-950 border-y border-white/15 py-4 text-white/90 overflow-hidden relative w-full select-none">
+        {/* Carrusel de Confianza (Trust Bar) - Ahora arriba del Hero */}
+        <section className="bg-slate-950 border-b border-white/15 py-4 text-white/90 overflow-hidden relative w-full select-none">
           <div className="w-full">
             <div className="animate-marquee-ltr flex items-center whitespace-nowrap gap-12 text-xs md:text-sm font-semibold tracking-wide py-1">
               
@@ -360,6 +244,115 @@ const HomePage = () => {
               </div>
 
             </div>
+          </div>
+        </section>
+
+        {/* Hero Product Showcase Carousel Section */}
+        <section className="relative min-h-[70vh] flex items-center justify-center bg-white py-16 md:py-24 border-b border-slate-100 overflow-hidden">
+          <div className="max-w-5xl mx-auto px-4 w-full text-center">
+            
+            {/* Header / Intro inside Hero */}
+            <div className="max-w-2xl mx-auto mb-10 text-center space-y-3">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#0284c7]/10 text-[#0284c7] border border-[#0284c7]/20 uppercase tracking-widest">
+                ⚡ Máximo Rendimiento
+              </span>
+              <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
+                Fórmulas de Nutrición Avanzada
+              </h2>
+              <p className="text-sm text-slate-500 max-w-lg mx-auto">
+                Diseñadas con rigor científico y adaptógenos de alta biodisponibilidad para optimizar tu enfoque, energía y longevidad celular.
+              </p>
+            </div>
+
+            {/* Centered Carousel (60-70% of viewport width) */}
+            <div className="w-full overflow-hidden min-h-[430px] relative px-4">
+              {loadingHero ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <Skeleton className="h-[420px] w-full rounded-2xl" />
+                  <Skeleton className="h-[420px] w-full rounded-2xl hidden sm:block" />
+                  <Skeleton className="h-[420px] w-full rounded-2xl hidden lg:block" />
+                </div>
+              ) : (
+                <Swiper
+                  modules={[Autoplay, Pagination, Navigation]}
+                  autoplay={{ delay: 4000, disableOnInteraction: false, pauseOnMouseEnter: true }}
+                  pagination={{ clickable: true, el: '.swiper-custom-pagination' }}
+                  navigation={{ nextEl: '.swiper-button-next-custom', prevEl: '.swiper-button-next-custom' }}
+                  spaceBetween={24}
+                  slidesPerView={1}
+                  breakpoints={{
+                    640: { slidesPerView: 1 },
+                    768: { slidesPerView: 2 },
+                    1024: { slidesPerView: 3 }
+                  }}
+                  className="hero-swiper pb-12"
+                >
+                  {heroProducts.map((product) => (
+                    <SwiperSlide key={product.id}>
+                      <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between h-[420px] text-center relative overflow-hidden group">
+                        
+                        <Link to={`/product/${product.id}`} className="block flex-grow flex flex-col text-left h-full">
+                          {/* Image Container with Fixed Dimensions to Prevent Layout Shift */}
+                          <div className="relative w-full h-44 flex items-center justify-center bg-slate-50 rounded-xl overflow-hidden mb-4">
+                            <img
+                              src={product.image_url}
+                              alt={product.name}
+                              loading="lazy"
+                              className="max-h-36 object-contain transition-transform duration-500 group-hover:scale-105"
+                              style={{ width: 'auto', height: '144px' }}
+                            />
+                            <span className="absolute top-2 left-2 px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#0284c7]/10 text-[#0284c7] uppercase tracking-wider">
+                              {product.benefit_tag}
+                            </span>
+                          </div>
+
+                          {/* Card Body */}
+                          <div className="space-y-2 flex-grow flex flex-col justify-center text-center">
+                            <h3 className="font-bold text-slate-800 text-lg group-hover:text-[#0284c7] transition-colors line-clamp-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                              {product.name}
+                            </h3>
+                            <p className="text-xl font-black text-slate-900">
+                              {formatPrice(product.price)}
+                            </p>
+                          </div>
+                        </Link>
+
+                        {/* Action CTA */}
+                        <div className="mt-4 relative z-10">
+                          <Button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              addToCart(product, 1);
+                              toast.success(`¡${product.name} agregado al carrito!`);
+                            }}
+                            className="w-full bg-[#0284c7] hover:bg-[#0284c7]/90 text-white font-bold py-2.5 rounded-xl transition-all duration-200 active:scale-[0.98]"
+                          >
+                            Llevar Ahora
+                          </Button>
+                        </div>
+                      </div>
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+              )}
+
+              {/* Custom Navigation buttons */}
+              {!loadingHero && heroProducts.length > 3 && (
+                <>
+                  <button className="swiper-button-prev-custom absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-slate-100 shadow-sm flex items-center justify-center hover:bg-slate-50 transition-colors">
+                    <span className="text-slate-600 text-base">◀</span>
+                  </button>
+                  <button className="swiper-button-next-custom absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-slate-100 shadow-sm flex items-center justify-center hover:bg-slate-50 transition-colors">
+                    <span className="text-slate-600 text-base">▶</span>
+                  </button>
+                </>
+              )}
+              
+              {/* Custom Pagination container */}
+              <div className="swiper-custom-pagination flex justify-center gap-1.5 mt-4" />
+            </div>
+
           </div>
         </section>
 
