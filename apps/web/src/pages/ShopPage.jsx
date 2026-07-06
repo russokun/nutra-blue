@@ -154,8 +154,14 @@ const ShopPage = () => {
   return (
     <>
       <Helmet>
-        <title>Catálogo - Nutra Blue</title>
-        <meta name="description" content="Explora nuestra selección de suplementos funcionales premium para salud cognitiva, gestión del estrés y longevidad." />
+        <title>Catálogo de Suplementos Premium y Biohacking — Nutra Blue</title>
+        <meta name="description" content="Explora nuestro catálogo de adaptógenos, nootrópicos y suplementos de longevidad celular en Chile. Calm Focus, Matcha Ritual, Dark Cacao y más." />
+        <meta name="keywords" content="comprar melena de leon, comprar ashwagandha, nootropicos chile, biohacking chile, suplementos premium" />
+        <meta property="og:title" content="Catálogo de Suplementos Premium — Nutra Blue" />
+        <meta property="og:description" content="Encuentra fórmulas científicas con adaptógenos de alta biodisponibilidad. Envíos a todo Chile." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://nutrablue-test.vercel.app/shop" />
+        <link rel="canonical" href="https://nutrablue-test.vercel.app/shop" />
       </Helmet>
 
       <Header />

@@ -155,8 +155,14 @@ const ProductDetailPage = () => {
   return (
     <>
       <Helmet>
-        <title>{`${product.name} - Nutra Blue`}</title>
-        <meta name="description" content={product.description || `Compra ${product.name} en Nutra Blue`} />
+        <title>{`${product.name} — Nutra Blue | Chile`}</title>
+        <meta name="description" content={product.description || `Adquiere ${product.name} con formulación científica premium en Nutra Blue.`} />
+        <meta property="og:title" content={`${product.name} — Nutra Blue`} />
+        <meta property="og:description" content={product.description || `Fórmula con adaptógenos de alta biodisponibilidad. Compra ${product.name} en Nutra Blue.`} />
+        <meta property="og:image" content={product.image_url} />
+        <meta property="og:type" content="product" />
+        <meta property="og:url" content={`https://nutrablue-test.vercel.app/product/${product.id}`} />
+        <link rel="canonical" href={`https://nutrablue-test.vercel.app/product/${product.id}`} />
       </Helmet>
 
       <Header />
