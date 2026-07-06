@@ -249,35 +249,35 @@ const HomePage = () => {
 
         {/* Hero Product Showcase Carousel Section */}
         <section className="relative min-h-[70vh] flex items-center justify-center bg-white py-16 md:py-24 border-b border-slate-100 overflow-hidden">
-          <div className="max-w-5xl mx-auto px-4 w-full text-center">
+          <div className="max-w-7xl mx-auto px-4 w-full text-center">
             
             {/* Header / Intro inside Hero */}
-            <div className="max-w-2xl mx-auto mb-10 text-center space-y-3">
+            <div className="max-w-2xl mx-auto mb-12 text-center space-y-4">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#0284c7]/10 text-[#0284c7] border border-[#0284c7]/20 uppercase tracking-widest">
-                ⚡ Máximo Rendimiento
+                🧬 Biohacking Cotidiano
               </span>
-              <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
-                Fórmulas de Nutrición Avanzada
+              <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
+                Encuentra tu fórmula para mejorar tu día
               </h2>
-              <p className="text-sm text-slate-500 max-w-lg mx-auto">
-                Diseñadas con rigor científico y adaptógenos de alta biodisponibilidad para optimizar tu enfoque, energía y longevidad celular.
+              <p className="text-base text-slate-500 max-w-lg mx-auto">
+                Adaptógenos y nootrópicos de alta pureza diseñados científicamente para potenciar tu concentración mental, energía limpia y calma natural.
               </p>
             </div>
 
-            {/* Centered Carousel (60-70% of viewport width) */}
-            <div className="w-full overflow-hidden min-h-[430px] relative px-4">
+            {/* Centered Carousel (30% larger, max-w-7xl) */}
+            <div className="w-full overflow-hidden min-h-[510px] relative px-4">
               {loadingHero ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <Skeleton className="h-[420px] w-full rounded-2xl" />
-                  <Skeleton className="h-[420px] w-full rounded-2xl hidden sm:block" />
-                  <Skeleton className="h-[420px] w-full rounded-2xl hidden lg:block" />
+                  <Skeleton className="h-[490px] w-full rounded-2xl" />
+                  <Skeleton className="h-[490px] w-full rounded-2xl hidden sm:block" />
+                  <Skeleton className="h-[490px] w-full rounded-2xl hidden lg:block" />
                 </div>
               ) : (
                 <Swiper
                   modules={[Autoplay, Pagination, Navigation]}
                   autoplay={{ delay: 4000, disableOnInteraction: false, pauseOnMouseEnter: true }}
                   pagination={{ clickable: true, el: '.swiper-custom-pagination' }}
-                  navigation={{ nextEl: '.swiper-button-next-custom', prevEl: '.swiper-button-next-custom' }}
+                  navigation={{ nextEl: '.swiper-button-next-custom', prevEl: '.swiper-button-prev-custom' }}
                   spaceBetween={24}
                   slidesPerView={1}
                   breakpoints={{
@@ -289,17 +289,17 @@ const HomePage = () => {
                 >
                   {heroProducts.map((product) => (
                     <SwiperSlide key={product.id}>
-                      <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between h-[420px] text-center relative overflow-hidden group">
+                      <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between h-[490px] text-center relative overflow-hidden group">
                         
                         <Link to={`/product/${product.id}`} className="block flex-grow flex flex-col text-left h-full">
-                          {/* Image Container with Fixed Dimensions to Prevent Layout Shift */}
-                          <div className="relative w-full h-44 flex items-center justify-center bg-slate-50 rounded-xl overflow-hidden mb-4">
+                          {/* Image Container with Fixed Dimensions (30% Larger: h-60 / 240px) */}
+                          <div className="relative w-full h-60 flex items-center justify-center bg-slate-50 rounded-xl overflow-hidden mb-4">
                             <img
                               src={product.image_url}
                               alt={product.name}
                               loading="lazy"
-                              className="max-h-36 object-contain transition-transform duration-500 group-hover:scale-105"
-                              style={{ width: 'auto', height: '144px' }}
+                              className="max-h-52 object-contain transition-transform duration-500 group-hover:scale-105"
+                              style={{ width: 'auto', height: '208px' }}
                             />
                             <span className="absolute top-2 left-2 px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#0284c7]/10 text-[#0284c7] uppercase tracking-wider">
                               {product.benefit_tag}
@@ -317,8 +317,15 @@ const HomePage = () => {
                           </div>
                         </Link>
 
-                        {/* Action CTA */}
-                        <div className="mt-4 relative z-10">
+                        {/* Double Buttons Footer: Click to go to product details and click to add to cart */}
+                        <div className="mt-4 flex gap-3 relative z-10">
+                          <Button
+                            asChild
+                            variant="outline"
+                            className="flex-1 border-[#0284c7]/30 text-[#0284c7] hover:bg-[#0284c7]/5 font-bold py-2.5 rounded-xl transition-all duration-200 active:scale-[0.98] text-xs md:text-sm"
+                          >
+                            <Link to={`/product/${product.id}`}>Ver Detalle</Link>
+                          </Button>
                           <Button
                             onClick={(e) => {
                               e.preventDefault();
@@ -326,7 +333,7 @@ const HomePage = () => {
                               addToCart(product, 1);
                               toast.success(`¡${product.name} agregado al carrito!`);
                             }}
-                            className="w-full bg-[#0284c7] hover:bg-[#0284c7]/90 text-white font-bold py-2.5 rounded-xl transition-all duration-200 active:scale-[0.98]"
+                            className="flex-1 bg-[#0284c7] hover:bg-[#0284c7]/90 text-white font-bold py-2.5 rounded-xl transition-all duration-200 active:scale-[0.98] text-xs md:text-sm"
                           >
                             Llevar Ahora
                           </Button>
