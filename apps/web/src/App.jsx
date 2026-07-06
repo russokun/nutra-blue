@@ -21,7 +21,8 @@ import AccountPage from '@/pages/AccountPage';
 const RedirectToAdmin = () => {
   useEffect(() => {
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '::1';
-    window.location.href = isLocal ? 'http://localhost:3002' : `https://admin.${window.location.hostname.replace('www.', '')}`;
+    // En local → dev del admin; en cualquier entorno de producción/staging → admin en Vercel
+    window.location.href = isLocal ? 'http://localhost:3002' : 'https://nutra-blue-admin.vercel.app/';
   }, []);
   return (
     <div className="min-h-screen flex items-center justify-center bg-background text-muted-foreground text-sm">
@@ -29,6 +30,7 @@ const RedirectToAdmin = () => {
     </div>
   );
 };
+
 
 function App() {
   return (

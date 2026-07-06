@@ -162,6 +162,9 @@ const CheckoutPage = () => {
         region: formData.region,
         items: cart.map(item => ({
           product_id: item.id,
+          name: item.name,
+          price: item.price,
+          image_url: item.image_url || item.imageUrl || null,
           quantity: item.quantity
         })),
         subtotal,
@@ -193,7 +196,7 @@ const CheckoutPage = () => {
         customer_name: formData.name
       };
 
-      let redirectUrl = `/order-confirmation?orderId=${order.id}`;
+      let redirectUrl = `/order-confirmation/${order.id}`;
       
       try {
         const endpoint = paymentMethod === 'webpay' 

@@ -179,6 +179,11 @@ const OrderConfirmationPage = () => {
                     </span>
                     <span className="text-muted-foreground text-sm ml-2">x{item.quantity}</span>
                   </div>
+                  {item.price && (
+                    <span className="text-card-foreground font-medium">
+                      {formatPrice(item.price * item.quantity)}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>
