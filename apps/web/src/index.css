@@ -114,4 +114,23 @@ body {
     width: max-content;
     animation: marquee-ltr 25s linear infinite;
   }
+
+  .didactic-bg {
+    position: relative;
+  }
+  
+  .didactic-bg::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.06;
+    background-image: 
+      radial-gradient(circle, #0284c7 1px, transparent 1px),
+      linear-gradient(to right, #0284c7 0.5px, transparent 0.5px),
+      linear-gradient(to bottom, #0284c7 0.5px, transparent 0.5px);
+    background-size: 24px 24px, 48px 48px, 48px 48px;
+    background-position: 0 0, 0 0, 0 0;
+    z-index: 0;
+  }
 }

@@ -19,7 +19,7 @@ const ImpactPage = () => {
 
       <Header />
 
-      <main className="min-h-screen bg-white overflow-hidden">
+      <main className="min-h-screen bg-white overflow-hidden didactic-bg">
         {/* Cinematic Hero Section with Glacial Lake Background */}
         <section className="relative py-28 md:py-40 flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 z-0">

@@ -71,7 +71,8 @@ async def initialize_payment(request: Request):
     if order.get("email", "").lower() != email.lower():
         raise HTTPException(status_code=403, detail="Email does not match order")
 
-    gateway = PaymentGatewayFactory.get_gateway()
+    gateway_name = payload.get("gateway")
+    gateway = PaymentGatewayFactory.get_gateway(gateway_name)
 
     try:
         result = gateway.create_transaction(
@@ -81,6 +82,9 @@ async def initialize_payment(request: Request):
             phone=phone,
             customer_name=customer_name,
         )
+        # Asegurar compatibilidad con el blueprint (devolver payment_url)
+        if "redirect_url" in result and "payment_url" not in result:
+            result["payment_url"] = result["redirect_url"]
         return result
     except HTTPException:
         raise

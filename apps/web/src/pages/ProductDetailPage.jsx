@@ -286,7 +286,7 @@ const ProductDetailPage = () => {
           </div>
 
           {/* --- SECCIÓN: EL ALMA DEL PRODUCTO --- */}
-          <div className="pt-4 pb-16">
+          <div className="pt-8 pb-16 px-6 md:px-12 rounded-3xl bg-slate-50 border border-border/30 didactic-bg mb-12">
             <div className="text-center mb-12">
               <h2 className="text-2xl md:text-3xl font-bold text-foreground" style={{ fontFamily: 'Playfair Display, serif' }}>
                 El Alma del Producto

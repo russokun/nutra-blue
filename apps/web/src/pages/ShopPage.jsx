@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCart } from '@/hooks/useCart';
 import { toast } from 'sonner';
+import apiServerClient from '@/lib/apiServerClient';
 
 const ShopPage = () => {
   const navigate = useNavigate();
@@ -124,12 +125,18 @@ const ShopPage = () => {
       suggestions.push(newSug);
       localStorage.setItem('nutra_blue_suggestions', JSON.stringify(suggestions));
 
-      if (dataClient && dataClient.collection) {
-        await dataClient.collection('product_suggestions').create({
-          product_name: inputVal,
-          text: inputVal,
-          status: 'pendiente'
-        }).catch(() => {});
+      try {
+        await apiServerClient.fetch('/product_suggestions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            product_name: inputVal,
+            text: inputVal,
+            status: 'pendiente'
+          })
+        });
+      } catch (err) {
+        console.warn('Backend suggestions fallback:', err);
       }
 
       toast.success("¡Gracias! Tu solicitud ha sido enviada al equipo clínico.");
@@ -369,34 +376,7 @@ const ShopPage = () => {
                 </div>
               )}
 
-              {/* Permanent Suggestions Box (Trigger B) */}
-              <div className="mt-12 bg-slate-900 text-white rounded-2xl p-8 border border-white/10 shadow-md">
-                <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-                  <div className="space-y-2 text-center md:text-left">
-                    <h3 className="text-lg font-bold">
-                      ¿No encontraste la fórmula que necesitas?
-                    </h3>
-                    <p className="text-sm text-slate-300 max-w-xl">
-                      Cuéntanos qué buscas y nuestro equipo clínico evaluará su desarrollo.
-                    </p>
-                  </div>
-                  <form onSubmit={handleSuggestionSubmit} className="flex w-full md:w-auto max-w-md gap-2">
-                    <input
-                      name="suggestionInput"
-                      type="text"
-                      placeholder="Ej: Creatina Micronizada, Ashwagandha..."
-                      required
-                      className="flex-grow md:w-64 px-4 py-3 rounded-xl bg-slate-950/80 border border-white/20 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                    />
-                    <Button 
-                      type="submit"
-                      className="bg-accent hover:bg-accent/90 text-white font-semibold px-6 py-3 rounded-xl text-sm shrink-0 shadow-sm"
-                    >
-                      Enviar sugerencia
-                    </Button>
-                  </form>
-                </div>
-              </div>
+
             </div>
           </div>
         </div>

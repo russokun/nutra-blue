@@ -49,6 +49,7 @@ async def create_lead(lead: LeadCreate):
         return new_lead
 
 @router.post("/product_suggestions")
+@router.post("/suggestions")
 async def create_suggestion(sug: SuggestionCreate):
     # Normalizar: product_name es el campo canónico; text es alias legacy
     product_name = sug.product_name or sug.text or ""

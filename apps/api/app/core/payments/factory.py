@@ -28,16 +28,18 @@ class MockPayment(PaymentGateway):
 
 class PaymentGatewayFactory:
     @staticmethod
-    def get_gateway() -> PaymentGateway:
-        provider = settings.payment_provider.lower()
+    def get_gateway(provider: str = None) -> PaymentGateway:
+        if not provider:
+            provider = settings.payment_provider
+        provider = provider.lower().strip()
         
-        if provider == "flow":
+        if provider in ("flow", "flowpay"):
             from app.core.payments.flow import FlowPayment
             return FlowPayment()
-        elif provider == "mercadopago":
+        elif provider in ("mercadopago", "mp"):
             from app.core.payments.mercadopago import MercadoPagoPayment
             return MercadoPagoPayment()
-        elif provider == "transbank":
+        elif provider in ("transbank", "webpay", "tbk"):
             from app.core.payments.transbank import TransbankPayment
             return TransbankPayment()
         else:

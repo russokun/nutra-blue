@@ -199,21 +199,20 @@ const CheckoutPage = () => {
       let redirectUrl = `/order-confirmation/${order.id}`;
       
       try {
-        const endpoint = paymentMethod === 'webpay' 
-          ? '/payment/webpay-init' 
-          : paymentMethod === 'mercadopago' 
-            ? '/payment/mercadopago-init' 
-            : '/payment/flow-init';
+        const paymentPayload = {
+          ...paymentData,
+          gateway: paymentMethod
+        };
 
-        const paymentResponse = await apiServerClient.fetch(endpoint, {
+        const paymentResponse = await apiServerClient.fetch('/payment/init', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(paymentData)
+          body: JSON.stringify(paymentPayload)
         });
 
         if (paymentResponse.ok) {
           const paymentResult = await paymentResponse.json();
-          redirectUrl = paymentResult.redirect_url || redirectUrl;
+          redirectUrl = paymentResult.payment_url || paymentResult.redirect_url || redirectUrl;
         }
       } catch (err) {
         console.warn('Backend payment init fallback to mock flow:', err);

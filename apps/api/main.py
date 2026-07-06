@@ -24,6 +24,30 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 
+class ErrorLoggingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        try:
+            response = await call_next(request)
+            if response.status_code in (404, 500):
+                logger.error(
+                    "AUDIT LOG: Request failed with status %s | Method: %s | Path: %s | Client: %s",
+                    response.status_code,
+                    request.method,
+                    request.url.path,
+                    request.client.host if request.client else "unknown"
+                )
+            return response
+        except Exception as e:
+            logger.error(
+                "AUDIT LOG: Exception during request | Method: %s | Path: %s | Error: %s",
+                request.method,
+                request.url.path,
+                str(e),
+                exc_info=True
+            )
+            raise e
+
+
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
@@ -40,6 +64,7 @@ if settings.is_production and not cors_origins:
     logger.warning("CORS_ORIGIN must be set in production. Defaulting to WEBSITE_DOMAIN.")
     cors_origins = [f"https://{settings.website_domain}"]
 
+app.add_middleware(ErrorLoggingMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(
     CORSMiddleware,
