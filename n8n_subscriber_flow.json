@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "Nutra Blue — Nuevo Suscriptor & Email de Bienvenida",
   "nodes": [
     {
@@ -59,7 +59,7 @@
         "operation": "append",
         "documentId": {
           "__rl": true,
-          "value": "1Vc5H7utWxZW2Q-ixM8mcKHhFEuWrwRZSTfm8m4LmZK4",
+          "value": "1eXHHOAxlc-z9EmsCsbcXklPfY0DePr6UPiFA0kbc-QU",
           "mode": "list"
         },
         "sheetName": {
