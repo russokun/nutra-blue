@@ -1,12 +1,15 @@
 {
-  "rewrites": [
+  "routes": [
     {
-      "source": "/hcgi/api/(.*)",
-      "destination": "https://api-test.nutrablue.cl/$1"
+      "src": "/hcgi/api/(.*)",
+      "dest": "https://api-test.nutrablue.cl/$1"
     },
     {
-      "source": "/((?!.*\\.(js|jsx|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|map|json|webp|avif)).*)",
-      "destination": "/index.html"
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
