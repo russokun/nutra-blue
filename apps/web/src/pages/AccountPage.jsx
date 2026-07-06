@@ -15,7 +15,24 @@ const AccountContent = () => {
   const displayName = currentUser?.user_metadata?.full_name || currentUser?.email.split('@')[0];
 
   const [orders, setOrders] = useState([]);
+  const [addressData, setAddressData] = useState({
+    address: '',
+    city: '',
+    region: '',
+    phone: ''
+  });
   const [loadingOrders, setLoadingOrders] = useState(true);
+
+  useEffect(() => {
+    const savedAddress = localStorage.getItem('nutra_blue_user_address');
+    if (savedAddress) {
+      try {
+        setAddressData(JSON.parse(savedAddress));
+      } catch (err) {
+        console.error('Error loading address:', err);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -109,6 +126,7 @@ const AccountContent = () => {
 
   const handleSaveAddress = (e) => {
     e.preventDefault();
+    localStorage.setItem('nutra_blue_user_address', JSON.stringify(addressData));
     toast.success('Dirección de despacho guardada con éxito.');
   };
 
@@ -276,6 +294,8 @@ const AccountContent = () => {
                           type="text"
                           required
                           placeholder="Av. Vitacura 1234, Depto 402"
+                          value={addressData.address}
+                          onChange={(e) => setAddressData({...addressData, address: e.target.value})}
                           className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                         />
                       </div>
@@ -285,6 +305,8 @@ const AccountContent = () => {
                           type="text"
                           required
                           placeholder="Vitacura"
+                          value={addressData.city}
+                          onChange={(e) => setAddressData({...addressData, city: e.target.value})}
                           className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                         />
                       </div>
@@ -297,6 +319,8 @@ const AccountContent = () => {
                           type="text"
                           required
                           placeholder="Metropolitana"
+                          value={addressData.region}
+                          onChange={(e) => setAddressData({...addressData, region: e.target.value})}
                           className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                         />
                       </div>
@@ -306,6 +330,8 @@ const AccountContent = () => {
                           type="text"
                           required
                           placeholder="+56 9 1234 5678"
+                          value={addressData.phone}
+                          onChange={(e) => setAddressData({...addressData, phone: e.target.value})}
                           className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                         />
                       </div>
