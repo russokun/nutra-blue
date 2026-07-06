@@ -126,6 +126,7 @@ const ShopPage = () => {
 
       if (dataClient && dataClient.collection) {
         await dataClient.collection('product_suggestions').create({
+          product_name: inputVal,
           text: inputVal,
           status: 'pendiente'
         }).catch(() => {});

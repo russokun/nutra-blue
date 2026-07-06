@@ -293,8 +293,11 @@ async def sync_products_from_sheets(
     # Parsear y mapear columnas de forma flexible
     def normalize_key(key: str) -> str:
         k = key.lower().strip()
+        # Eliminar caracteres especiales para comparación flexible
+        k_clean = k.replace("$", "").replace(".", "").replace(",", "").strip()
         if k in ("name", "nombre", "suplemento / alimento", "suplemento/alimento", "suplemento", "alimento"): return "name"
-        if k in ("price", "precio", "$ venta", "venta", "$venta"): return "price"
+        if k in ("price", "precio", "$ venta", "venta", "$venta", "precio venta", "precio de venta") or k_clean in ("precio venta", "precio de venta", "venta"): return "price"
+        if k in ("cost", "costo", "$ costo", "precio costo", "precio de costo") or k_clean in ("precio costo", "precio de costo", "costo"): return "cost"  # Ignorar columna de costo
         if k in ("stock", "inventario", "stock disponible"): return "stock"
         if k in ("category", "categoria", "categoría", "categoría / objetivo", "categoria/objetivo", "objetivo"): return "category"
         if k in ("image_url", "image", "imagen", "imagen_url", "url imagen", "url_imagen"): return "image_url"
@@ -333,16 +336,31 @@ async def sync_products_from_sheets(
     idx_stock = -1
     idx_category = -1
     idx_doc = -1
+    idx_cost = -1  # Columna de precio de costo — ignorar al sincronizar
 
     for i, h in enumerate(headers_main):
-        if "suplemento / alimento" in h or h == "suplemento" or h == "alimento":
+        h_lower = h.lower().strip()
+        if "suplemento / alimento" in h_lower or h_lower == "suplemento" or h_lower == "alimento":
             idx_name = i
-        elif "categor" in h or h == "categoria" or h == "objetivo":
+        elif "categor" in h_lower or h_lower == "categoria" or h_lower == "objetivo":
             idx_category = i
-        elif "venta" in h or h == "$ venta":
+        elif "costo" in h_lower or "$ costo" in h_lower or "precio costo" in h_lower:
+            # Marcar columna de costo para NO usarla como precio de venta
+            idx_cost = i
+        elif "venta" in h_lower or h_lower == "$ venta":
             idx_price = i
-        elif "link" in h or "doc" in h:
+        elif "link" in h_lower or "doc" in h_lower:
             idx_doc = i
+
+    # Si no encontramos "venta" en cabecera, usar fallback posicional
+    # pero excluir la columna de costo si ya fue identificada
+    if idx_price == -1:
+        # Buscar cualquier columna de precio que no sea la de costo
+        for i, h in enumerate(headers_main):
+            h_lower = h.lower().strip()
+            if any(w in h_lower for w in ("precio", "price")) and i != idx_cost:
+                idx_price = i
+                break
 
     # Buscar "inventario" en la subcabecera
     for i, h in enumerate(headers_sub):
@@ -352,7 +370,7 @@ async def sync_products_from_sheets(
     # Fallbacks de indices
     if idx_name == -1: idx_name = 1
     if idx_category == -1: idx_category = 0
-    if idx_price == -1: idx_price = 5
+    if idx_price == -1: idx_price = 5  # Col 5 = precio de venta por default del sheet
     if idx_stock == -1: idx_stock = 7
     if idx_doc == -1: idx_doc = 8
 

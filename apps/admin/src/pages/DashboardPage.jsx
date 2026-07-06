@@ -427,12 +427,12 @@ const DashboardPage = () => {
               suggestions.map((s) => (
                 <div key={s.id} className="p-4 bg-slate-50 border border-border rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs">
                   <div className="space-y-1">
-                    <p className="font-bold text-foreground">"{s.text}"</p>
+                    <p className="font-bold text-foreground">"{s.product_name || s.text}"</p>
                     <p className="text-[10px] text-muted-foreground">
-                      Sugerido el {formatDate(s.created_at || s.date)} • <strong className={s.status === 'Considerado' ? 'text-emerald-600' : 'text-amber-600'}>{s.status}</strong>
+                      Sugerido el {formatDate(s.created_at || s.date)} • <strong className={(s.status || '').toLowerCase() === 'considerado' ? 'text-emerald-600' : 'text-amber-600'}>{s.status ? (s.status.charAt(0).toUpperCase() + s.status.slice(1).toLowerCase()) : 'Pendiente'}</strong>
                     </p>
                   </div>
-                  {s.status === 'Pendiente' && (
+                  {(s.status || '').toLowerCase() === 'pendiente' && (
                     <div className="flex gap-2 w-full sm:w-auto">
                       <Button onClick={() => handleConsiderSuggestion(s.id)} size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] px-2.5 py-1">Considerar</Button>
                       <Button onClick={() => handleArchiveSuggestion(s.id)} variant="ghost" size="sm" className="hover:bg-destructive/10 hover:text-destructive rounded-lg text-[10px] px-2.5 py-1 text-muted-foreground">Archivar</Button>
