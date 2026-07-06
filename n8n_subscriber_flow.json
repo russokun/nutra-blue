@@ -1,0 +1,119 @@
+﻿{
+  "name": "Nutra Blue — Nuevo Suscriptor & Email de Bienvenida",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "new-subscriber",
+        "options": {}
+      },
+      "id": "webhook-trigger-id",
+      "name": "Webhook Trigger (API Nutra Blue)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.RESEND_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"from\": \"Nutra Blue <onboarding@resend.dev>\",\n  \"to\": [\"{{ $json.body.email }}\"],\n  \"subject\": \"Tu código WELCOME15 está aquí — 15% de descuento en Nutra Blue 🌿\",\n  \"html\": \"<div style='font-family:sans-serif;padding:24px;max-width:600px;background:#0c1e35;color:#f1f5f9;border-radius:16px;'><h1 style='color:#38bdf8;'>¡Bienvenido a Nutra Blue! 🌿</h1><p>Gracias por suscribirte desde: <strong>{{ $json.body.source }}</strong></p><p>Usa el código a continuación para obtener 15% de descuento en tu primera compra:</p><div style='background:rgba(255,255,255,0.1);border:2px dashed #38bdf8;padding:12px;text-align:center;font-size:24px;font-weight:bold;margin:16px 0;border-radius:8px;'>WELCOME15</div><p><a href='https://nutrablue-test.vercel.app/shop' style='background:#0284c7;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;'>Ir a la Tienda &rarr;</a></p></div>\"\n}"
+      },
+      "id": "send-email-resend-id",
+      "name": "Enviar Email (Resend API)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        200
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "resend-auth-key",
+          "name": "Resend API Headers"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Vc5H7utWxZW2Q-ixM8mcKHhFEuWrwRZSTfm8m4LmZK4",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $json.body.email }}",
+            "Origen": "={{ $json.body.source }}",
+            "Fecha": "={{ $today }}"
+          },
+          "matchingColumns": []
+        },
+        "options": {}
+      },
+      "id": "gsheet-append-id",
+      "name": "Registrar Lead en Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        480,
+        400
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "google-sheets-oauth-id",
+          "name": "Google Sheets"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Trigger (API Nutra Blue)": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email (Resend API)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Registrar Lead en Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
