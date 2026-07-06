@@ -1,4 +1,4 @@
-import os
+﻿import os
 from pydantic import Field
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
@@ -58,6 +58,9 @@ class Settings(BaseSettings):
     webpay_commerce_code: str = os.getenv("WEBPAY_COMMERCE_CODE", "597055555532")
     webpay_api_key: str = os.getenv("WEBPAY_API_KEY", "")
     
+    # n8n Webhooks
+    n8n_subscriber_webhook: str = os.getenv("N8N_SUBSCRIBER_WEBHOOK", "")
+
     @property
     def is_production(self) -> bool:
         return self.environment.lower() == "production"
@@ -72,3 +75,4 @@ class Settings(BaseSettings):
         case_sensitive = False
 
 settings = Settings()
+

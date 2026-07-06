@@ -215,3 +215,93 @@ async def send_payment_confirmation(order: dict) -> bool:
         f"Pago confirmado - Orden #{str(order.get('id',''))[:8].upper()} - Nutra Blue",
         html,
     )
+
+
+async def send_welcome_email(to: str) -> bool:
+    """
+    Envia email de bienvenida con codigo de descuento WELCOME15.
+    Se dispara al registrar un nuevo suscriptor desde el pop-up.
+    """
+    html = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Bienvenido a Nutra Blue</title>
+    </head>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc; margin: 0; padding: 20px;">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #0c1e35; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
+            <!-- Header -->
+            <tr>
+                <td style="padding: 40px 32px 24px 32px; text-align: center;">
+                    <h1 style="color: #38bdf8; font-size: 32px; margin: 0; font-weight: 800; letter-spacing: -0.02em;">Nutra Blue 🌿</h1>
+                    <p style="color: #64748b; margin: 8px 0 0 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em;">Nutricion Cientifica & Longevidad</p>
+                </td>
+            </tr>
+            <!-- Hero Banner -->
+            <tr>
+                <td style="padding: 0 32px;">
+                    <div style="background: linear-gradient(135deg, #0369a1 0%, #0284c7 50%, #38bdf8 100%); border-radius: 16px; padding: 32px; text-align: center;">
+                        <p style="color: #bae6fd; font-size: 13px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;">Tu codigo exclusivo</p>
+                        <div style="background: rgba(255,255,255,0.15); border: 2px dashed rgba(255,255,255,0.5); border-radius: 12px; padding: 16px 24px; display: inline-block; margin: 8px 0;">
+                            <span style="color: #ffffff; font-size: 36px; font-weight: 900; letter-spacing: 0.1em; font-family: monospace;">WELCOME15</span>
+                        </div>
+                        <p style="color: #bae6fd; font-size: 22px; font-weight: 700; margin: 12px 0 0 0;">15% de descuento</p>
+                        <p style="color: #93c5fd; font-size: 13px; margin: 4px 0 0 0;">en tu primera compra</p>
+                    </div>
+                </td>
+            </tr>
+            <!-- Content -->
+            <tr>
+                <td style="padding: 32px;">
+                    <h2 style="color: #f1f5f9; font-size: 22px; margin: 0 0 12px 0; font-weight: 700;">Bienvenido a la comunidad Nutra Blue</h2>
+                    <p style="color: #94a3b8; font-size: 15px; line-height: 1.7; margin: 0 0 24px 0;">
+                        Eres parte de +2.000 personas que ya optimizan su biologia con ciencia aplicada. Tu codigo <strong style="color: #38bdf8;">WELCOME15</strong> te da 15% de descuento en tu primera compra.
+                    </p>
+                    <!-- Benefits -->
+                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 28px;">
+                        <tr>
+                            <td style="padding: 10px 0; border-bottom: 1px solid #1e3a5f;">
+                                <span style="color: #38bdf8; font-size: 16px;">⚡</span>
+                                <span style="color: #cbd5e1; font-size: 14px; margin-left: 10px;">Formulas con adaptogenos de alta biodisponibilidad</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px 0; border-bottom: 1px solid #1e3a5f;">
+                                <span style="color: #38bdf8; font-size: 16px;">🧬</span>
+                                <span style="color: #cbd5e1; font-size: 14px; margin-left: 10px;">Ingredientes testeados por laboratorios independientes</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px 0;">
+                                <span style="color: #38bdf8; font-size: 16px;">📦</span>
+                                <span style="color: #cbd5e1; font-size: 14px; margin-left: 10px;">Envio gratis en compras sobre $50.000</span>
+                            </td>
+                        </tr>
+                    </table>
+                    <!-- CTA -->
+                    <div style="text-align: center;">
+                        <a href="https://nutrablue-test.vercel.app/shop" style="display: inline-block; background: linear-gradient(135deg, #0284c7, #38bdf8); color: #ffffff; font-weight: 700; font-size: 16px; padding: 16px 40px; border-radius: 12px; text-decoration: none; letter-spacing: 0.02em;">
+                            Explorar Productos &rarr;
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            <!-- Footer -->
+            <tr>
+                <td style="padding: 20px 32px; border-top: 1px solid #1e3a5f; text-align: center;">
+                    <p style="color: #475569; font-size: 11px; margin: 0;">Nutra Blue &mdash; Nutricion Cientifica &amp; Longevidad &bull; Santiago, Chile</p>
+                    <p style="color: #334155; font-size: 11px; margin: 6px 0 0 0;">Puedes darte de baja cuando quieras. Respetamos tu privacidad.</p>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+    """
+    return await send_email(
+        to=to,
+        subject="Tu codigo WELCOME15 esta aqui — 15% de descuento en Nutra Blue 🌿",
+        html=html,
+    )
+

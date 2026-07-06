@@ -1,4 +1,4 @@
-import logging
+﻿import logging
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,7 +8,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from starlette.middleware.base import BaseHTTPMiddleware
 from app.core.config import settings
-from app.routers import health, products, orders, payments, chat, admin, auth, public
+from app.routers import health, products, orders, payments, chat, admin, auth, public, coupons, subscribers
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -82,6 +82,8 @@ app.include_router(chat.router)
 app.include_router(admin.router)
 app.include_router(auth.router)
 app.include_router(public.router)
+app.include_router(coupons.router)
+app.include_router(subscribers.router)
 
 
 
@@ -102,3 +104,5 @@ if __name__ == "__main__":
         port=settings.port,
         reload=not settings.is_production,
     )
+
+

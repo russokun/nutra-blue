@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -58,7 +58,7 @@ const HomePage = () => {
             name: 'Matcha Ritual',
             price: 24990,
             image_url: 'https://horizons-cdn.hostinger.com/b35461a0-e424-4767-bd53-3b70fb21c1bf/db395fe43818aef950855c1429a35f3f.jpg',
-            benefit_tag: 'Energía sin Crash'
+            benefit_tag: 'EnergÃ­a sin Crash'
           }
         ]);
       } finally {
@@ -112,7 +112,7 @@ const HomePage = () => {
     
     localStorage.setItem('nutra_blue_popup_dismissed', 'true');
     setShowPopup(false);
-    toast.success('¡Excelente! Código de 15% de descuento enviado a tu correo.');
+    toast.success('Â¡Excelente! CÃ³digo de 15% de descuento enviado a tu correo.');
   };
 
   const handleClosePopup = () => {
@@ -124,9 +124,9 @@ const HomePage = () => {
   const pillars = [
     {
       icon: Brain,
-      title: 'Energía Sostenida',
+      title: 'EnergÃ­a Sostenida',
       cta: 'Mejorar mi Enfoque',
-      description: 'Vence la fatiga sin los bajones del café.',
+      description: 'Vence la fatiga sin los bajones del cafÃ©.',
       category: 'Salud Cognitiva',
       image: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&h=400&fit=crop'
     },
@@ -135,14 +135,14 @@ const HomePage = () => {
       title: 'Enfoque Inquebrantable',
       cta: 'Reducir mi Cortisol',
       description: 'Claridad mental para un mundo lleno de distracciones.',
-      category: 'Gestión del Estrés',
+      category: 'GestiÃ³n del EstrÃ©s',
       image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600&h=400&fit=crop'
     },
     {
       icon: Sparkles,
-      title: 'Recuperación Profunda',
+      title: 'RecuperaciÃ³n Profunda',
       cta: 'Activar mi Longevidad',
-      description: 'Descanso reparador para rendir al máximo al día siguiente.',
+      description: 'Descanso reparador para rendir al mÃ¡ximo al dÃ­a siguiente.',
       category: 'Longevidad',
       image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600&h=400&fit=crop'
     }
@@ -169,7 +169,7 @@ const HomePage = () => {
   const handleAddToCart = (product, e) => {
     e.stopPropagation();
     addToCart(product, 1);
-    toast.success(`${product.name} añadido al carrito`);
+    toast.success(`${product.name} aÃ±adido al carrito`);
   };
 
   const formatPrice = (price) => {
@@ -183,8 +183,13 @@ const HomePage = () => {
   return (
     <>
       <Helmet>
-        <title>Nutra Blue - Biohacking para la Longevidad</title>
-        <meta name="description" content="Suplementos funcionales premium para optimizar tu biología. Descubre nuestros productos de salud cognitiva, gestión del estrés y longevidad." />
+        <title>Nutra Blue — Suplementos de Biohacking y Longevidad | Chile</title>
+        <meta name="description" content="Suplementos funcionales premium con adapt&oacute;genos de alta biodisponibilidad. Optimiza tu enfoque, energ&iacute;a y longevidad celular. Env&iacute;o gratis sobre $50.000 en Chile." />
+        <meta name="keywords" content="suplementos naturales, biohacking, longevidad, salud cognitiva, adaptogenos, Chile" />
+        <meta property="og:title" content="Nutra Blue — Biohacking para la Longevidad" />
+        <meta property="og:description" content="Formulas cientificas premium para optimizar tu enfoque, energia y longevidad celular. Ingredientes testeados, envio rapido en Chile." />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href="https://nutrablue-test.vercel.app" />
       </Helmet>
 
       <Header />
@@ -198,23 +203,23 @@ const HomePage = () => {
               {/* Copy 1 */}
               <div className="flex items-center gap-12">
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">⚡</span>
-                  <span>Envío Rápido</span>
+                  <span className="text-lg">âš¡</span>
+                  <span>EnvÃ­o RÃ¡pido</span>
                 </div>
                 <span className="text-white/20">|</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">🛡️</span>
+                  <span className="text-lg">ðŸ›¡ï¸</span>
                   <span>Calidad Premium (Ingredientes testeados)</span>
                 </div>
                 <span className="text-white/20">|</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">🧬</span>
-                  <span>Fórmulas de Nutrición Avanzada</span>
+                  <span className="text-lg">ðŸ§¬</span>
+                  <span>FÃ³rmulas de NutriciÃ³n Avanzada</span>
                 </div>
                 <span className="text-white/20">|</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">📦</span>
-                  <span>Envío Gratis (Sobre $50.000)</span>
+                  <span className="text-lg">ðŸ“¦</span>
+                  <span>EnvÃ­o Gratis (Sobre $50.000)</span>
                 </div>
                 <span className="text-white/20">|</span>
               </div>
@@ -222,23 +227,23 @@ const HomePage = () => {
               {/* Copy 2 */}
               <div className="flex items-center gap-12">
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">⚡</span>
-                  <span>Envío Rápido</span>
+                  <span className="text-lg">âš¡</span>
+                  <span>EnvÃ­o RÃ¡pido</span>
                 </div>
                 <span className="text-white/20">|</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">🛡️</span>
+                  <span className="text-lg">ðŸ›¡ï¸</span>
                   <span>Calidad Premium (Ingredientes testeados)</span>
                 </div>
                 <span className="text-white/20">|</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">🧬</span>
-                  <span>Fórmulas de Nutrición Avanzada</span>
+                  <span className="text-lg">ðŸ§¬</span>
+                  <span>FÃ³rmulas de NutriciÃ³n Avanzada</span>
                 </div>
                 <span className="text-white/20">|</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">📦</span>
-                  <span>Envío Gratis (Sobre $50.000)</span>
+                  <span className="text-lg">ðŸ“¦</span>
+                  <span>EnvÃ­o Gratis (Sobre $50.000)</span>
                 </div>
                 <span className="text-white/20">|</span>
               </div>
@@ -251,18 +256,7 @@ const HomePage = () => {
         <section className="relative min-h-[70vh] flex items-center justify-center bg-white py-16 md:py-24 border-b border-slate-100 overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 w-full text-center">
             
-            {/* Header / Intro inside Hero */}
-            <div className="max-w-2xl mx-auto mb-12 text-center space-y-4">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#0284c7]/10 text-[#0284c7] border border-[#0284c7]/20 uppercase tracking-widest">
-                🧬 Biohacking Cotidiano
-              </span>
-              <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
-                Encuentra tu fórmula para mejorar tu día
-              </h2>
-              <p className="text-base text-slate-500 max-w-lg mx-auto">
-                Adaptógenos y nootrópicos de alta pureza diseñados científicamente para potenciar tu concentración mental, energía limpia y calma natural.
-              </p>
-            </div>
+
 
             {/* Centered Carousel (30% larger, max-w-7xl) */}
             <div className="w-full overflow-hidden min-h-[510px] relative px-4">
@@ -331,7 +325,7 @@ const HomePage = () => {
                               e.preventDefault();
                               e.stopPropagation();
                               addToCart(product, 1);
-                              toast.success(`¡${product.name} agregado al carrito!`);
+                              toast.success(`Â¡${product.name} agregado al carrito!`);
                             }}
                             className="flex-1 bg-[#0284c7] hover:bg-[#0284c7]/90 text-white font-bold py-2.5 rounded-xl transition-all duration-200 active:scale-[0.98] text-xs md:text-sm"
                           >
@@ -345,13 +339,13 @@ const HomePage = () => {
               )}
 
               {/* Custom Navigation buttons */}
-              {!loadingHero && heroProducts.length > 3 && (
+              {!loadingHero && heroProducts.length > 1 && (
                 <>
                   <button className="swiper-button-prev-custom absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-slate-100 shadow-sm flex items-center justify-center hover:bg-slate-50 transition-colors">
-                    <span className="text-slate-600 text-base">◀</span>
+                    <span className="text-slate-600 text-base">â—€</span>
                   </button>
                   <button className="swiper-button-next-custom absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-slate-100 shadow-sm flex items-center justify-center hover:bg-slate-50 transition-colors">
-                    <span className="text-slate-600 text-base">▶</span>
+                    <span className="text-slate-600 text-base">â–¶</span>
                   </button>
                 </>
               )}
@@ -377,10 +371,10 @@ const HomePage = () => {
                 className="text-3xl md:text-4xl font-bold text-foreground leading-tight mb-4"
                 style={{ letterSpacing: '-0.02em' }}
               >
-                Tres Pilares de Optimización
+                Tres Pilares de OptimizaciÃ³n
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Nuestras formulaciones premium atacan los desafíos clave de la biología humana moderna.
+                Nuestras formulaciones premium atacan los desafÃ­os clave de la biologÃ­a humana moderna.
               </p>
             </motion.div>
 
@@ -440,12 +434,12 @@ const HomePage = () => {
           </div>
         </section>
 
-        {/* Descubrir Categorías */}
+        {/* Descubrir CategorÃ­as */}
         <section className="py-20 bg-[#f8f7f5] border-t border-border">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-                Descubrir Categorías
+                Descubrir CategorÃ­as
               </h2>
               <p className="text-sm text-muted-foreground mt-2">
                 Explora suplementos especializados para tus metas de biohacking
@@ -460,14 +454,14 @@ const HomePage = () => {
                   tag: 'Enfoque'
                 },
                 {
-                  name: 'Gestión del Estrés',
+                  name: 'GestiÃ³n del EstrÃ©s',
                   desc: 'Equilibra tu sistema nervioso y reduce cortisol',
                   image: 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?w=600&h=400&fit=crop',
                   tag: 'Calma'
                 },
                 {
                   name: 'Longevidad',
-                  desc: 'Activa tus vías de optimización celular',
+                  desc: 'Activa tus vÃ­as de optimizaciÃ³n celular',
                   image: 'https://images.unsplash.com/photo-1532187643603-ba119ca4109e?w=600&h=400&fit=crop',
                   tag: 'Celular'
                 }
@@ -498,21 +492,21 @@ const HomePage = () => {
           </div>
         </section>
 
-        {/* Featured Section - Los Más Vendidos (Horizontal Scroll on Mobile) */}
+        {/* Featured Section - Los MÃ¡s Vendidos (Horizontal Scroll on Mobile) */}
         <section className="py-24 bg-background border-t border-border">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 uppercase tracking-widest mb-4">
-                Únete a +2.000 personas optimizando su biología
+                Ãšnete a +2.000 personas optimizando su biologÃ­a
               </span>
               <h2
                 className="text-3xl md:text-4xl font-bold text-foreground mb-4"
                 style={{ letterSpacing: '-0.02em' }}
               >
-                Los Más Vendidos
+                Los MÃ¡s Vendidos
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Formulaciones premium de alta biodisponibilidad más deseadas por nuestra comunidad.
+                Formulaciones premium de alta biodisponibilidad mÃ¡s deseadas por nuestra comunidad.
               </p>
             </div>
 
@@ -575,7 +569,7 @@ const HomePage = () => {
                         disabled={product.stock === 0}
                         className="w-full text-xs bg-accent text-white hover:bg-accent/90 py-3 rounded-xl transition-all duration-200 shadow-sm"
                       >
-                        {product.stock === 0 ? 'Agotado' : 'Añadir'}
+                        {product.stock === 0 ? 'Agotado' : 'AÃ±adir'}
                       </Button>
                     </div>
                   </div>
@@ -617,7 +611,7 @@ const HomePage = () => {
                     Optimiza tu rendimiento desde hoy
                   </h3>
                   <p className="text-sm text-slate-300 leading-relaxed max-w-md mx-auto">
-                    Suscríbete y desbloquea un <strong className="text-accent">15% de descuento</strong> en tu primera compra. Además, recibe nuestras guías de optimización biológica directo en tu bandeja de entrada.
+                    SuscrÃ­bete y desbloquea un <strong className="text-accent">15% de descuento</strong> en tu primera compra. AdemÃ¡s, recibe nuestras guÃ­as de optimizaciÃ³n biolÃ³gica directo en tu bandeja de entrada.
                   </p>
                 </div>
 
@@ -627,7 +621,7 @@ const HomePage = () => {
                     required
                     value={popupEmail}
                     onChange={(e) => setPopupEmail(e.target.value)}
-                    placeholder="Tu correo electrónico"
+                    placeholder="Tu correo electrÃ³nico"
                     className="w-full px-4 py-3 rounded-xl bg-slate-950/80 border border-white/25 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                   />
                   <Button
@@ -654,3 +648,4 @@ const HomePage = () => {
 
 export default HomePage;
 // Force deployment trigger in Vercel staging environment
+
