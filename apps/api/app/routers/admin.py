@@ -149,22 +149,42 @@ async def get_dashboard_metrics(_: dict = Depends(verify_admin_user)):
         orders = list(MOCK_ORDERS.values())
         revenue = sum(o.get("total", 0) for o in orders if o.get("status") in ["paid", "shipped"])
         pending_orders = sum(1 for o in orders if o.get("status") == "pending")
+        
+        # Local last sync
+        last_sync = None
+        for p in MOCK_PRODUCTS:
+            if p.get("name") == "__SYSTEM_SYNC_LOG__":
+                last_sync = p.get("description")
+                break
+                
         return {
             "revenue": revenue,
             "pending_orders": pending_orders,
             "visits": 1420,
-            "conversion_rate": 2.8
+            "conversion_rate": 2.8,
+            "last_sync": last_sync
         }
     try:
         res_orders = supabase_client.from_("orders").select("total, status").execute()
         orders_data = res_orders.data or []
         revenue = sum(o.get("total", 0) or o.get("total_amount", 0) for o in orders_data if o.get("status") in ["paid", "shipped"])
         pending_orders = sum(1 for o in orders_data if o.get("status") == "pending")
+        
+        # Consultar última sincronización en Supabase
+        last_sync = None
+        try:
+            res_sync = supabase_client.from_("products").select("description").eq("name", "__SYSTEM_SYNC_LOG__").execute()
+            if res_sync.data:
+                last_sync = res_sync.data[0].get("description")
+        except Exception:
+            pass
+
         return {
             "revenue": revenue,
             "pending_orders": pending_orders,
             "visits": 1420,
-            "conversion_rate": 2.8
+            "conversion_rate": 2.8,
+            "last_sync": last_sync
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch dashboard metrics: {str(e)}")
@@ -532,6 +552,36 @@ async def sync_products_from_sheets(
                     "row": index + 1,
                     "product": name,
                     "error": f"Error al guardar en Supabase: {str(e)}"
+                })
+
+    # Guardar timestamp de última sincronización exitosa
+    if len(report["errors"]) < len(rows_list):
+        import datetime
+        sync_time_str = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        if supabase_client is not None:
+            try:
+                supabase_client.from_("products").upsert({
+                    "name": "__SYSTEM_SYNC_LOG__",
+                    "price": 1,
+                    "stock": 1,
+                    "category": "System",
+                    "description": sync_time_str
+                }, on_conflict="name").execute()
+            except Exception:
+                pass
+        else:
+            for idx, p in enumerate(MOCK_PRODUCTS):
+                if p.get("name") == "__SYSTEM_SYNC_LOG__":
+                    MOCK_PRODUCTS[idx]["description"] = sync_time_str
+                    break
+            else:
+                MOCK_PRODUCTS.append({
+                    "id": "system-sync-log",
+                    "name": "__SYSTEM_SYNC_LOG__",
+                    "price": 1,
+                    "stock": 1,
+                    "category": "System",
+                    "description": sync_time_str
                 })
 
     return {

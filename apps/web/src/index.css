@@ -133,4 +133,10 @@ body {
     background-position: 0 0, 0 0, 0 0;
     z-index: 0;
   }
+
+  @media (max-width: 768px) {
+    .didactic-bg::before {
+      opacity: 0.02;
+    }
+  }
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/hooks/useCart';
@@ -14,6 +14,24 @@ import { toast } from 'sonner';
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const { cart, getCartTotal } = useCart();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const errorParam = params.get('error');
+    if (errorParam) {
+      let message = 'Ocurrió un inconveniente al procesar el pago. Por favor intenta nuevamente.';
+      if (errorParam === 'user_rejected' || errorParam === 'aborted') {
+        message = 'El pago fue cancelado por el usuario.';
+      } else if (errorParam === 'failed' || errorParam === 'rejected') {
+        message = 'La transacción fue rechazada por el banco emisor.';
+      } else if (errorParam === 'payment_validation') {
+        message = 'Error de validación: el monto total de pago no coincide.';
+      }
+      toast.error(message, { duration: 6000 });
+      // Limpiar parámetro error de la URL de forma limpia
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({

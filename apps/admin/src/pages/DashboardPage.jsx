@@ -22,7 +22,7 @@ const formatPrice = (price) =>
   new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(price);
 
 const DashboardPage = () => {
-  const [metrics, setMetrics] = useState({ revenue: 0, pending_orders: 0, visits: 0, conversion_rate: 0 });
+  const [metrics, setMetrics] = useState({ revenue: 0, pending_orders: 0, visits: 0, conversion_rate: 0, last_sync: null });
   const [recentOrders, setRecentOrders] = useState([]);
   const [alerts, setAlerts] = useState({ low_stock: [], expiration: [] });
   const [loading, setLoading] = useState(true);
@@ -71,6 +71,17 @@ const DashboardPage = () => {
   const [quickAddForm, setQuickAddForm] = useState({ name: '', price: '', stock: '', category: 'Longevidad' });
   const [couponForm, setCouponForm] = useState({ code: '', discount: '15', expiry: '' });
   const [trackingForm, setTrackingForm] = useState({ orderId: '', trackingCode: '' });
+  const isSyncStale = () => {
+    if (!metrics.last_sync) return true;
+    try {
+      const lastSyncDate = new Date(metrics.last_sync);
+      const diffMs = Date.now() - lastSyncDate.getTime();
+      const diffHours = diffMs / (1000 * 60 * 60);
+      return diffHours > 24;
+    } catch {
+      return true;
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -82,13 +93,15 @@ const DashboardPage = () => {
           revenue: data?.revenue ?? 0,
           pending_orders: data?.pending_orders ?? 0,
           visits: data?.visits ?? 0,
-          conversion_rate: data?.conversion_rate ?? 0
+          conversion_rate: data?.conversion_rate ?? 0,
+          last_sync: data?.last_sync ?? null
         }))
         .catch(() => ({
           revenue: 28990 * 15,
           pending_orders: 3,
           visits: 1250,
-          conversion_rate: 2.4
+          conversion_rate: 2.4,
+          last_sync: null
         }));
 
       const ordersData = await fetch('/hcgi/api/admin/orders/recent?limit=10').then(r => r.json()).catch(() => []);
@@ -208,6 +221,43 @@ const DashboardPage = () => {
           <RefreshCw className="h-4 w-4" /> Actualizar
         </Button>
       </div>
+
+      {isSyncStale() && (
+        <div className="bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-sm">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold">Sincronización desactualizada:</span> El catálogo no se ha sincronizado con Google Sheets en las últimas 24 horas (o no hay registros). Esto puede mostrar stock o precios obsoletos.
+              {metrics.last_sync && (
+                <span className="block text-xs opacity-80 mt-1">
+                  Última sincronización: {new Date(metrics.last_sync).toLocaleString('es-CL')}
+                </span>
+              )}
+            </div>
+          </div>
+          <Button 
+            onClick={async () => {
+              toast.promise(
+                fetch('/hcgi/api/admin/products/sync-sheets', { method: 'POST' })
+                  .then(async (res) => {
+                    if (!res.ok) throw new Error();
+                    await fetchData();
+                  }),
+                {
+                  loading: 'Sincronizando catálogo con Google Sheets...',
+                  success: '¡Catálogo sincronizado exitosamente!',
+                  error: 'Error al sincronizar catálogo. Revisa la URL y formato del CSV.'
+                }
+              );
+            }} 
+            variant="outline" 
+            size="sm" 
+            className="border-amber-500/30 hover:bg-amber-500/20 shrink-0 text-xs text-amber-900 dark:text-amber-200"
+          >
+            Sincronizar Ahora
+          </Button>
+        </div>
+      )}
 
       {/* Metric Cards (KPIs) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
