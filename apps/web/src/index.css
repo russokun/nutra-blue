@@ -140,3 +140,13 @@ body {
     }
   }
 }
+
+/* Swiper Custom Styling */
+.hero-swiper .swiper-pagination-bullet-active {
+  background-color: hsl(var(--primary)) !important;
+}
+.hero-swiper .swiper-button-next,
+.hero-swiper .swiper-button-prev {
+  color: hsl(var(--primary)) !important;
+  transform: scale(0.65);
+}
