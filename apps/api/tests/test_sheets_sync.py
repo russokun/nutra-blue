@@ -1,19 +1,20 @@
 from fastapi.testclient import TestClient
 from main import app
-from app.core.security import verify_admin_user
+from app.core.security import verify_admin_or_internal_key
 from unittest.mock import patch, MagicMock
 
 client = TestClient(app)
 
-async def override_verify_admin_user():
+async def override_verify_admin_or_internal_key():
     return {"id": "test-admin-id", "email": "admin@nutrablue.cl"}
 
 def test_sync_products_sheets_success():
     # Override authentication dependency for this test
-    app.dependency_overrides[verify_admin_user] = override_verify_admin_user
+    app.dependency_overrides[verify_admin_or_internal_key] = override_verify_admin_or_internal_key
     
-    mock_csv = "Nombre,Precio,Stock,Categoría,Imagen,Beneficios,Certificaciones,Ficha\n" \
-               "Super Beetle Protein,19990,100,Proteínas,http://img.jpg,Alto en Hierro;Sostenible,Orgánico;SAG,https://docs.google.com/document/123\n"
+    mock_csv = "Categoría / Objetivo,Suplemento / Alimento,Precio Costo,Precio Venta,Link Doc\n" \
+               ",,Inventario,Inventario,,\n" \
+               "Proteínas,Super Beetle Protein,15000,19990,https://docs.google.com/document/123\n"
 
     with patch("requests.get") as mock_get:
         mock_response = MagicMock()
@@ -35,11 +36,33 @@ def test_sync_products_sheets_success():
     app.dependency_overrides.clear()
 
 def test_sync_products_sheets_validation_error():
-    app.dependency_overrides[verify_admin_user] = override_verify_admin_user
+    app.dependency_overrides[verify_admin_or_internal_key] = override_verify_admin_or_internal_key
     
     # Bad stock (non-numeric string)
-    mock_csv = "Nombre,Precio,Stock,Categoría,Imagen,Beneficios,Certificaciones,Ficha\n" \
-               "Bad Stock Product,19990,not-a-number,Proteínas,,,,\n"
+    mock_csv = "Categoría / Objetivo,Suplemento / Alimento,Precio Costo,Precio Venta,Link Doc\n" \
+               ",,Inventario,Inventario,,\n" \
+               "Proteínas,Bad Stock Product,15000,19990,https://docs.google.com/document/123\n"
+
+    # En este test modificaremos la fila de datos para enviar un stock inválido
+    # Sin embargo, como el parser ahora busca stock en la subcabecera "Inventario", 
+    # modificaremos la subcabecera para inyectar "not-a-number" o en los datos
+    # de stock el valor "not-a-number".
+    # Fila 0: Categoría / Objetivo,Suplemento / Alimento,Precio Costo,Precio Venta,Link Doc
+    # Fila 1: ,,Inventario,Inventario,,
+    # Fila 2: Proteínas,Bad Stock Product,15000,19990,https://docs.google.com/document/123
+    # Espera, si la subcabecera es "Inventario", el índice se calcula y se saca de la fila de datos en esa columna.
+    # En la fila de datos, la columna de inventario (columna 2 o 3, que tiene "Inventario" en la fila 1) tiene el valor.
+    # Mapeo: 
+    # Col 0: Categoría / Objetivo ("Proteínas")
+    # Col 1: Suplemento / Alimento ("Bad Stock Product")
+    # Col 2: Precio Costo ("15000")
+    # Col 3: Precio Venta ("19990")
+    # Col 4: Link Doc ("https://docs.google.com/document/123")
+    # En Fila 1 (subcabecera), la columna de stock es la Columna 2 o 3 (donde dice "Inventario").
+    # En la fila de datos, pongamos "not-a-number" en esa misma columna para disparar el ValueError.
+    mock_csv = "Categoría / Objetivo,Suplemento / Alimento,Precio Costo,Precio Venta,Link Doc\n" \
+               ",,Inventario,Inventario,,\n" \
+               "Proteínas,Bad Stock Product,15000,not-a-number,https://docs.google.com/document/123\n"
 
     with patch("requests.get") as mock_get:
         mock_response = MagicMock()
@@ -54,5 +77,7 @@ def test_sync_products_sheets_validation_error():
         # Even if one product fails, it returns success=True if at least some succeed, but here it's 0/1 success.
         assert len(data["summary"]["errors"]) == 1
         assert data["summary"]["errors"][0]["product"] == "Bad Stock Product"
+
+    app.dependency_overrides.clear()
 
     app.dependency_overrides.clear()
