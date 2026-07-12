@@ -1,0 +1,237 @@
+{
+  "name": "Nutra Blue — Sincronización Catálogo (Sheet + Docs → Supabase)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 3 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "⏰ Schedule Diario (3am Chile)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sync-catalog",
+        "options": {}
+      },
+      "id": "webhook-manual-trigger",
+      "name": "🔁 Trigger Manual (Webhook)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 480]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.GOOGLE_SHEET_CSV_URL }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "id": "fetch-sheet-csv",
+      "name": "📥 Descargar CSV del Google Sheet",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 380]
+    },
+    {
+      "parameters": {
+        "jsCode": "const csvText = $input.first().json.data;\n\nfunction parseCSV(text) {\n  const rows = [];\n  const lines = text.replace(/\\r/g, '').split('\\n');\n  for (const line of lines) {\n    if (!line.trim()) continue;\n    const row = [];\n    let inQuote = false, cur = '';\n    for (let i = 0; i < line.length; i++) {\n      const ch = line[i];\n      if (ch === '\"') { inQuote = !inQuote; continue; }\n      if (ch === ',' && !inQuote) { row.push(cur.trim()); cur = ''; continue; }\n      cur += ch;\n    }\n    row.push(cur.trim());\n    rows.push(row);\n  }\n  return rows;\n}\n\nconst rows = parseCSV(csvText);\n\nlet headerRowIdx = -1;\nfor (let i = 0; i < Math.min(rows.length, 5); i++) {\n  if (rows[i].some(cell => cell.toLowerCase().includes('suplemento'))) {\n    headerRowIdx = i;\n    break;\n  }\n}\nif (headerRowIdx === -1) headerRowIdx = 0;\n\nconst mainHeaders = rows[headerRowIdx].map(h => h.toLowerCase().trim());\nconst subHeaders = (headerRowIdx + 1 < rows.length) ? rows[headerRowIdx + 1].map(h => h.toLowerCase().trim()) : [];\n\nlet idxName = -1, idxPrice = -1, idxStock = -1, idxCategory = -1, idxDoc = -1, idxCost = -1;\n\nfor (let i = 0; i < mainHeaders.length; i++) {\n  const h = mainHeaders[i];\n  if (h.includes('suplemento') || h.includes('alimento')) { idxName = i; }\n  else if (h.includes('categor') || h.includes('objetivo')) { idxCategory = i; }\n  else if (h.includes('costo') || h === '$ costo') { idxCost = i; }\n  else if (h.includes('venta') || h === '$ venta') { idxPrice = i; }\n  else if (h.includes('link') || h.includes('doc')) { idxDoc = i; }\n}\n\nif (idxPrice === -1) {\n  for (let i = 0; i < mainHeaders.length; i++) {\n    if ((mainHeaders[i].includes('precio') || mainHeaders[i].includes('price')) && i !== idxCost) {\n      idxPrice = i; break;\n    }\n  }\n}\n\nfor (let i = 0; i < subHeaders.length; i++) {\n  if (subHeaders[i].includes('inventario') || subHeaders[i].includes('stock')) {\n    idxStock = i; break;\n  }\n}\n\nif (idxName === -1) idxName = 1;\nif (idxCategory === -1) idxCategory = 0;\nif (idxPrice === -1) idxPrice = 5;\nif (idxStock === -1) idxStock = 7;\nif (idxDoc === -1) idxDoc = 8;\n\nconst startRow = headerRowIdx + 2;\nconst products = [];\n\nfor (let i = startRow; i < rows.length; i++) {\n  const row = rows[i];\n  if (row.length <= idxName) continue;\n\n  const name = row[idxName] ? row[idxName].trim() : '';\n  if (!name || name.toLowerCase().includes('suplemento')) continue;\n\n  const rawPrice = (row[idxPrice] || '').replace(/[$\\s]/g, '').replace(/\\./g, '').replace(',', '');\n  const price = rawPrice ? parseInt(rawPrice, 10) : 0;\n  if (isNaN(price) || price === 0) continue;\n\n  const rawStock = (row[idxStock] || '').trim();\n  const stock = rawStock ? parseInt(rawStock, 10) : 100;\n\n  const category = (row[idxCategory] || 'Otros').trim();\n  const googleDocUrl = idxDoc >= 0 && row[idxDoc] ? row[idxDoc].trim() : '';\n\n  products.push({\n    name,\n    price,\n    stock: isNaN(stock) ? 100 : stock,\n    category,\n    google_doc_url: googleDocUrl || null,\n    image_url: '/logo.png'\n  });\n}\n\nreturn products.map(p => ({ json: p }));\n"
+      },
+      "id": "parse-csv-code",
+      "name": "🧩 Parsear CSV → Productos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [720, 380]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.google_doc_url }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty" }
+            },
+            {
+              "leftValue": "={{ $json.google_doc_url }}",
+              "rightValue": "docs.google.com",
+              "operator": { "type": "string", "operation": "contains" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "filter-has-doc",
+      "name": "🔀 ¿Tiene Google Doc?",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [960, 280]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ (() => { const m = ($json.google_doc_url || '').match(/\\/document\\/d\\/([a-zA-Z0-9-_]+)/); return m ? `https://docs.google.com/document/d/${m[1]}/export?format=docx` : ''; })() }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          },
+          "timeout": 20000
+        }
+      },
+      "id": "download-gdoc",
+      "name": "📄 Descargar Google Doc (.docx)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1200, 180],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const productData = $('🧩 Parsear CSV → Productos').item.json;\nconst binary = $input.first().binary;\n\nif (!binary || !binary.data) {\n  return [{ json: { ...productData } }];\n}\n\nconst sections = {\n  description: '',\n  origin: '',\n  ingredients: '',\n  usage: '',\n  precautions: '',\n  extracted_benefits: []\n};\n\ntry {\n  const b64 = binary.data.data || binary.data;\n  const buf = Buffer.from(b64, 'base64');\n  const rawXml = buf.toString('latin1');\n\n  const textMatches = rawXml.match(/<w:t[^>]*>([^<]+)<\\/w:t>/g) || [];\n  const paragraphs = [];\n  let current = '';\n\n  for (const m of textMatches) {\n    const text = m.replace(/<[^>]+>/g, '').trim();\n    if (!text) continue;\n    if (rawXml.includes('<w:p ') || rawXml.includes('<w:p>')) {\n      current += text + ' ';\n    } else {\n      current += text + ' ';\n    }\n  }\n\n  const lines = current.split(/(?<=[.!?])\\s{2,}|\\n/);\n\n  const SECTION_KEYWORDS = {\n    description: ['descripci', 'descripcion del producto', 'descripcion del tipo'],\n    origin: ['zona de producci', 'lugar de producci'],\n    ingredients: ['ingrediente', 'composici', 'f\\u00f3rmula', 'formula', 'composi'],\n    usage: ['modo de uso', 'instrucciones', 'c\\u00f3mo tomar', 'como tomar', 'dosis'],\n    precautions: ['precauci', 'advertencia', 'contraindicaci', 'cuidado']\n  };\n\n  let currentKey = null;\n  let introCapured = false;\n\n  for (const rawLine of lines) {\n    const t = rawLine.trim();\n    if (!t || t.length < 3) continue;\n    const lower = t.toLowerCase();\n\n    if (/^[•\\-\\*]\\s/.test(t)) {\n      sections.extracted_benefits.push(t.replace(/^[•\\-\\*]\\s*/, '').trim());\n      continue;\n    }\n\n    let matched = false;\n    for (const [key, kws] of Object.entries(SECTION_KEYWORDS)) {\n      if (kws.some(kw => lower.includes(kw))) {\n        currentKey = key;\n        const afterColon = t.includes(':') ? t.split(':').slice(1).join(':').trim() : '';\n        if (afterColon) sections[key] += afterColon + ' ';\n        matched = true;\n        break;\n      }\n    }\n    if (matched) continue;\n\n    if (!currentKey && !introCapured && t.length > 60) {\n      sections.description = t;\n      introCapured = true;\n      continue;\n    }\n\n    if (currentKey) sections[currentKey] += t + ' ';\n  }\n\n  for (const k of ['description','origin','ingredients','usage','precautions']) {\n    sections[k] = sections[k].trim();\n  }\n\n  return [{ json: { ...productData, ...sections } }];\n\n} catch(e) {\n  return [{ json: { ...productData } }];\n}\n"
+      },
+      "id": "parse-docx-code",
+      "name": "🔬 Parsear DOCX → Campos Enriquecidos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1440, 180]
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": { "__rl": true, "value": "public", "mode": "list" },
+        "table": { "__rl": true, "value": "products", "mode": "list" },
+        "conflictColumns": "name",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.name }}",
+            "price": "={{ $json.price }}",
+            "stock": "={{ $json.stock }}",
+            "category": "={{ $json.category }}",
+            "image_url": "={{ $json.image_url || '/logo.png' }}",
+            "google_doc_url": "={{ $json.google_doc_url || null }}",
+            "description": "={{ $json.description || null }}",
+            "origin": "={{ $json.origin || null }}",
+            "ingredients": "={{ $json.ingredients || null }}",
+            "usage": "={{ $json.usage || null }}",
+            "precautions": "={{ $json.precautions || null }}",
+            "benefits": "={{ JSON.stringify($json.extracted_benefits && $json.extracted_benefits.length > 0 ? $json.extracted_benefits : []) }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "supabase-upsert-with-doc",
+      "name": "💾 Upsert Supabase (con Doc)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1680, 180],
+      "credentials": {
+        "supabaseApi": { "id": "supabase-creds", "name": "Supabase Nutra Blue" }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": { "__rl": true, "value": "public", "mode": "list" },
+        "table": { "__rl": true, "value": "products", "mode": "list" },
+        "conflictColumns": "name",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.name }}",
+            "price": "={{ $json.price }}",
+            "stock": "={{ $json.stock }}",
+            "category": "={{ $json.category }}",
+            "image_url": "={{ $json.image_url || '/logo.png' }}",
+            "google_doc_url": "={{ $json.google_doc_url || null }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "supabase-upsert-no-doc",
+      "name": "💾 Upsert Supabase (sin Doc)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1200, 480],
+      "credentials": {
+        "supabaseApi": { "id": "supabase-creds", "name": "Supabase Nutra Blue" }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const allItems = $input.all();\nconst now = new Date().toISOString();\nconst successful = allItems.filter(i => !i.json.error).length;\nconst failed = allItems.filter(i => i.json.error).length;\n\nreturn [{\n  json: {\n    success: true,\n    timestamp: now,\n    summary: {\n      processed: allItems.length,\n      successful,\n      failed,\n      message: `Sincronización completada: ${successful} productos actualizados en Supabase. ${failed} errores.`\n    }\n  }\n}];\n"
+      },
+      "id": "sync-report",
+      "name": "📊 Reporte Final",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1920, 380]
+    },
+    {
+      "parameters": {
+        "content": "## 🗂️ Sync Catálogo Nutra Blue\n**Sheet → Docs → Supabase**\n\n**Triggers:**\n- Cron diario 03:00 (Chile)\n- Webhook POST manual\n\n**Flujo por producto:**\n1. Descarga CSV del Sheet\n2. Parsea columnas flexible\n3. Si tiene google_doc_url → descarga .docx\n4. Extrae: description, origin, ingredients, usage, precautions, benefits\n5. Upsert en Supabase `products`\n\n**Variables requeridas:**\n- `GOOGLE_SHEET_CSV_URL` en n8n\n- Credencial Supabase configurada",
+        "height": 340,
+        "width": 340,
+        "color": 5
+      },
+      "id": "sticky-note",
+      "name": "📌 Documentación del Flujo",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [240, 60]
+    }
+  ],
+  "connections": {
+    "⏰ Schedule Diario (3am Chile)": {
+      "main": [[{ "node": "📥 Descargar CSV del Google Sheet", "type": "main", "index": 0 }]]
+    },
+    "🔁 Trigger Manual (Webhook)": {
+      "main": [[{ "node": "📥 Descargar CSV del Google Sheet", "type": "main", "index": 0 }]]
+    },
+    "📥 Descargar CSV del Google Sheet": {
+      "main": [[{ "node": "🧩 Parsear CSV → Productos", "type": "main", "index": 0 }]]
+    },
+    "🧩 Parsear CSV → Productos": {
+      "main": [[{ "node": "🔀 ¿Tiene Google Doc?", "type": "main", "index": 0 }]]
+    },
+    "🔀 ¿Tiene Google Doc?": {
+      "main": [
+        [{ "node": "📄 Descargar Google Doc (.docx)", "type": "main", "index": 0 }],
+        [{ "node": "💾 Upsert Supabase (sin Doc)", "type": "main", "index": 0 }]
+      ]
+    },
+    "📄 Descargar Google Doc (.docx)": {
+      "main": [[{ "node": "🔬 Parsear DOCX → Campos Enriquecidos", "type": "main", "index": 0 }]]
+    },
+    "🔬 Parsear DOCX → Campos Enriquecidos": {
+      "main": [[{ "node": "💾 Upsert Supabase (con Doc)", "type": "main", "index": 0 }]]
+    },
+    "💾 Upsert Supabase (con Doc)": {
+      "main": [[{ "node": "📊 Reporte Final", "type": "main", "index": 0 }]]
+    },
+    "💾 Upsert Supabase (sin Doc)": {
+      "main": [[{ "node": "📊 Reporte Final", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": true,
+  "settings": { "executionOrder": "v1" }
+}
