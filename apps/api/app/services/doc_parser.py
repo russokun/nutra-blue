@@ -57,50 +57,63 @@ def parse_google_doc(url: str) -> dict:
             continue
             
         lower_text = text.lower()
+        is_short_line = len(text) < 80
         
-        # Detectar viñetas de beneficios en cualquier parte del documento
-        if text.startswith("•") or text.startswith("-") or text.startswith("*"):
-            clean_benefit = re.sub(r"^[•\-*]\s*", "", text)
-            sections["extracted_benefits"].append(clean_benefit)
-        
-        # Detectar cabeceras o secciones y cambiar el foco
-        if any(h in lower_text for h in ["descripción del tipo de producto", "descripcion del tipo de producto", "descripción del producto", "descripcion del producto"]):
+        # Detectar cabeceras o secciones y cambiar el foco (solo en líneas cortas/títulos)
+        if is_short_line and any(h in lower_text for h in ["descripción del tipo de producto", "descripcion del tipo de producto", "descripción del producto", "descripcion del producto"]):
             current_key = "description"
-            # Si el titulo incluye texto despues de dos puntos
             if ":" in text:
                 sections[current_key] += text.split(":", 1)[1].strip() + "\n"
             continue
-        elif any(h in lower_text for h in ["zona de producción", "zona de produccion", "lugar de producción", "lugar de produccion"]):
+        elif is_short_line and any(h in lower_text for h in ["zona de producción", "zona de produccion", "lugar de producción", "lugar de produccion", "origen"]):
             current_key = "origin"
             if ":" in text:
                 sections[current_key] += text.split(":", 1)[1].strip() + "\n"
             continue
-        elif any(h in lower_text for h in ["ingrediente", "composición", "composicion", "fórmula", "formula"]):
+        elif is_short_line and any(h in lower_text for h in ["perfil del producto", "ingrediente", "composición", "composicion", "fórmula", "formula"]):
             current_key = "ingredients"
             if ":" in text:
                 sections[current_key] += text.split(":", 1)[1].strip() + "\n"
             continue
-        elif any(h in lower_text for h in ["modo de uso", "instrucciones", "uso", "cómo tomar", "dosis"]):
+        elif is_short_line and any(h in lower_text for h in ["modo de uso", "instrucciones", "uso", "cómo tomar", "como tomar", "dosis"]):
             current_key = "usage"
             if ":" in text:
                 sections[current_key] += text.split(":", 1)[1].strip() + "\n"
             continue
-        elif any(h in lower_text for h in ["precauciones", "advertencias", "contraindicaciones", "cuidado"]):
+        elif is_short_line and any(h in lower_text for h in ["precauciones", "advertencias", "contraindicaciones", "cuidado"]):
             current_key = "precautions"
             if ":" in text:
                 sections[current_key] += text.split(":", 1)[1].strip() + "\n"
             continue
+        elif is_short_line and any(h in lower_text for h in ["beneficios para el cliente", "beneficios"]):
+            current_key = "benefits"
+            continue
+        elif is_short_line and any(h in lower_text for h in ["cross-selling", "estructura de costos", "estrategia de venta", "contacto de proveedor", "referencias"]):
+            current_key = "ignored_metadata"
+            continue
             
-        # Capturar el primer parrafo largo (introduccion) como "Alma de Producto"
+        # Detectar viñetas de beneficios únicamente si estamos en la sección de beneficios
+        if current_key == "benefits":
+            # Dividir por saltos de línea suaves (\n o \r) que puedan venir en un único párrafo
+            sub_lines = re.split(r"[\n\r\u000b]+", text)
+            for line in sub_lines:
+                line_str = line.strip()
+                # Aceptar viñetas estándar, guiones, asteriscos o el carácter especial de bullet de Word (\uf0b7)
+                if line_str.startswith("•") or line_str.startswith("-") or line_str.startswith("*") or line_str.startswith("") or line_str.startswith("\uf0b7") or re.match(r"^[^a-zA-Z0-9\s]{1,2}\s", line_str):
+                    clean_benefit = re.sub(r"^[^a-zA-Z0-9\s]{1,3}\s*", "", line_str).strip()
+                    if clean_benefit:
+                        sections["extracted_benefits"].append(clean_benefit)
+            continue
+        
+        # Capturar el primer parrafo largo (introduccion) como Descripción si aún no se ha capturado nada
         if current_key is None and not intro_captured:
-            # Si no es un titulo y es un parrafo descriptivo largo
             if len(text) > 60 and not "ficha comercial:" in lower_text and not lower_text.startswith("ficha"):
                 sections["description"] = text
                 intro_captured = True
             continue
 
-        # Acumular texto en la sección actual
-        if current_key:
+        # Acumular texto en la sección actual (excluyendo metadatos ignorados y beneficios individuales en viñetas)
+        if current_key and current_key != "ignored_metadata" and current_key != "benefits":
             sections[current_key] += text + "\n"
         
     # Limpiar espacios en blanco al inicio/final de cada sección
