@@ -535,6 +535,7 @@ const HomePage = () => {
                         <img
                           src={product.image_url}
                           alt={product.name}
+                          loading="lazy"
                           className="h-full w-auto object-contain drop-shadow-[0_15px_25px_rgba(0,0,0,0.08)] group-hover:scale-105 transition-transform duration-300"
                         />
                         <span className="absolute top-0 left-0 bg-primary/10 text-primary border border-primary/20 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
