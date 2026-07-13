@@ -71,13 +71,18 @@ const HomePage = () => {
   }, []);
 
   useEffect(() => {
-    const isDismissed = localStorage.getItem('nutra_blue_popup_dismissed');
-    if (isDismissed) return;
+    // Verificar si fue descartado en las últimas 24 horas
+    const dismissedAt = localStorage.getItem('nutra_blue_popup_dismissed_at');
+    if (dismissedAt) {
+      const elapsed = Date.now() - parseInt(dismissedAt, 10);
+      const hours24 = 24 * 60 * 60 * 1000;
+      if (elapsed < hours24) return; // Aún dentro de la ventana de 24h
+    }
 
-    // Trigger 1: Timed (10 seconds)
+    // Trigger 1: Timed (4 segundos)
     const timer = setTimeout(() => {
       setShowPopup(true);
-    }, 10000);
+    }, 4000);
 
     // Trigger 2: Exit Intent
     const handleMouseLeave = (e) => {
@@ -112,13 +117,13 @@ const HomePage = () => {
       localStorage.setItem('nutra_blue_subscribers', JSON.stringify(subscribers));
     }
     
-    localStorage.setItem('nutra_blue_popup_dismissed', 'true');
+    localStorage.setItem('nutra_blue_popup_dismissed_at', Date.now().toString());
     setShowPopup(false);
     toast.success('¡Excelente! Código de 15% de descuento enviado a tu correo.');
   };
 
   const handleClosePopup = () => {
-    localStorage.setItem('nutra_blue_popup_dismissed', 'true');
+    localStorage.setItem('nutra_blue_popup_dismissed_at', Date.now().toString());
     setShowPopup(false);
   };
 
