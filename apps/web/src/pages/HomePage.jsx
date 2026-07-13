@@ -374,6 +374,8 @@ const HomePage = () => {
             </div>
 
           </div>
+        </section>
+
         {/* Ofertas y Packs Exclusivos Section */}
         <section className="py-20 bg-white border-b border-slate-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
