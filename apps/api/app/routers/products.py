@@ -18,28 +18,32 @@ router = APIRouter(prefix="/products", tags=["Products"])
 @router.get("", response_model=List[Product])
 async def get_products():
     if supabase_client is None:
-        return MOCK_PRODUCTS
+        return [p for p in MOCK_PRODUCTS if p.get("name") != "__SYSTEM_SYNC_LOG__"]
         
     try:
-        response = supabase_client.from_("products").select("*").order("name").execute()
-        return response.data
+        response = supabase_client.from_("products").select("*").neq("name", "__SYSTEM_SYNC_LOG__").order("name").execute()
+        products = []
+        for p in response.data or []:
+            p["image_url"] = p.get("image_url") or "/logo.png"
+            products.append(p)
+        return products
     except Exception as e:
         # Fallback to mock data if supabase fails
         print(f"Supabase error: {str(e)}. Falling back to mock data.")
-        return MOCK_PRODUCTS
+        return [p for p in MOCK_PRODUCTS if p.get("name") != "__SYSTEM_SYNC_LOG__"]
 
 @router.get("/hero-carousel", response_model=List[HeroProductResponse])
 async def get_hero_carousel():
     products_list = []
     if supabase_client is None:
-        products_list = MOCK_PRODUCTS
+        products_list = [p for p in MOCK_PRODUCTS if p.get("name") != "__SYSTEM_SYNC_LOG__"]
     else:
         try:
-            response = supabase_client.from_("products").select("*").execute()
+            response = supabase_client.from_("products").select("*").neq("name", "__SYSTEM_SYNC_LOG__").execute()
             products_list = response.data or []
         except Exception as e:
             print(f"Supabase error fetching hero products: {str(e)}")
-            products_list = MOCK_PRODUCTS
+            products_list = [p for p in MOCK_PRODUCTS if p.get("name") != "__SYSTEM_SYNC_LOG__"]
 
     curated_keys = ["melena", "cordyceps", "ajo negro", "matcha", "calm", "cacao", "spirulina"]
     featured = []
@@ -113,7 +117,9 @@ async def get_product(product_id: str):
             if product:
                 return product
             raise HTTPException(status_code=404, detail="Product not found")
-        return response.data[0]
+        p = response.data[0]
+        p["image_url"] = p.get("image_url") or "/logo.png"
+        return p
     except HTTPException:
         raise
     except Exception as e:
@@ -128,8 +134,12 @@ async def get_products_by_category(category: str):
         return [p for p in MOCK_PRODUCTS if p["category"] == category]
 
     try:
-        response = supabase_client.from_("products").select("*").eq("category", category).order("name").execute()
-        return response.data
+        response = supabase_client.from_("products").select("*").eq("category", category).neq("name", "__SYSTEM_SYNC_LOG__").order("name").execute()
+        products = []
+        for p in response.data or []:
+            p["image_url"] = p.get("image_url") or "/logo.png"
+            products.append(p)
+        return products
     except Exception as e:
         print(f"Supabase error: {str(e)}. Falling back to mock data.")
         return [p for p in MOCK_PRODUCTS if p["category"] == category]

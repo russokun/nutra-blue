@@ -121,7 +121,7 @@ BEGIN
     
     RETURN jsonb_build_object('id', v_order_id, 'status', 'pending');
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 7. Seed Products (11 records)
 INSERT INTO products (name, price, stock, category, image_url, benefits, certifications)
