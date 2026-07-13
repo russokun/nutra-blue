@@ -222,42 +222,7 @@ const DashboardPage = () => {
         </Button>
       </div>
 
-      {isSyncStale() && (
-        <div className="bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-sm">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-bold">Sincronización desactualizada:</span> El catálogo no se ha sincronizado con Google Sheets en las últimas 24 horas (o no hay registros). Esto puede mostrar stock o precios obsoletos.
-              {metrics.last_sync && (
-                <span className="block text-xs opacity-80 mt-1">
-                  Última sincronización: {new Date(metrics.last_sync).toLocaleString('es-CL')}
-                </span>
-              )}
-            </div>
-          </div>
-          <Button 
-            onClick={async () => {
-              toast.promise(
-                fetch('/hcgi/api/admin/products/sync-sheets', { method: 'POST' })
-                  .then(async (res) => {
-                    if (!res.ok) throw new Error();
-                    await fetchData();
-                  }),
-                {
-                  loading: 'Sincronizando catálogo con Google Sheets...',
-                  success: '¡Catálogo sincronizado exitosamente!',
-                  error: 'Error al sincronizar catálogo. Revisa la URL y formato del CSV.'
-                }
-              );
-            }} 
-            variant="outline" 
-            size="sm" 
-            className="border-amber-500/30 hover:bg-amber-500/20 shrink-0 text-xs text-amber-900 dark:text-amber-200"
-          >
-            Sincronizar Ahora
-          </Button>
-        </div>
-      )}
+
 
       {/* Metric Cards (KPIs) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
