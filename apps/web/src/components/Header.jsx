@@ -13,16 +13,25 @@ const Header = ({ minimal = false }) => {
 
   if (minimal) {
     return (
-      <header className="bg-background border-b border-border py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <Link to="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold text-primary" style={{ fontFamily: 'Playfair Display, serif' }}>
-              Nutra Blue
-            </span>
-          </Link>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-semibold">
-            <Lock className="h-3.5 w-3.5 text-success" />
-            <span>Pago 100% Seguro</span>
+      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between py-2 min-h-[80px]">
+            <Link to="/" className="flex items-center space-x-3">
+              <img src="/logo.png" alt="Nutra Blue Logo" style={{ height: '70px', width: 'auto' }} />
+              <span className="text-xl font-bold text-primary tracking-tight hidden sm:block" style={{ fontFamily: 'Playfair Display, serif' }}>
+                Nutra Blue
+              </span>
+            </Link>
+
+            <div className="flex items-center gap-6">
+              <Link to="/shop" className="text-sm font-semibold text-muted-foreground hover:text-primary transition-all duration-200 flex items-center gap-1 bg-muted/30 px-3 py-1.5 rounded-lg border border-border/40">
+                ← Volver al Catálogo
+              </Link>
+              <div className="flex items-center gap-1.5 text-xs md:text-sm font-semibold text-muted-foreground bg-muted/65 px-4 py-2 rounded-full border border-border/50">
+                <Lock className="h-4 w-4 text-success" />
+                <span>Pago Seguro SSL</span>
+              </div>
+            </div>
           </div>
         </div>
       </header>
@@ -45,42 +54,23 @@ const Header = ({ minimal = false }) => {
 
   const allLinks = authLink ? [...navLinks, authLink] : navLinks;
 
-  if (minimal) {
-    return (
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-4 min-h-[96px]">
-            {/* Center Logo */}
-            <div className="flex-1 flex justify-center sm:justify-start">
-              <Link to="/" className="flex items-center space-x-3">
-                <img src="/logo.png" alt="Nutra Blue Logo" style={{ height: '120px', width: 'auto' }} />
-                <span className="text-2xl font-bold text-primary tracking-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
-                  Nutra Blue
-                </span>
-              </Link>
-            </div>
-
-            {/* Right Secure Lock */}
-            <div className="flex items-center gap-1.5 text-xs md:text-sm font-semibold text-muted-foreground bg-muted/65 px-4 py-2 rounded-full border border-border/50">
-              <Lock className="h-4 w-4 text-success" />
-              <span>Pago Seguro SSL</span>
-            </div>
-          </div>
-        </div>
-      </header>
-    );
-  }
-
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between py-3 min-h-[88px]">
-          <Link to="/" className="flex items-center space-x-3">
-            <img src="/logo.png" alt="Nutra Blue Logo" style={{ height: '108px', width: 'auto' }} />
-            <span className="text-2xl font-bold text-primary tracking-tight hidden sm:block" style={{ fontFamily: 'Playfair Display, serif' }}>
-              Nutra Blue
-            </span>
-          </Link>
+          <div className="flex items-center space-x-4">
+            <Link to="/" className="flex items-center space-x-3">
+              <img src="/logo.png" alt="Nutra Blue Logo" style={{ height: '108px', width: 'auto' }} />
+              <span className="text-2xl font-bold text-primary tracking-tight hidden sm:block" style={{ fontFamily: 'Playfair Display, serif' }}>
+                Nutra Blue
+              </span>
+            </Link>
+            {location.pathname !== '/' && location.pathname !== '/shop' && (
+              <Link to="/shop" className="hidden md:inline-flex items-center text-xs font-semibold text-muted-foreground hover:text-primary transition-all duration-200 bg-muted/40 px-2.5 py-1 rounded-md border border-border/30">
+                ← Catálogo
+              </Link>
+            )}
+          </div>
 
           <nav className="hidden md:flex items-center space-x-8">
             {allLinks.map((link) => (

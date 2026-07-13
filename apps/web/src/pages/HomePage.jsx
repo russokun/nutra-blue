@@ -10,6 +10,7 @@ import dataClient from '@/lib/dataClient';
 import { useCart } from '@/hooks/useCart';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
+import SectionCarousel from '@/components/common/SectionCarousel';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 
@@ -28,6 +29,7 @@ const HomePage = () => {
   const [popupEmail, setPopupEmail] = useState('');
   const [heroProducts, setHeroProducts] = useState([]);
   const [loadingHero, setLoadingHero] = useState(true);
+  const [saleProducts, setSaleProducts] = useState([]);
 
   useEffect(() => {
     const fetchHeroProducts = async () => {
@@ -149,17 +151,34 @@ const HomePage = () => {
   ];
 
   useEffect(() => {
-    const loadFeatured = async () => {
+    const loadProducts = async () => {
       try {
-        const list = await dataClient.collection('products').getFullList({ limit: 3 });
+        const list = await dataClient.collection('products').getFullList({
+          $autoCancel: false
+        });
+        
+        // Destacados (Los 3 primeros)
         setFeaturedProducts(list.slice(0, 3));
+        
+        // Filtrar Ofertas y Packs con la misma lógica de ShopPage
+        const filtered = list.filter(p => {
+          const isSale = p.price < 18000;
+          const isPack = p.name.toLowerCase().includes('mix') || 
+                         p.name.toLowerCase().includes('blend') || 
+                         p.name.toLowerCase().includes('tea') || 
+                         p.name.toLowerCase().includes('pack') || 
+                         p.name.toLowerCase().includes('desde');
+          return (isSale || isPack) && p.name !== '__SYSTEM_SYNC_LOG__';
+        });
+        
+        setSaleProducts(filtered.slice(0, 10)); // Limitar a las 10 mejores ofertas/packs
       } catch (e) {
-        console.error('Failed to load featured products:', e);
+        console.error('Failed to load products for homepage:', e);
       } finally {
         setLoading(false);
       }
     };
-    loadFeatured();
+    loadProducts();
   }, []);
 
   const handlePillarClick = (category) => {
@@ -354,6 +373,36 @@ const HomePage = () => {
               <div className="swiper-custom-pagination flex justify-center gap-1.5 mt-4" />
             </div>
 
+          </div>
+        {/* Ofertas y Packs Exclusivos Section */}
+        <section className="py-20 bg-white border-b border-slate-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div className="mb-12">
+              <span className="text-primary font-bold text-xs tracking-wider uppercase bg-primary/10 px-3 py-1.5 rounded-full">
+                Descuentos y Combos
+              </span>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mt-3" style={{ fontFamily: 'Playfair Display, serif' }}>
+                Ofertas y Packs Exclusivos
+              </h2>
+              <p className="text-slate-600 max-w-xl mx-auto mt-2 text-sm">
+                Optimiza tu rendimiento al mejor precio con nuestras selecciones y combos especiales.
+              </p>
+            </div>
+            
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="bg-card rounded-2xl p-4 border border-border space-y-4">
+                    <div className="w-full h-44 bg-muted rounded-xl animate-pulse" />
+                    <div className="h-6 w-3/4 bg-muted rounded animate-pulse" />
+                    <div className="h-4 w-1/2 bg-muted rounded animate-pulse" />
+                    <div className="h-10 w-full bg-muted rounded animate-pulse" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <SectionCarousel products={saleProducts} />
+            )}
           </div>
         </section>
 
