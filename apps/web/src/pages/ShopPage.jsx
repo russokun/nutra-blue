@@ -377,7 +377,7 @@ const ShopPage = () => {
                           </div>
                         </div>
                         <div className="p-4 pt-0">
-                          <div className="grid grid-cols-2 gap-2 mt-2">
+                          <div className="flex flex-col gap-2 mt-2">
                             <Button
                               variant="outline"
                               onClick={(e) => { e.stopPropagation(); navigate(`/product/${product.id}`); }}

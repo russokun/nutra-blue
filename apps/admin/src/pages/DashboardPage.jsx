@@ -298,13 +298,13 @@ const DashboardPage = () => {
       <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-sm">
         <h2 className="text-lg font-bold text-foreground mb-4">Botonera de Acciones Rápidas</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Button onClick={() => setModalQuickAdd(true)} className="h-12 rounded-xl text-sm font-semibold gap-2 shadow">
+          <Button onClick={() => setModalQuickAdd(true)} className="h-auto min-h-[48px] py-2 whitespace-normal rounded-xl text-sm font-semibold gap-2 shadow">
             <Plus className="h-4 w-4" /> Añadir Producto Rápido
           </Button>
-          <Button onClick={() => setModalCoupon(true)} variant="outline" className="h-12 rounded-xl text-sm font-semibold gap-2 border-border/80">
+          <Button onClick={() => setModalCoupon(true)} variant="outline" className="h-auto min-h-[48px] py-2 whitespace-normal rounded-xl text-sm font-semibold gap-2 border-border/80">
             <Tag className="h-4 w-4 text-primary" /> Crear Cupón de Descuento
           </Button>
-          <Button onClick={() => setModalTracking(true)} variant="secondary" className="h-12 rounded-xl text-sm font-semibold gap-2 bg-secondary/80">
+          <Button onClick={() => setModalTracking(true)} variant="secondary" className="h-auto min-h-[48px] py-2 whitespace-normal rounded-xl text-sm font-semibold gap-2 bg-secondary/80">
             <Scan className="h-4 w-4 text-primary" /> Escanear / Cargar Tracking
           </Button>
         </div>

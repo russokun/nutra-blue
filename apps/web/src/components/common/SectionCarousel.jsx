@@ -108,7 +108,7 @@ const SectionCarousel = ({ products }) => {
                 </Link>
 
                 {/* Double Buttons Footer */}
-                <div className="mt-4 flex gap-2.5 relative z-10">
+                <div className="mt-4 flex flex-col gap-2 relative z-10">
                   <Button
                     asChild
                     variant="outline"
