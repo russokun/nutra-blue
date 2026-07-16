@@ -58,7 +58,7 @@ const Footer = ({ minimal = false }) => {
                 <img src="/logo.png" alt="NutraBlue Logo" className="h-12 w-auto brightness-0 invert" />
               </div>
               <p className="text-sm text-slate-300 leading-relaxed">
-                Alimentos funcionales y naturales para tu energía, tu descanso, tu claridad y tus años por vivir. Empresa familiar chilena. Despacho a todo el país.
+                Alimentos naturales y funcionales, seleccionados para mejorar tu salud y tu vida. Empresa familiar chilena — despacho a todo el país.
               </p>
             </div>
 
@@ -87,9 +87,9 @@ const Footer = ({ minimal = false }) => {
             {/* Certifications & newsletter */}
             <div className="space-y-6 flex flex-col justify-between">
               <div className="space-y-3">
-                <span className="text-sm font-bold tracking-wider uppercase text-white">Newsletter</span>
+                <span className="text-sm font-bold tracking-wider uppercase text-white">Salud que llega a tu correo</span>
                 <p className="text-xs text-slate-300">
-                  Únete y recibe tips de salud que sí funcionan (más un descuento de bienvenida).
+                  Recetas, ideas simples para comer mejor y descuentos exclusivos para nuestra comunidad. Sin spam, prometido.
                 </p>
                 <form onSubmit={handleSubscribe} className="flex gap-2">
                   <input
