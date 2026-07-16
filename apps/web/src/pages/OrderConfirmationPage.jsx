@@ -115,7 +115,7 @@ const OrderConfirmationPage = () => {
   return (
     <>
       <Helmet>
-        <title>Confirmación de Orden - Nutra Blue</title>
+        <title>Confirmación de Orden - NutraBlue</title>
         <meta name="description" content="Tu orden ha sido confirmada exitosamente" />
       </Helmet>
 

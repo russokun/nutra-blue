@@ -42,7 +42,7 @@ const RegisterPage = () => {
   return (
     <>
       <Helmet>
-        <title>Registro - Nutra Blue</title>
+        <title>Registro - NutraBlue</title>
       </Helmet>
       <Header />
       <main className="min-h-screen bg-background py-12">

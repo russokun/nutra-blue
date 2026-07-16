@@ -9,7 +9,7 @@ const Footer = ({ minimal = false }) => {
   const handleSubscribe = (e) => {
     e.preventDefault();
     if (!email) return;
-    toast.success('¡Gracias por suscribirte a Nutra Blue! Pronto recibirás novedades científicas y ofertas.');
+    toast.success('¡Gracias por suscribirte a NutraBlue! Pronto recibirás novedades científicas y ofertas.');
     setEmail('');
   };
 
@@ -18,7 +18,7 @@ const Footer = ({ minimal = false }) => {
       <footer className="bg-card text-muted-foreground border-t border-border py-8 mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
-            <p>© 2026 Nutra Blue. Todos los derechos reservados. Distribuidor Autorizado.</p>
+            <p>© 2026 NutraBlue. Todos los derechos reservados. Distribuidor Autorizado.</p>
             <div className="flex items-center space-x-6">
               <Link to="/privacy-policy" className="hover:text-primary transition-colors duration-200">
                 Términos y Condiciones
@@ -55,10 +55,7 @@ const Footer = ({ minimal = false }) => {
             {/* Brand */}
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
-                <img src="/logo.png" alt="Nutra Blue Logo" className="h-12 w-auto brightness-0 invert" />
-                <span className="text-xl font-bold text-white">
-                  Nutra Blue
-                </span>
+                <img src="/logo.png" alt="NutraBlue Logo" className="h-12 w-auto brightness-0 invert" />
               </div>
               <p className="text-sm text-slate-300 leading-relaxed">
                 Suplementos funcionales premium diseñados científicamente para optimizar tu biología, potenciar la energía y alcanzar la longevidad.
@@ -114,7 +111,7 @@ const Footer = ({ minimal = false }) => {
 
               <div className="pt-2 flex items-center gap-2 text-xs text-slate-400">
                 <ShieldCheck className="h-4 w-4 text-primary" />
-                <span>Distribuidor Oficial de Nutra Blue</span>
+                <span>Distribuidor Oficial de NutraBlue</span>
               </div>
             </div>
           </div>
@@ -122,7 +119,7 @@ const Footer = ({ minimal = false }) => {
           <div className="mt-8 pt-8 border-t border-white/10">
             <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
               <p className="text-xs text-slate-400">
-                © 2026 Nutra Blue. Todos los derechos reservados. Desarrollado bajo respaldo científico.
+                © 2026 NutraBlue. Todos los derechos reservados. Desarrollado bajo respaldo científico.
               </p>
               <div className="flex space-x-6 text-xs text-slate-400">
                 <Link to="/privacy-policy" className="hover:text-primary transition-all duration-200">

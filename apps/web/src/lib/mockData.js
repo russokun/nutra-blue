@@ -1,112 +1,16 @@
 export const MOCK_PRODUCTS = [
-  {
-    "id": "calm-and-focus",
-    "name": "Calm & Focus",
-    "price": 18990,
-    "stock": 45,
-    "category": "Salud Cognitiva",
-    "image_url": "https://horizons-cdn.hostinger.com/b35461a0-e424-4767-bd53-3b70fb21c1bf/947065a3f4ef376351578339a9ba0e35.jpg",
-    "benefits": ["Mejora concentración", "Reduce niebla mental", "Adaptógeno natural"],
-    "certifications": ["Orgánico", "SAG"]
-  },
-  {
-    "id": "dark-cacao",
-    "name": "Dark Cacao",
-    "price": 22500,
-    "stock": 38,
-    "category": "Longevidad",
-    "image_url": "https://horizons-cdn.hostinger.com/b35461a0-e424-4767-bd53-3b70fb21c1bf/8b9759abb5ce079dcc1b31532e0e3ce2.jpg",
-    "benefits": ["Alto en polifenoles", "Antioxidante potente", "Ceremonial"],
-    "certifications": ["Orgánico", "Fair Trade"]
-  },
-  {
-    "id": "spirulina-premium-powder",
-    "name": "Spirulina Premium Powder",
-    "price": 16800,
-    "stock": 52,
-    "category": "Longevidad",
-    "image_url": "https://horizons-cdn.hostinger.com/b35461a0-e424-4767-bd53-3b70fb21c1bf/e02764b75ff61216674c82d8bc2bef12.jpg",
-    "benefits": ["Proteína completa", "Superalimento", "Energía sostenida"],
-    "certifications": ["Orgánico", "Vegan"]
-  },
-  {
-    "id": "chlorella-premium-powder",
-    "name": "Chlorella Premium Powder",
-    "price": 17990,
-    "stock": 48,
-    "category": "Longevidad",
-    "image_url": "https://horizons-cdn.hostinger.com/b35461a0-e424-4767-bd53-3b70fb21c1bf/e02764b75ff61216674c82d8bc2bef12.jpg",
-    "benefits": ["Desintoxicación", "Clorofila pura", "Detox natural"],
-    "certifications": ["Orgánico", "Vegan"]
-  },
-  {
-    "id": "matcha-ritual",
-    "name": "Matcha Ritual",
-    "price": 24990,
-    "stock": 35,
-    "category": "Salud Cognitiva",
-    "image_url": "https://horizons-cdn.hostinger.com/b35461a0-e424-4767-bd53-3b70fb21c1bf/db395fe43818aef950855c1429a35f3f.jpg",
-    "benefits": ["L-teanina para calma", "Energía sin crash", "Ceremonial premium"],
-    "certifications": ["Orgánico", "Ceremonial Grade"]
-  },
-  {
-    "id": "black-garlic",
-    "name": "Black Garlic",
-    "price": 19890,
-    "stock": 42,
-    "category": "Gestión del Estrés",
-    "image_url": "https://horizons-cdn.hostinger.com/b35461a0-e424-4767-bd53-3b70fb21c1bf/72ab83b10e6c22ff8c951b4965f63186.jpg",
-    "benefits": ["Fermentado 90 días", "Antiestrés", "Sabor umami"],
-    "certifications": ["Orgánico", "Fermentado"]
-  },
-  {
-    "id": "walnut-and-almond-mix",
-    "name": "Walnut & Almond Mix",
-    "price": 15490,
-    "stock": 60,
-    "category": "Longevidad",
-    "image_url": "https://horizons-cdn.hostinger.com/b35461a0-e424-4767-bd53-3b70fb21c1bf/92991841506fe8cbe74ac15e6cf2e749.jpg",
-    "benefits": ["Omega 3 natural", "Grasas saludables", "Snack nutritivo"],
-    "certifications": ["Orgánico", "Raw"]
-  },
-  {
-    "id": "reishi-mushroom-tea",
-    "name": "Reishi Mushroom Tea",
-    "price": 21500,
-    "stock": 40,
-    "category": "Gestión del Estrés",
-    "image_url": "https://horizons-cdn.hostinger.com/b35461a0-e424-4767-bd53-3b70fb21c1bf/bb35ea4887ead9552e30a342eeaef645.jpg",
-    "benefits": ["Adaptógeno reishi", "Sueño profundo", "Relajación"],
-    "certifications": ["Orgánico", "Hongo medicinal"]
-  },
-  {
-    "id": "golden-turmeric-pepper-blend",
-    "name": "Golden Turmeric & Black Pepper Blend",
-    "price": 14990,
-    "stock": 55,
-    "category": "Gestión del Estrés",
-    "image_url": "https://horizons-cdn.hostinger.com/b35461a0-e424-4767-bd53-3b70fb21c1bf/6ed1571c88a0dc4195b6de03339f7ccf.jpg",
-    "benefits": ["Antiinflamatorio", "Cúrcuma + pimienta", "Biodisponibilidad mejorada"],
-    "certifications": ["Orgánico", "Ayurvédico"]
-  },
-  {
-    "id": "maca-powder",
-    "name": "Maca Powder",
-    "price": 16500,
-    "stock": 50,
-    "category": "Longevidad",
-    "image_url": "https://horizons-cdn.hostinger.com/b35461a0-e424-4767-bd53-3b70fb21c1bf/26c0a00cb124e2c1e2fc225fdcc53bc4.jpg",
-    "benefits": ["Energía y vitalidad", "Adaptógeno peruano", "Hormonas balanceadas"],
-    "certifications": ["Orgánico", "Peruano"]
-  },
-  {
-    "id": "mixed-berries-powder",
-    "name": "Mixed Berries Powder",
-    "price": 20890,
-    "stock": 44,
-    "category": "Longevidad",
-    "image_url": "https://horizons-cdn.hostinger.com/b35461a0-e424-4767-bd53-3b70fb21c1bf/3cb4a678b3b042b7aecd3e65c1b99551.jpg",
-    "benefits": ["Antioxidantes potentes", "Polifenoles", "Superfruta"],
-    "certifications": ["Orgánico", "Liofilizado"]
-  }
+  { id: 'maca-en-polvo', name: 'Maca en Polvo', price: 16500, stock: 50, category: 'Energía', image_url: 'https://horizons-cdn.hostinger.com/b35461a0-e424-4767-bd53-3b70fb21c1bf/26c0a00cb124e2c1e2fc225fdcc53bc4.jpg', benefits: ['Energía natural'], certifications: ['Orgánico', 'Peruano'] },
+  { id: 'polen-multifloral', name: 'Polen Multifloral', price: 12990, stock: 45, category: 'Energía', image_url: '/logo.png', benefits: ['Apoyo a tus defensas'], certifications: ['Orgánico'] },
+  { id: 'cordyceps', name: 'Cordyceps', price: 21990, stock: 30, category: 'Energía', image_url: '/logo.png', benefits: ['Energía natural'], certifications: ['Orgánico'] },
+  { id: 'calm-and-focus', name: 'Calm & Focus', price: 18990, stock: 45, category: 'Concentración y Calma', image_url: 'https://horizons-cdn.hostinger.com/b35461a0-e424-4767-bd53-3b70fb21c1bf/947065a3f4ef376351578339a9ba0e35.jpg', benefits: ['Foco y claridad'], certifications: ['Orgánico', 'SAG'] },
+  { id: 'melena-de-leon', name: 'Melena de León en Gotas', price: 24990, stock: 25, category: 'Concentración y Calma', image_url: '/logo.png', benefits: ['Memoria y mente activa'], certifications: ['Orgánico'] },
+  { id: 'matcha-ritual', name: 'Matcha Ritual', price: 24990, stock: 35, category: 'Concentración y Calma', image_url: 'https://horizons-cdn.hostinger.com/b35461a0-e424-4767-bd53-3b70fb21c1bf/db395fe43818aef950855c1429a35f3f.jpg', benefits: ['Foco y claridad'], certifications: ['Orgánico', 'Ceremonial Grade'] },
+  { id: 'te-de-reishi', name: 'Té de Reishi', price: 21500, stock: 40, category: 'Descanso y Longevidad', image_url: 'https://horizons-cdn.hostinger.com/b35461a0-e424-4767-bd53-3b70fb21c1bf/bb35ea4887ead9552e30a342eeaef645.jpg', benefits: ['Descanso reparador'], certifications: ['Orgánico', 'Hongo medicinal'] },
+  { id: 'maqui-liofilizado', name: 'Maqui Liofilizado', price: 18990, stock: 38, category: 'Descanso y Longevidad', image_url: '/logo.png', benefits: ['Rico en antioxidantes'], certifications: ['Orgánico'] },
+  { id: 'mix-de-berries', name: 'Mix de Berries en Polvo', price: 20890, stock: 44, category: 'Descanso y Longevidad', image_url: 'https://horizons-cdn.hostinger.com/b35461a0-e424-4767-bd53-3b70fb21c1bf/3cb4a678b3b042b7aecd3e65c1b99551.jpg', benefits: ['Rico en antioxidantes'], certifications: ['Orgánico', 'Liofilizado'] },
+  { id: 'aceite-de-oliva', name: 'Aceite de Oliva', price: 14990, stock: 60, category: 'Alimentación Diaria', image_url: '/logo.png', benefits: ['Corazón sano'], certifications: ['Orgánico'] },
+  { id: 'ajo-chilote-negro', name: 'Ajo Chilote Negro', price: 12990, stock: 42, category: 'Alimentación Diaria', image_url: 'https://horizons-cdn.hostinger.com/b35461a0-e424-4767-bd53-3b70fb21c1bf/72ab83b10e6c22ff8c951b4965f63186.jpg', benefits: ['Bienestar general'], certifications: ['Orgánico', 'Fermentado'] },
+  { id: 'ajo-negro-100g', name: 'Ajo Negro (100 g)', price: 9990, stock: 50, category: 'Alimentación Diaria', image_url: '/logo.png', benefits: ['Bienestar general'], certifications: ['Orgánico'] },
+  { id: 'nueces', name: 'Nueces', price: 8990, stock: 60, category: 'Alimentación Diaria', image_url: 'https://horizons-cdn.hostinger.com/b35461a0-e424-4767-bd53-3b70fb21c1bf/92991841506fe8cbe74ac15e6cf2e749.jpg', benefits: ['Corazón sano'], certifications: ['Orgánico', 'Raw'] },
+  { id: 'semillas-de-zapallo', name: 'Semillas de Zapallo', price: 7990, stock: 55, category: 'Alimentación Diaria', image_url: '/logo.png', benefits: ['Bienestar general'], certifications: ['Orgánico'] }
 ];

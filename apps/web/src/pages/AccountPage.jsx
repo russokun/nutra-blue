@@ -133,7 +133,7 @@ const AccountContent = () => {
   return (
     <>
       <Helmet>
-        <title>Mi Cuenta - Nutra Blue</title>
+        <title>Mi Cuenta - NutraBlue</title>
       </Helmet>
       
       <Header />
@@ -246,7 +246,7 @@ const AccountContent = () => {
                           {/* Tracking Progress Visualizer */}
                           <div className="pt-4 border-t border-border/45 space-y-4">
                             <div className="flex justify-between items-center text-xs text-muted-foreground">
-                              <span>Courier: <strong className="text-foreground">{order.courier || 'Despacho Nutra Blue'}</strong></span>
+                              <span>Courier: <strong className="text-foreground">{order.courier || 'Despacho NutraBlue'}</strong></span>
                               <span>Código de Seguimiento: <strong className="text-foreground flex items-center gap-1 cursor-pointer hover:underline" onClick={() => {
                                 const trackingCode = order.tracking_code || order.trackingCode || 'Pendiente';
                                 if (trackingCode !== 'Pendiente') {

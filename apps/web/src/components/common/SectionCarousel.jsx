@@ -115,7 +115,7 @@ const SectionCarousel = ({ products }) => {
                     className="flex-1 border-primary/20 text-primary hover:bg-primary/5 font-semibold py-2 rounded-xl transition-all duration-200 text-xs"
                   >
                     <Link to={`/product/${product.id}`}>
-                      <Eye className="h-3.5 w-3.5 mr-1" /> Detalles
+                      <Eye className="h-3.5 w-3.5 mr-1" /> Ver Detalles
                     </Link>
                   </Button>
                   <Button
@@ -127,7 +127,7 @@ const SectionCarousel = ({ products }) => {
                     }}
                     className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-2 rounded-xl transition-all duration-200 text-xs"
                   >
-                    <ShoppingBag className="h-3.5 w-3.5 mr-1" /> Añadir
+                    <ShoppingBag className="h-3.5 w-3.5 mr-1" /> Añadir a mi Rutina
                   </Button>
                 </div>
               </div>

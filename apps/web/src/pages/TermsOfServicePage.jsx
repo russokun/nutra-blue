@@ -9,8 +9,8 @@ const TermsOfServicePage = () => {
   return (
     <>
       <Helmet>
-        <title>Términos de Servicio - Nutra Blue</title>
-        <meta name="description" content="Términos y condiciones de uso de Nutra Blue. Conoce los términos de compra, envíos, políticas de devolución y garantías en Chile." />
+        <title>Términos de Servicio - NutraBlue</title>
+        <meta name="description" content="Términos y condiciones de uso de NutraBlue. Conoce los términos de compra, envíos, políticas de devolución y garantías en Chile." />
       </Helmet>
 
       <Header />
@@ -27,7 +27,7 @@ const TermsOfServicePage = () => {
               Términos de Servicio
             </h1>
             <p className="text-muted-foreground mx-auto text-base max-w-2xl">
-              Bienvenido a Nutra Blue. Al acceder a nuestro sitio web y realizar compras, aceptas
+              Bienvenido a NutraBlue. Al acceder a nuestro sitio web y realizar compras, aceptas
               y te comprometes a cumplir los siguientes términos y condiciones de uso, regulados bajo la
               Ley N° 19.496 sobre Protección de los Derechos de los Consumidores en Chile.
             </p>
@@ -103,7 +103,7 @@ const TermsOfServicePage = () => {
                 <span className="text-primary text-lg">1.</span> Aspectos Generales
               </h2>
               <p className="text-sm leading-relaxed text-muted-foreground">
-                Las transacciones que se efectúen a través del sitio web de Nutra Blue están sujetas a los presentes Términos y Condiciones, así como a las leyes de la República de Chile, en particular la Ley N° 19.496 sobre Protección de los Derechos de los Consumidores y la Ley N° 19.628 sobre Protección de la Vida Privada.
+                Las transacciones que se efectúen a través del sitio web de NutraBlue están sujetas a los presentes Términos y Condiciones, así como a las leyes de la República de Chile, en particular la Ley N° 19.496 sobre Protección de los Derechos de los Consumidores y la Ley N° 19.628 sobre Protección de la Vida Privada.
               </p>
               <p className="text-sm leading-relaxed text-muted-foreground">
                 El acceso y uso de este sitio web es gratuito para los usuarios. Para realizar compras en nuestra plataforma es requisito la aceptación de los presentes términos, lo cual se entiende realizado al hacer clic en el botón de confirmación de compra o al registrarse en el sitio.
@@ -120,7 +120,7 @@ const TermsOfServicePage = () => {
               <ul className="list-disc pl-6 space-y-2 text-sm text-muted-foreground">
                 <li>Proporcionar información fidedigna, veraz y actualizada (nombre, RUT, correo, dirección de despacho, etc.).</li>
                 <li>Mantener la confidencialidad de sus claves de acceso asociadas a su cuenta personal.</li>
-                <li>Notificar de inmediato a Nutra Blue ante cualquier uso no autorizado de su cuenta.</li>
+                <li>Notificar de inmediato a NutraBlue ante cualquier uso no autorizado de su cuenta.</li>
               </ul>
             </section>
 
@@ -129,10 +129,10 @@ const TermsOfServicePage = () => {
                 <span className="text-primary text-lg">3.</span> Proceso de Compra y Precios
               </h2>
               <p className="text-sm leading-relaxed text-muted-foreground">
-                Los precios de los productos exhibidos en Nutra Blue están expresados en pesos chilenos (CLP) e incluyen el Impuesto al Valor Agregado (IVA). El costo del despacho se calcula de forma separada según la comuna de destino y se desglosa claramente en la pantalla de resumen del checkout antes del pago.
+                Los precios de los productos exhibidos en NutraBlue están expresados en pesos chilenos (CLP) e incluyen el Impuesto al Valor Agregado (IVA). El costo del despacho se calcula de forma separada según la comuna de destino y se desglosa claramente en la pantalla de resumen del checkout antes del pago.
               </p>
               <p className="text-sm leading-relaxed text-muted-foreground">
-                Una vez completado el flujo de pago, Nutra Blue enviará un correo electrónico de confirmación automática detallando los productos adquiridos, el precio total cobrado, el método de pago utilizado y los datos de envío. La venta se considerará formalizada y válida una vez recibido dicho correo y validados los fondos de pago.
+                Una vez completado el flujo de pago, NutraBlue enviará un correo electrónico de confirmación automática detallando los productos adquiridos, el precio total cobrado, el método de pago utilizado y los datos de envío. La venta se considerará formalizada y válida una vez recibido dicho correo y validados los fondos de pago.
               </p>
             </section>
 
@@ -159,7 +159,7 @@ const TermsOfServicePage = () => {
               </p>
               <ul className="list-disc pl-6 space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <strong className="text-foreground/90">Derecho a Retracto:</strong> De conformidad con el artículo 3 bis letra b) de la Ley N° 19.496, Nutra Blue dispone que en las compras realizadas a través de este portal <strong className="text-foreground/95">no se podrá ejercer el derecho de retracto</strong> de forma discrecional una vez abierto el empaque, dado que comercializamos alimentos y suplementos alimenticios cuyas condiciones de esterilidad e inocuidad se pierden al abrirse los sellos de seguridad. Sin embargo, para productos completamente sellados, sin abrir y en su embalaje original, se podrá solicitar la devolución dentro de los 10 días siguientes a la recepción.
+                  <strong className="text-foreground/90">Derecho a Retracto:</strong> De conformidad con el artículo 3 bis letra b) de la Ley N° 19.496, NutraBlue dispone que en las compras realizadas a través de este portal <strong className="text-foreground/95">no se podrá ejercer el derecho de retracto</strong> de forma discrecional una vez abierto el empaque, dado que comercializamos alimentos y suplementos alimenticios cuyas condiciones de esterilidad e inocuidad se pierden al abrirse los sellos de seguridad. Sin embargo, para productos completamente sellados, sin abrir y en su embalaje original, se podrá solicitar la devolución dentro de los 10 días siguientes a la recepción.
                 </li>
                 <li>
                   <strong className="text-foreground/90">Garantía Legal:</strong> Si el producto presenta fallas de origen, defectos de fabricación, roturas de envase o no corresponde a lo solicitado, el cliente tiene derecho a la garantía legal dentro de los 6 meses siguientes a la compra, pudiendo optar entre el cambio del producto, reparación o la devolución del dinero pagado. Para esto, se debe presentar la boleta o comprobante de compra respectivo.
@@ -172,7 +172,7 @@ const TermsOfServicePage = () => {
                 <span className="text-primary text-lg">6.</span> Exclusión de Responsabilidad Médica y Uso de Productos
               </h2>
               <p className="text-sm leading-relaxed text-amber-600/95 bg-amber-500/10 p-4 rounded-xl border border-amber-500/25">
-                <strong className="text-amber-800">ADVERTENCIA:</strong> Los suplementos funcionales que comercializa Nutra Blue son formulaciones complementarias orientadas a la nutrición y el bienestar general. No constituyen medicamentos, fármacos ni tratamientos clínicos específicos, y de ninguna manera reemplazan la consulta, diagnóstico o indicación de un profesional médico matriculado. Te recomendamos leer atentamente el rotulado y las indicaciones de cada envase antes de consumir.
+                <strong className="text-amber-800">ADVERTENCIA:</strong> Los suplementos funcionales que comercializa NutraBlue son formulaciones complementarias orientadas a la nutrición y el bienestar general. No constituyen medicamentos, fármacos ni tratamientos clínicos específicos, y de ninguna manera reemplazan la consulta, diagnóstico o indicación de un profesional médico matriculado. Te recomendamos leer atentamente el rotulado y las indicaciones de cada envase antes de consumir.
               </p>
             </section>
 

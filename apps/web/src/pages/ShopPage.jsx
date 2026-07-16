@@ -31,9 +31,10 @@ const ShopPage = () => {
 
   const categories = [
     { value: 'all', label: 'Todos' },
-    { value: 'Salud Cognitiva', label: 'Salud Cognitiva' },
-    { value: 'Gestión del Estrés', label: 'Gestión del Estrés' },
-    { value: 'Longevidad', label: 'Longevidad' }
+    { value: 'Energía', label: 'Energía' },
+    { value: 'Concentración y Calma', label: 'Concentración y Calma' },
+    { value: 'Descanso y Longevidad', label: 'Descanso y Longevidad' },
+    { value: 'Alimentación Diaria', label: 'Alimentación Diaria' }
   ];
 
   useEffect(() => {
@@ -76,9 +77,13 @@ const ShopPage = () => {
       } else if (selectedSubCategory === 'individuales') {
         matchesSub = !product.name.toLowerCase().includes('mix') && !product.name.toLowerCase().includes('blend') && !product.name.toLowerCase().includes('tea');
       } else if (selectedSubCategory === 'energia') {
-        matchesSub = (product.benefits || []).some(b => b.toLowerCase().includes('energ')) || product.category === 'Longevidad';
+        matchesSub = product.category === 'Energía';
       } else if (selectedSubCategory === 'concentracion') {
-        matchesSub = (product.benefits || []).some(b => b.toLowerCase().includes('concentr')) || product.category === 'Salud Cognitiva';
+        matchesSub = product.category === 'Concentración y Calma';
+      } else if (selectedSubCategory === 'descanso') {
+        matchesSub = product.category === 'Descanso y Longevidad';
+      } else if (selectedSubCategory === 'alimentacion') {
+        matchesSub = product.category === 'Alimentación Diaria';
       }
 
       return matchesCategory && matchesSearch && matchesSub;
@@ -154,10 +159,10 @@ const ShopPage = () => {
   return (
     <>
       <Helmet>
-        <title>Catálogo de Suplementos Premium y Biohacking — Nutra Blue</title>
+        <title>Catálogo de Suplementos Premium y Biohacking — NutraBlue</title>
         <meta name="description" content="Explora nuestro catálogo de adaptógenos, nootrópicos y suplementos de longevidad celular en Chile. Calm Focus, Matcha Ritual, Dark Cacao y más." />
         <meta name="keywords" content="comprar melena de leon, comprar ashwagandha, nootropicos chile, biohacking chile, suplementos premium" />
-        <meta property="og:title" content="Catálogo de Suplementos Premium — Nutra Blue" />
+        <meta property="og:title" content="Catálogo de Suplementos Premium — NutraBlue" />
         <meta property="og:description" content="Encuentra fórmulas científicas con adaptógenos de alta biodisponibilidad. Envíos a todo Chile." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://nutrablue-test.vercel.app/shop" />
@@ -230,17 +235,37 @@ const ShopPage = () => {
                   </div>
                 </div>
 
-                {/* Subcategories / Tipo / Filtros Orientados a la Venta */}
+                {/* Filtro por Beneficio */}
                 <div className="pt-4 border-t border-border">
-                  <span className="text-sm font-semibold text-foreground mb-3 block">Filtrar por</span>
+                  <span className="text-sm font-semibold text-foreground mb-3 block">Filtrar por beneficio</span>
                   <div className="space-y-1.5">
                     {[
-                      { value: 'all', label: 'Todos los Suplementos' },
+                      { value: 'all', label: 'Todos los Beneficios' },
+                      { value: 'energia', label: '⚡ Energía' },
+                      { value: 'concentracion', label: '🧠 Concentración y Calma' },
+                      { value: 'descanso', label: '🌙 Descanso y Longevidad' },
+                      { value: 'alimentacion', label: '🥑 Alimentación Diaria' }
+                    ].map(sub => (
+                      <Button
+                        key={sub.value}
+                        onClick={() => setSelectedSubCategory(sub.value)}
+                        variant={selectedSubCategory === sub.value ? 'default' : 'outline'}
+                        className="w-full justify-start transition-all duration-200 text-xs py-2 rounded-xl text-left"
+                      >
+                        {sub.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Filtro por Tipo */}
+                <div className="pt-4 border-t border-border">
+                  <span className="text-sm font-semibold text-foreground mb-3 block">Filtrar por tipo</span>
+                  <div className="space-y-1.5">
+                    {[
                       { value: 'ofertas', label: '🏷️ Ofertas Especiales' },
-                      { value: 'packs', label: '📦 Packs y Packs Mensuales' },
-                      { value: 'individuales', label: '🧬 Productos Individuales' },
-                      { value: 'energia', label: '⚡ Beneficio: Energía' },
-                      { value: 'concentracion', label: '🧠 Beneficio: Enfoque' }
+                      { value: 'packs', label: '📦 Packs Mensuales' },
+                      { value: 'individuales', label: '🧬 Productos Individuales' }
                     ].map(sub => (
                       <Button
                         key={sub.value}
@@ -355,10 +380,10 @@ const ShopPage = () => {
                           <div className="grid grid-cols-2 gap-2 mt-2">
                             <Button
                               variant="outline"
-                              onClick={(e) => handleOpenIngredients(product, e)}
+                              onClick={(e) => { e.stopPropagation(); navigate(`/product/${product.id}`); }}
                               className="w-full text-xs py-3.5 rounded-xl transition-all duration-200"
                             >
-                              Ingredientes
+                              Ver Detalles
                             </Button>
                             <Button
                               onClick={(e) => handleAddToCart(product, e)}
@@ -371,9 +396,9 @@ const ShopPage = () => {
 
                           {/* Micro-copy de Confianza */}
                           <div className="flex flex-wrap gap-1 mt-3 pt-2 border-t border-border/30 text-[9px] text-muted-foreground justify-center">
-                            <span className="bg-slate-100 px-1.5 py-0.5 rounded-md font-medium">✨ Alta Biodisponibilidad</span>
-                            <span className="bg-slate-100 px-1.5 py-0.5 rounded-md font-medium">🇨🇱 Envío Rápido a Chile</span>
-                            <span className="bg-slate-100 px-1.5 py-0.5 rounded-md font-medium">🛡️ Calidad Clínica Garantizada</span>
+                            <span className="bg-slate-100 px-1.5 py-0.5 rounded-md font-medium">✨ Máxima absorción</span>
+                            <span className="bg-slate-100 px-1.5 py-0.5 rounded-md font-medium">🇨🇱 Envío rápido a todo Chile</span>
+                            <span className="bg-slate-100 px-1.5 py-0.5 rounded-md font-medium">🛡️ Calidad garantizada</span>
                           </div>
                         </div>
                       </div>

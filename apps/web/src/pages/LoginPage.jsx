@@ -40,7 +40,7 @@ const LoginPage = () => {
   return (
     <>
       <Helmet>
-        <title>Iniciar Sesión - Nutra Blue</title>
+        <title>Iniciar Sesión - NutraBlue</title>
       </Helmet>
       <Header />
       <main className="min-h-screen bg-background py-12">

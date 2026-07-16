@@ -17,10 +17,7 @@ const Header = ({ minimal = false }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-2 min-h-[80px]">
             <Link to="/" className="flex items-center space-x-3">
-              <img src="/logo.png" alt="Nutra Blue Logo" style={{ height: '70px', width: 'auto' }} />
-              <span className="text-xl font-bold text-primary tracking-tight hidden sm:block" style={{ fontFamily: 'Playfair Display, serif' }}>
-                Nutra Blue
-              </span>
+              <img src="/logo.png" alt="NutraBlue Logo" style={{ height: '70px', width: 'auto' }} />
             </Link>
 
             <div className="flex items-center gap-6">
@@ -60,10 +57,7 @@ const Header = ({ minimal = false }) => {
         <div className="flex items-center justify-between py-3 min-h-[88px]">
           <div className="flex items-center space-x-4">
             <Link to="/" className="flex items-center space-x-3">
-              <img src="/logo.png" alt="Nutra Blue Logo" style={{ height: '108px', width: 'auto' }} />
-              <span className="text-2xl font-bold text-primary tracking-tight hidden sm:block" style={{ fontFamily: 'Playfair Display, serif' }}>
-                Nutra Blue
-              </span>
+              <img src="/logo.png" alt="NutraBlue Logo" style={{ height: '108px', width: 'auto' }} />
             </Link>
             {location.pathname !== '/' && location.pathname !== '/shop' && (
               <Link to="/shop" className="hidden md:inline-flex items-center text-xs font-semibold text-muted-foreground hover:text-primary transition-all duration-200 bg-muted/40 px-2.5 py-1 rounded-md border border-border/30">

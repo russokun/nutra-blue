@@ -263,8 +263,8 @@ const CheckoutPage = () => {
   return (
     <>
       <Helmet>
-        <title>Checkout - Nutra Blue</title>
-        <meta name="description" content="Completa tu compra en Nutra Blue" />
+        <title>Checkout - NutraBlue</title>
+        <meta name="description" content="Completa tu compra en NutraBlue" />
       </Helmet>
 
       <Header minimal />

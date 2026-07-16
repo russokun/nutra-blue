@@ -207,11 +207,12 @@ const HomePage = () => {
   return (
     <>
       <Helmet>
-        <title>Nutra Blue — Suplementos de Biohacking y Longevidad | Chile</title>
-        <meta name="description" content="Suplementos funcionales premium con adapt&oacute;genos de alta biodisponibilidad. Optimiza tu enfoque, energ&iacute;a y longevidad celular. Env&iacute;o gratis sobre $50.000 en Chile." />
-        <meta name="keywords" content="suplementos naturales, biohacking, longevidad, salud cognitiva, adaptogenos, Chile" />
-        <meta property="og:title" content="Nutra Blue — Biohacking para la Longevidad" />
-        <meta property="og:description" content="Formulas cientificas premium para optimizar tu enfoque, energia y longevidad celular. Ingredientes testeados, envio rapido en Chile." />
+        <title>NutraBlue — Alimentos naturales y funcionales para tu salud</title>
+        <meta name="description" content="Alimentos naturales y funcionales seleccionados para mejorar tu salud: energía, concentración, descanso y longevidad. Empresa familiar chilena, despacho a todo Chile." />
+        <meta name="keywords" content="alimentos naturales, alimentos funcionales, longevidad, salud, energía, concentración, Chile" />
+        <meta property="og:title" content="NutraBlue — Alimentos naturales y funcionales para tu salud" />
+        <meta property="og:description" content="Alimentos naturales y funcionales seleccionados para mejorar tu salud: energía, concentración, descanso y longevidad. Empresa familiar chilena, despacho a todo Chile." />
+        <meta property="og:image" content="/og-image.jpg" />
         <meta property="og:type" content="website" />
         <link rel="canonical" href="https://nutrablue-test.vercel.app" />
       </Helmet>
@@ -594,10 +595,10 @@ const HomePage = () => {
                           loading="lazy"
                           className="h-full w-auto object-contain drop-shadow-[0_15px_25px_rgba(0,0,0,0.08)] group-hover:scale-105 transition-transform duration-300"
                         />
-                        <span className="absolute top-0 left-0 bg-primary/10 text-primary border border-primary/20 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        <span className="absolute top-0 left-0 max-w-[50%] truncate bg-primary/10 text-primary border border-primary/20 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
                           {product.category}
                         </span>
-                        <span className="absolute top-0 right-0 bg-amber-500/10 text-amber-700 border border-amber-500/20 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        <span className="absolute top-0 right-0 max-w-[50%] truncate bg-amber-500/10 text-amber-700 border border-amber-500/20 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
                           Stock Limitado
                         </span>
                       </div>
@@ -619,14 +620,14 @@ const HomePage = () => {
                         }}
                         className="w-full text-xs py-3 rounded-xl transition-all duration-200"
                       >
-                        Detalles
+                        Ver Detalles
                       </Button>
                       <Button
                         onClick={(e) => handleAddToCart(product, e)}
                         disabled={product.stock === 0}
                         className="w-full text-xs bg-accent text-white hover:bg-accent/90 py-3 rounded-xl transition-all duration-200 shadow-sm"
                       >
-                        {product.stock === 0 ? 'Agotado' : 'Añadir'}
+                        {product.stock === 0 ? 'Agotado' : 'Añadir a mi Rutina'}
                       </Button>
                     </div>
                   </div>

@@ -13,8 +13,8 @@ const ImpactPage = () => {
   return (
     <>
       <Helmet>
-        <title>Nuestro Impacto - Nutra Blue</title>
-        <meta name="description" content="Descubre el impacto y la propuesta de valor de Nutra Blue. Impulsamos la longevidad celular, la claridad mental y la salud sustentable en Chile." />
+        <title>Nuestro Impacto - NutraBlue</title>
+        <meta name="description" content="Descubre el impacto y la propuesta de valor de NutraBlue. Impulsamos la longevidad celular, la claridad mental y la salud sustentable en Chile." />
       </Helmet>
 
       <Header />
@@ -82,7 +82,7 @@ const ImpactPage = () => {
               </div>
               <div className="space-y-1 border-y md:border-y-0 md:border-x border-border/60 py-6 md:py-0">
                 <p className="text-4xl md:text-5xl font-extrabold text-accent">0%</p>
-                <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Compromisos con la Calidad</p>
+                <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Rellenos ni Aditivos Artificiales</p>
                 <p className="text-xs text-muted-foreground/80 max-w-xs mx-auto">Fórmulas testeadas en laboratorios independientes para validar su potencia.</p>
               </div>
               <div className="space-y-1">
@@ -118,7 +118,7 @@ const ImpactPage = () => {
                   Vivimos a un ritmo que nos drena, y los estimulantes sintéticos solo te hacen pagar el precio después con más fatiga. Tu biología no necesita parches, necesita optimización real.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
-                  En Nutra Blue, cambiamos los estimulantes por ciencia. Diseñamos fórmulas de alta biodisponibilidad que no solo te despiertan, sino que nutren tu cerebro y restauran tu capacidad de rendir al máximo, de forma natural y constante.
+                  En NutraBlue, cambiamos los estimulantes por ciencia. Diseñamos fórmulas de alta biodisponibilidad que no solo te despiertan, sino que nutren tu cerebro y restauran tu capacidad de rendir al máximo, de forma natural y constante.
                 </p>
                 
                 <div className="pt-4">
@@ -312,7 +312,7 @@ const ImpactPage = () => {
                   id: 'absorcion-celular',
                   title: '¿Por qué la absorción celular es el secreto de la verdadera energía?',
                   summary: 'La mitocondria es el motor de tu cuerpo, pero sin la biodisponibilidad adecuada de cofactores, la energía nunca llega a tus células.',
-                  content: 'Muchos suplementos tradicionales se eliminan sin absorberse. En Nutra Blue nos enfocamos en compuestos de alta biodisponibilidad y extractos estandarizados que maximizan la permeabilidad de la membrana celular. Al combinar adaptógenos activos con cofactores naturales, permitimos que tu mitocondria produzca ATP de forma sostenida y eficiente, eliminando el clásico crash de los estimulantes convencionales.'
+                  content: 'Muchos suplementos tradicionales se eliminan sin absorberse. En NutraBlue nos enfocamos en compuestos de alta biodisponibilidad y extractos estandarizados que maximizan la permeabilidad de la membrana celular. Al combinar adaptógenos activos con cofactores naturales, permitimos que tu mitocondria produzca ATP de forma sostenida y eficiente, eliminando el clásico crash de los estimulantes convencionales.'
                 },
                 {
                   id: 'nutricion-avanzada',
@@ -328,7 +328,7 @@ const ImpactPage = () => {
                     <p className="text-xs text-muted-foreground leading-relaxed">{article.content}</p>
                   </div>
                   <div className="mt-6 pt-4 border-t border-border/20 text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">
-                    Artículos Informativos • Filosofía Nutra Blue
+                    Artículos Informativos • Filosofía NutraBlue
                   </div>
                 </div>
               ))}
@@ -353,7 +353,7 @@ const ImpactPage = () => {
                 Nuestra Promesa Contigo
               </h2>
               <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Trabajamos de la mano con biólogos y químicos farmacéuticos. Cada lote de Nutra Blue es formulado bajo estándares rigurosos de pureza. 
+                Trabajamos de la mano con biólogos y químicos farmacéuticos. Cada lote de NutraBlue es formulado bajo estándares rigurosos de pureza. 
                 Si un compuesto no tiene respaldo científico sólido en ensayos clínicos aleatorizados, no lo incluimos en nuestro catálogo. Así de simple.
               </p>
             </motion.div>

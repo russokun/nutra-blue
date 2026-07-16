@@ -155,10 +155,10 @@ const ProductDetailPage = () => {
   return (
     <>
       <Helmet>
-        <title>{`${product.name} — Nutra Blue | Chile`}</title>
-        <meta name="description" content={product.description || `Adquiere ${product.name} con formulación científica premium en Nutra Blue.`} />
-        <meta property="og:title" content={`${product.name} — Nutra Blue`} />
-        <meta property="og:description" content={product.description || `Fórmula con adaptógenos de alta biodisponibilidad. Compra ${product.name} en Nutra Blue.`} />
+        <title>{`${product.name} — NutraBlue | Chile`}</title>
+        <meta name="description" content={product.description || `Adquiere ${product.name} con formulación científica premium en NutraBlue.`} />
+        <meta property="og:title" content={`${product.name} — NutraBlue`} />
+        <meta property="og:description" content={product.description || `Fórmula con adaptógenos de alta biodisponibilidad. Compra ${product.name} en NutraBlue.`} />
         <meta property="og:image" content={product.image_url} />
         <meta property="og:type" content="product" />
         <meta property="og:url" content={`https://nutrablue-test.vercel.app/product/${product.id}`} />
@@ -252,12 +252,12 @@ const ProductDetailPage = () => {
                 className="w-full h-11 text-base font-semibold shadow-md active:scale-[0.98] transition-all duration-150"
               >
                 <ShoppingCart className="h-5 w-5 mr-2" />
-                {product.stock === 0 ? 'Agotado' : 'Añadir al Carrito'}
+                {product.stock === 0 ? 'Agotado' : 'Añadir a mi Rutina'}
               </Button>
             </div>
           </div>
 
-          {/* Banner de la Marca Nutra Blue */}
+          {/* Banner de la Marca NutraBlue */}
           <div className="w-full bg-gradient-to-r from-sky-950 via-slate-900 to-sky-950 text-foreground py-6 px-8 rounded-2xl border border-primary/20 shadow-md mb-12 flex flex-col md:flex-row justify-between items-center gap-4 overflow-hidden relative group">
             {/* Left Decorative Shape */}
             <div className="absolute top-0 left-0 w-32 h-full bg-gradient-to-r from-primary/5 to-transparent skew-x-12 pointer-events-none"></div>
@@ -267,7 +267,7 @@ const ProductDetailPage = () => {
             {/* Left Logo */}
             <div className="flex items-center space-x-2 shrink-0 z-10 select-none">
               <span className="text-2xl font-semibold text-primary" style={{ fontFamily: 'Playfair Display, serif' }}>
-                Nutra Blue
+                NutraBlue
               </span>
               <span className="text-lg text-emerald-500 font-bold">🌿</span>
             </div>
@@ -286,7 +286,7 @@ const ProductDetailPage = () => {
             <div className="flex items-center space-x-2 shrink-0 z-10 select-none">
               <span className="text-lg text-emerald-500 font-bold">🌿</span>
               <span className="text-2xl font-semibold text-primary" style={{ fontFamily: 'Playfair Display, serif' }}>
-                Nutra Blue
+                NutraBlue
               </span>
             </div>
           </div>

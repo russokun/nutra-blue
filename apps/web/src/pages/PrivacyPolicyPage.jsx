@@ -9,8 +9,8 @@ const PrivacyPolicyPage = () => {
   return (
     <>
       <Helmet>
-        <title>Política de Privacidad - Nutra Blue</title>
-        <meta name="description" content="Política de privacidad de Nutra Blue. Conoce cómo protegemos y gestionamos tus datos personales en conformidad con las leyes chilenas." />
+        <title>Política de Privacidad - NutraBlue</title>
+        <meta name="description" content="Política de privacidad de NutraBlue. Conoce cómo protegemos y gestionamos tus datos personales en conformidad con las leyes chilenas." />
       </Helmet>
 
       <Header />
@@ -27,7 +27,7 @@ const PrivacyPolicyPage = () => {
               Política de Privacidad
             </h1>
             <p className="text-muted-foreground mx-auto text-base max-w-2xl">
-              En Nutra Blue nos tomamos muy en serio la seguridad y privacidad de tus datos.
+              En NutraBlue nos tomamos muy en serio la seguridad y privacidad de tus datos.
               A continuación te explicamos en detalle qué información recopilamos, cómo la utilizamos y qué derechos tienes,
               conforme a la Ley N° 19.628 de Protección de la Vida Privada de la República de Chile.
             </p>
@@ -112,11 +112,11 @@ const PrivacyPolicyPage = () => {
                 Tus datos de carácter personal son procesados para las siguientes finalidades explícitas:
               </p>
               <ol className="list-decimal pl-6 space-y-2 text-sm text-muted-foreground">
-                <li>Procesar, validar y facturar tus compras de productos Nutra Blue.</li>
+                <li>Procesar, validar y facturar tus compras de productos NutraBlue.</li>
                 <li>Gestionar los servicios de despacho y entrega a domicilio con transportistas autorizados en todo Chile.</li>
                 <li>Enviar notificaciones relativas al estado de tu pedido (confirmación, preparación y despacho).</li>
                 <li>Brindar asistencia a través de nuestros canales de soporte y responder tus consultas.</li>
-                <li>Enviar boletines y ofertas exclusivas de Nutra Blue, previa autorización en el registro (de lo cual podrás darte de baja en cualquier momento).</li>
+                <li>Enviar boletines y ofertas exclusivas de NutraBlue, previa autorización en el registro (de lo cual podrás darte de baja en cualquier momento).</li>
               </ol>
             </section>
 
@@ -125,7 +125,7 @@ const PrivacyPolicyPage = () => {
                 <span className="text-primary text-lg">3.</span> Transferencia de Datos a Terceros
               </h2>
               <p className="text-sm leading-relaxed text-muted-foreground">
-                Nutra Blue no vende, comercializa ni arrienda tus datos personales bajo ninguna circunstancia. Solamente compartimos la información estrictamente necesaria con proveedores estratégicos para la operación de tu pedido:
+                NutraBlue no vende, comercializa ni arrienda tus datos personales bajo ninguna circunstancia. Solamente compartimos la información estrictamente necesaria con proveedores estratégicos para la operación de tu pedido:
               </p>
               <ul className="list-disc pl-6 space-y-2 text-sm text-muted-foreground">
                 <li>Empresas de Courier (Starken, Chilexpress, Correos de Chile u otros similares) para completar la entrega física de tus productos.</li>
@@ -179,7 +179,7 @@ const PrivacyPolicyPage = () => {
                 <span className="text-primary text-lg">7.</span> Modificaciones a la Política
               </h2>
               <p className="text-sm leading-relaxed text-muted-foreground">
-                Nutra Blue se reserva el derecho de modificar esta política para adaptarla a futuras actualizaciones normativas en Chile o cambios organizacionales en nuestros servicios. Te sugerimos revisar periódicamente esta página para estar informado de las actualizaciones.
+                NutraBlue se reserva el derecho de modificar esta política para adaptarla a futuras actualizaciones normativas en Chile o cambios organizacionales en nuestros servicios. Te sugerimos revisar periódicamente esta página para estar informado de las actualizaciones.
               </p>
             </section>
 
