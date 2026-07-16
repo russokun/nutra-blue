@@ -38,7 +38,9 @@ const Header = ({ minimal = false }) => {
   const navLinks = [
     { name: 'Inicio', path: '/' },
     { name: 'Catálogo', path: '/shop' },
+    { name: 'Nuestra Historia', path: '/historia' },
     { name: 'Impacto', path: '/impacto' },
+    { name: 'Contacto', path: '/contacto' },
   ];
 
   const isActive = (path) => location.pathname === path;

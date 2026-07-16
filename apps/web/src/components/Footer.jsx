@@ -75,7 +75,7 @@ const Footer = ({ minimal = false }) => {
                 <Link to="/impacto" className="text-sm text-slate-300 hover:text-primary transition-all duration-200">
                   Conoce Nuestro Impacto
                 </Link>
-                <Link to="/privacy-policy" className="text-sm text-slate-300 hover:text-primary transition-all duration-200">
+                <Link to="/faqs" className="text-sm text-slate-300 hover:text-primary transition-all duration-200">
                   Preguntas Frecuentes (FAQs)
                 </Link>
                 <a href="mailto:contacto@nutrablue.cl" className="text-sm text-slate-300 hover:text-primary transition-all duration-200">

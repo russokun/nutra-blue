@@ -159,7 +159,7 @@ const ImpactPage = () => {
                       Resiliencia Física
                     </h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      Compuestos botánicos adaptógenos (como el *Reishi* y el *Ajo Negro*) que ayudan a equilibrar el eje HPA (hipotálamo-hipófisis-adrenal) para regular la respuesta fisiológica al estrés cotidiano.
+                      Compuestos botánicos (como el *Reishi* y el *Ajo Negro*) tradicionalmente usados para acompañar tu rutina y aportar al bienestar general en tu día a día.
                     </p>
                   </CardContent>
                 </Card>
@@ -271,20 +271,20 @@ const ImpactPage = () => {
                 <div className="space-y-3">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded-full">Resiliencia</span>
                   <h3 className="text-lg font-bold text-foreground">
-                    Modulación del Cortisol mediante Adaptógenos Activos
+                    Fuente Natural de Adaptógenos para tu Bienestar
                   </h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Estudios aleatorizados de doble ciego que demuestran la regulación del eje hipotálamo-hipófisis-adrenal mediante extractos estandarizados.
+                    Acompaña tu rutina con extractos estandarizados de uso tradicional para el estilo de vida actual.
                   </p>
                 </div>
                 <div className="pt-6 border-t border-border/20 mt-4 flex items-center justify-between">
                   <button
-                    onClick={() => toast.info("Evidencia: Reducción promedio de 23% en niveles de cortisol en plasma en 60 días.")}
+                    onClick={() => toast.info("Información: Los compuestos seleccionados han sido tradicionalmente usados para aportar al bienestar diario.")}
                     className="text-xs font-bold text-accent hover:underline flex items-center gap-1"
                   >
-                    Ver Evidencia Clínica <ArrowRight className="h-3 w-3" />
+                    Ver Información Adicional <ArrowRight className="h-3 w-3" />
                   </button>
-                  <span className="text-[10px] text-muted-foreground font-semibold">Estudio Clínico</span>
+                  <span className="text-[10px] text-muted-foreground font-semibold">Uso Tradicional</span>
                 </div>
               </div>
             </div>
@@ -317,8 +317,8 @@ const ImpactPage = () => {
                 {
                   id: 'nutricion-avanzada',
                   title: 'El impacto de la nutrición avanzada en tu enfoque mental diario.',
-                  summary: 'Descubre cómo los nootrópicos naturales y el control del cortisol pueden transformar tu claridad cognitiva.',
-                  content: 'El cerebro consume el 20% de la energía metabólica. Cuando estás bajo estrés crónico, el cortisol elevado inhibe la plasticidad sináptica, reduciendo tu enfoque. El uso regular de compuestos como la L-teanina, hongos medicinales (Melenas de León y Reishi) y nootrópicos naturales ayuda a modular la respuesta al estrés, potenciando la producción de ondas cerebrales alfa para un estado de calma alerta ideal para el alto rendimiento profesional.'
+                  summary: 'Descubre cómo los ingredientes de origen natural pueden acompañar tu día a día.',
+                  content: 'El cerebro consume el 20% de la energía metabólica. Acompañar tu rutina con ingredientes funcionales (Melena de León y Reishi) es una práctica tradicional para aportar al bienestar general. Estos ingredientes de origen natural se utilizan habitualmente para complementar un estilo de vida activo y consciente.'
                 }
               ].map((article) => (
                 <div key={article.id} className="bg-[#fcfbf9] p-8 rounded-2xl border border-border/80 shadow-sm flex flex-col justify-between hover:border-primary/20 transition-all">
@@ -365,8 +365,8 @@ const ImpactPage = () => {
                 <p className="text-[11px] text-muted-foreground">Cero estearato de magnesio, maltodextrinas o azúcares ocultos en los polvos.</p>
               </div>
               <div className="p-5 bg-white rounded-2xl border border-border/60 text-center shadow-sm">
-                <h4 className="font-bold text-sm text-foreground mb-1">Dosis Terapéuticas</h4>
-                <p className="text-[11px] text-muted-foreground">Concentraciones activas que de verdad generan un impacto medible en tu biología.</p>
+                <h4 className="font-bold text-sm text-foreground mb-1">Dosis Funcionales</h4>
+                <p className="text-[11px] text-muted-foreground">Concentraciones que tradicionalmente aportan un impacto medible en tu bienestar.</p>
               </div>
               <div className="p-5 bg-white rounded-2xl border border-border/60 text-center shadow-sm">
                 <h4 className="font-bold text-sm text-foreground mb-1">Certificación Local</h4>

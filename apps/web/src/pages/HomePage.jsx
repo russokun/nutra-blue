@@ -140,8 +140,8 @@ const HomePage = () => {
     {
       icon: Heart,
       title: 'Enfoque Inquebrantable',
-      cta: 'Reducir mi Cortisol',
-      description: 'Claridad mental para un mundo lleno de distractions.',
+      cta: 'Mejorar mi Rutina',
+      description: 'Claridad mental para un mundo lleno de distracciones.',
       category: 'Gestión del Estrés',
       image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600&h=400&fit=crop'
     },
@@ -512,7 +512,7 @@ const HomePage = () => {
                 },
                 {
                   name: 'Gestión del Estrés',
-                  desc: 'Equilibra tu sistema nervioso y reduce cortisol',
+                  desc: 'Fuente natural para acompañar tu descanso y calma',
                   image: 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?w=600&h=400&fit=crop',
                   tag: 'Calma'
                 },
