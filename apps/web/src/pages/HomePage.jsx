@@ -130,27 +130,27 @@ const HomePage = () => {
 
   const pillars = [
     {
-      icon: Brain,
-      title: 'Energía Sostenida',
-      cta: 'Mejorar mi Enfoque',
-      description: 'Vence la fatiga sin los bajones del café.',
-      category: 'Salud Cognitiva',
+      icon: Sparkles,
+      title: 'Energía natural',
+      cta: 'Ver productos de Energía',
+      description: 'Para rendir en tu día sin estimulantes que pasan la cuenta.',
+      category: 'Energía',
       image: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&h=400&fit=crop'
     },
     {
-      icon: Heart,
-      title: 'Enfoque Inquebrantable',
-      cta: 'Mejorar mi Rutina',
-      description: 'Claridad mental para un mundo lleno de distracciones.',
-      category: 'Gestión del Estrés',
+      icon: Brain,
+      title: 'Calma y concentración',
+      cta: 'Ver productos de Concentración y Calma',
+      description: 'Claridad mental en un mundo lleno de distracciones.',
+      category: 'Concentración y Calma',
       image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600&h=400&fit=crop'
     },
     {
-      icon: Sparkles,
-      title: 'Recuperación Profunda',
-      cta: 'Activar mi Longevidad',
-      description: 'Descanso reparador para rendir al máximo al día siguiente.',
-      category: 'Longevidad',
+      icon: Heart,
+      title: 'Descanso y longevidad',
+      cta: 'Ver productos de Descanso y Longevidad',
+      description: 'Dormir bien hoy para vivir mejor mañana.',
+      category: 'Descanso y Longevidad',
       image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600&h=400&fit=crop'
     }
   ];
@@ -280,8 +280,20 @@ const HomePage = () => {
         {/* Hero Product Showcase Carousel Section */}
         <section className="relative min-h-[70vh] flex items-center justify-center bg-white py-16 md:py-24 border-b border-slate-100 overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 w-full text-center">
-            
-
+            {/* Hero Copy */}
+            <div className="max-w-3xl mx-auto mb-16 space-y-6">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
+                Tu salud es el punto de partida de todo.
+              </h1>
+              <p className="text-lg md:text-xl text-slate-600 leading-relaxed">
+                En NutraBlue creemos que una vida mejor comienza por cómo te alimentas. Por eso seleccionamos alimentos naturales y funcionales que aportan a lo fundamental: tu energía, tu descanso, tu claridad y tus años por vivir.
+              </p>
+              <div className="pt-4">
+                <Button onClick={() => navigate('/shop')} size="lg" className="rounded-full text-base font-bold px-8 py-6 h-auto shadow-lg hover:shadow-xl transition-all">
+                  Conocer el catálogo
+                </Button>
+              </div>
+            </div>
 
             {/* Centered Carousel (30% larger, max-w-7xl) */}
             <div className="w-full overflow-hidden min-h-[510px] relative px-4">
@@ -307,8 +319,8 @@ const HomePage = () => {
                   className="hero-swiper pb-12"
                 >
                   {heroProducts.map((product) => (
-                    <SwiperSlide key={product.id}>
-                      <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between h-[490px] text-center relative overflow-hidden group">
+                    <SwiperSlide key={product.id} className="h-auto">
+                      <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between h-full min-h-[490px] text-center relative overflow-hidden group">
                         
                         <Link to={`/product/${product.id}`} className="block flex-grow flex flex-col text-left h-full">
                           {/* Image Container with Fixed Dimensions (30% Larger: h-60 / 240px) */}
@@ -428,11 +440,8 @@ const HomePage = () => {
                 className="text-3xl md:text-4xl font-bold text-foreground leading-tight mb-4"
                 style={{ letterSpacing: '-0.02em' }}
               >
-                Tres Pilares de Optimización
+                Lo fundamental para vivir mejor
               </h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Nuestras formulaciones premium atacan los desafíos clave de la biología humana moderna.
-              </p>
             </motion.div>
 
             <div className="space-y-20">
@@ -496,31 +505,37 @@ const HomePage = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-                Descubrir Categorías
+                Encuentra lo que tu cuerpo necesita
               </h2>
               <p className="text-sm text-muted-foreground mt-2">
-                Explora suplementos especializados para tus metas de biohacking
+                Explora nuestros alimentos funcionales según el beneficio que buscas.
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
                 {
-                  name: 'Salud Cognitiva',
+                  name: 'Energía',
+                  desc: 'Vitalidad natural para tu día a día',
+                  image: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&h=400&fit=crop',
+                  tag: 'Vitalidad'
+                },
+                {
+                  name: 'Concentración y Calma',
                   desc: 'Potencia tu memoria, enfoque y claridad mental',
                   image: 'https://images.unsplash.com/photo-1507413245164-6160d8298b31?w=600&h=400&fit=crop',
                   tag: 'Enfoque'
                 },
                 {
-                  name: 'Gestión del Estrés',
-                  desc: 'Fuente natural para acompañar tu descanso y calma',
-                  image: 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?w=600&h=400&fit=crop',
-                  tag: 'Calma'
+                  name: 'Descanso y Longevidad',
+                  desc: 'Descansa bien hoy para vivir mejor mañana',
+                  image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600&h=400&fit=crop',
+                  tag: 'Descanso'
                 },
                 {
-                  name: 'Longevidad',
-                  desc: 'Activa tus vías de optimización celular',
-                  image: 'https://images.unsplash.com/photo-1532187643603-ba119ca4109e?w=600&h=400&fit=crop',
-                  tag: 'Celular'
+                  name: 'Alimentación Diaria',
+                  desc: 'La base de una vida saludable, todos los días',
+                  image: 'https://images.unsplash.com/photo-1498837167922-41c3735b366a?w=600&h=400&fit=crop',
+                  tag: 'Nutrición'
                 }
               ].map((cat) => (
                 <div
@@ -553,17 +568,14 @@ const HomePage = () => {
         <section className="py-24 bg-background border-t border-border">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 uppercase tracking-widest mb-4">
-                Únete a +2.000 personas optimizando su biología
-              </span>
               <h2
-                className="text-3xl md:text-4xl font-bold text-foreground mb-4"
+                className="text-3xl md:text-4xl font-bold text-foreground mb-4 mt-8"
                 style={{ letterSpacing: '-0.02em' }}
               >
-                Los Más Vendidos
+                Los favoritos de nuestra comunidad
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Formulaciones premium de alta biodisponibilidad más deseadas por nuestra comunidad.
+                Los productos que nuestros clientes eligen una y otra vez para cuidar su salud.
               </p>
             </div>
 
@@ -584,7 +596,7 @@ const HomePage = () => {
                   <div
                     key={product.id}
                     onClick={() => navigate(`/product/${product.id}`)}
-                    className="min-w-[290px] md:min-w-0 snap-center bg-card rounded-2xl p-6 border border-border hover:border-primary/30 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 shadow-sm cursor-pointer"
+                    className="min-w-[290px] md:min-w-0 h-full min-h-[400px] snap-center bg-card rounded-2xl p-6 border border-border hover:border-primary/30 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 shadow-sm cursor-pointer"
                   >
                     <div>
                       {/* Floating Product Image Container */}
@@ -595,10 +607,10 @@ const HomePage = () => {
                           loading="lazy"
                           className="h-full w-auto object-contain drop-shadow-[0_15px_25px_rgba(0,0,0,0.08)] group-hover:scale-105 transition-transform duration-300"
                         />
-                        <span className="absolute top-0 left-0 max-w-[50%] truncate bg-primary/10 text-primary border border-primary/20 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        <span className="absolute top-0 left-0 max-w-[48%] truncate bg-primary/10 text-primary border border-primary/20 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
                           {product.category}
                         </span>
-                        <span className="absolute top-0 right-0 max-w-[50%] truncate bg-amber-500/10 text-amber-700 border border-amber-500/20 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        <span className="absolute top-0 right-0 max-w-[48%] truncate bg-amber-500/10 text-amber-700 border border-amber-500/20 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
                           Stock Limitado
                         </span>
                       </div>

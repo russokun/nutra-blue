@@ -59,8 +59,8 @@ const SectionCarousel = ({ products }) => {
           const discountPercent = 20; // 20% de descuento estimado
 
           return (
-            <SwiperSlide key={product.id}>
-              <div className="bg-card border border-border/60 rounded-2xl p-5 hover:border-primary/20 flex flex-col justify-between h-[450px] relative group transition-all duration-300 hover:shadow-lg">
+            <SwiperSlide key={product.id} className="h-auto">
+              <div className="bg-card border border-border/60 rounded-2xl p-5 hover:border-primary/20 flex flex-col justify-between h-full min-h-[460px] relative group transition-all duration-300 hover:shadow-lg">
                 
                 {/* Descuento Badge */}
                 <div className="absolute top-3 left-3 z-10 bg-destructive text-destructive-foreground text-[10px] font-extrabold px-2.5 py-1 rounded-full flex items-center gap-1 uppercase tracking-wider">

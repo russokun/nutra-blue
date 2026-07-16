@@ -17,6 +17,9 @@ import ImpactPage from '@/pages/ImpactPage';
 import LoginPage from '@/pages/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
 import AccountPage from '@/pages/AccountPage';
+import HistoriaPage from '@/pages/HistoriaPage';
+import ContactoPage from '@/pages/ContactoPage';
+import FaqPage from '@/pages/FaqPage';
 
 const RedirectToAdmin = () => {
   useEffect(() => {
@@ -52,6 +55,9 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/account" element={<AccountPage />} />
             <Route path="/admin" element={<RedirectToAdmin />} />
+            <Route path="/historia" element={<HistoriaPage />} />
+            <Route path="/contacto" element={<ContactoPage />} />
+            <Route path="/faqs" element={<FaqPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
 

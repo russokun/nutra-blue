@@ -58,7 +58,7 @@ const Footer = ({ minimal = false }) => {
                 <img src="/logo.png" alt="NutraBlue Logo" className="h-12 w-auto brightness-0 invert" />
               </div>
               <p className="text-sm text-slate-300 leading-relaxed">
-                Suplementos funcionales premium diseñados científicamente para optimizar tu biología, potenciar la energía y alcanzar la longevidad.
+                Alimentos funcionales y naturales para tu energía, tu descanso, tu claridad y tus años por vivir. Empresa familiar chilena. Despacho a todo el país.
               </p>
             </div>
 
@@ -87,9 +87,9 @@ const Footer = ({ minimal = false }) => {
             {/* Certifications & newsletter */}
             <div className="space-y-6 flex flex-col justify-between">
               <div className="space-y-3">
-                <span className="text-sm font-bold tracking-wider uppercase text-white">Únete y recibe estrategias</span>
+                <span className="text-sm font-bold tracking-wider uppercase text-white">Newsletter</span>
                 <p className="text-xs text-slate-300">
-                  Estrategias de nutrición avanzada y descuentos exclusivos.
+                  Únete y recibe tips de salud que sí funcionan (más un descuento de bienvenida).
                 </p>
                 <form onSubmit={handleSubscribe} className="flex gap-2">
                   <input

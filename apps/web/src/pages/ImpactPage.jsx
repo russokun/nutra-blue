@@ -47,16 +47,14 @@ const ImpactPage = () => {
                 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white leading-tight tracking-tight"
                 style={{ fontFamily: 'Playfair Display, serif', letterSpacing: '-0.02em', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}
               >
-                Queremos optimizar el <br />
+                La salud primero. <br />
                 <span className="text-accent font-black">
-                  Potencial Humano
+                  Todo lo demás nace de ahí.
                 </span>
               </h1>
 
               <p className="text-lg md:text-xl text-white/95 max-w-3xl mx-auto leading-relaxed" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.2)' }}>
-                No existimos para vender pastillas; existimos para democratizar el biohacking. 
-                Nuestra meta es otorgar claridad mental, equilibrio nervioso y longevidad activa a cada persona en Chile, 
-                fusionando la pureza de la naturaleza con el rigor de la ciencia moderna.
+                No vendemos pastillas milagrosas. Somos una empresa familiar chilena que cree que la naturaleza, bien elegida y respaldada por la ciencia, puede mejorar la vida de las personas. Cada producto de nuestro catálogo está aquí por una sola razón: aporta de verdad a tu salud. Llegamos a todo Chile.
               </p>
 
               <div className="flex flex-wrap justify-center gap-4 pt-4">
@@ -142,7 +140,7 @@ const ImpactPage = () => {
                       <Brain className="h-6 w-6" />
                     </div>
                     <h3 className="text-lg font-bold text-card-foreground">
-                      Optimización Mental
+                      Mente clara
                     </h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       Fórmulas como *Calm & Focus* y *Matcha Ritual* diseñadas para mejorar el enfoque sostenido, la memoria y la neuroplasticidad sin provocar taquicardias ni rebotes.
@@ -156,7 +154,7 @@ const ImpactPage = () => {
                       <Zap className="h-6 w-6" />
                     </div>
                     <h3 className="text-lg font-bold text-card-foreground">
-                      Resiliencia Física
+                      Cuerpo fuerte
                     </h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       Compuestos botánicos (como el *Reishi* y el *Ajo Negro*) tradicionalmente usados para acompañar tu rutina y aportar al bienestar general en tu día a día.
