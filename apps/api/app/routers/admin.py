@@ -236,23 +236,8 @@ async def get_inventory_alerts(_: dict = Depends(verify_admin_user)):
 
 @router.post("/products/quick-add", response_model=Product)
 async def quick_add_product(product: ProductCreate, _: dict = Depends(verify_admin_user)):
-    if supabase_client is None:
-        new_product = {
-            "id": str(uuid.uuid4()),
-            **product.model_dump(),
-        }
-        MOCK_PRODUCTS.append(new_product)
-        return new_product
-
-    try:
-        response = supabase_client.from_("products").insert(product.model_dump()).execute()
-        if not response.data:
-            raise HTTPException(status_code=500, detail="Failed to create product")
-        return response.data[0]
-    except Exception as e:
-        if "duplicate" in str(e).lower() or "unique" in str(e).lower():
-            raise HTTPException(status_code=400, detail="Product name already exists")
-        raise HTTPException(status_code=500, detail="Failed to create product")
+    """Alias de /products (mismo comportamiento). Se mantiene por compatibilidad con el frontend."""
+    return await create_product(product, _)
 @router.post("/products/upsert", response_model=Product)
 async def upsert_product(product: ProductCreate, _: dict = Depends(verify_admin_or_internal_key)):
     if supabase_client is None:

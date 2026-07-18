@@ -1,11 +1,4 @@
 import { supabase } from '@/lib/dataClient';
+import { createAuthClient } from '@nutrablue/shared';
 
-export async function getAccessToken() {
-  if (!supabase) return null;
-  const { data: { session } } = await supabase.auth.getSession();
-  return session?.access_token ?? null;
-}
-
-export function isSupabaseAuthAvailable() {
-  return !!supabase;
-}
+export const { getAccessToken, isSupabaseAuthAvailable } = createAuthClient(supabase);

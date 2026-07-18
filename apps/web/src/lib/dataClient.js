@@ -1,12 +1,9 @@
-import { createClient } from '@supabase/supabase-js';
 import { MOCK_PRODUCTS } from './mockData';
+import { createSupabaseClient } from '@nutrablue/shared';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://jadtkmohtsjsmmtwkjsz.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphZHRrbW9odHNqc21tdHdranN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MTUyMDcsImV4cCI6MjA5ODA5MTIwN30.sTvSpHewovibPM0L62DvPMTOt90N6IZ8oIXaqJeSgvo';
+const { supabase, isSupabaseConfigured } = createSupabaseClient();
 
-const isSupabaseConfigured = true;
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export { supabase };
 
 const mapCreatedTimestamp = (item) => {
   if (!item) return item;
