@@ -92,9 +92,7 @@ async def initialize_payment(request: Request):
         raise HTTPException(status_code=500, detail="Failed to initialize payment")
 
 
-@router.post("/flow-callback")
-@router.post("/mercadopago-callback")
-async def payment_webhook(request: Request):
+async def _handle_payment_webhook(request: Request, provider: str):
     content_type = request.headers.get("Content-Type", "")
     payload = {}
 
@@ -108,7 +106,7 @@ async def payment_webhook(request: Request):
             pass
 
     headers = dict(request.headers)
-    gateway = PaymentGatewayFactory.get_gateway()
+    gateway = PaymentGatewayFactory.get_gateway(provider)
 
     try:
         verification = gateway.verify_webhook(payload, headers)
@@ -130,6 +128,16 @@ async def payment_webhook(request: Request):
         raise HTTPException(status_code=400, detail="Webhook verification failed")
 
 
+@router.post("/flow-callback")
+async def flow_webhook(request: Request):
+    return await _handle_payment_webhook(request, "flow")
+
+
+@router.post("/mercadopago-callback")
+async def mercadopago_webhook(request: Request):
+    return await _handle_payment_webhook(request, "mercadopago")
+
+
 @router.get("/transbank-return")
 @router.post("/transbank-return")
 async def transbank_return(request: Request):
@@ -140,7 +148,7 @@ async def transbank_return(request: Request):
         params.update(dict(form_data))
 
     order_id = params.get("order_id")
-    gateway = PaymentGatewayFactory.get_gateway()
+    gateway = PaymentGatewayFactory.get_gateway("transbank")
 
     try:
         result = gateway.handle_return(params)
