@@ -1,6 +1,5 @@
 from typing import Dict, Any
 from transbank.webpay.webpay_plus.transaction import Transaction
-from transbank.common.integration_type import IntegrationType
 from app.core.payments.base import PaymentGateway
 from app.core.config import settings
 
@@ -8,18 +7,17 @@ class TransbankPayment(PaymentGateway):
     def __init__(self):
         self.commerce_code = settings.webpay_commerce_code
         self.api_key = settings.webpay_api_key
-        
-        # Initialize Transbank Transaction
-        self.tx = Transaction()
+
+        # Initialize Transbank Transaction (transbank-sdk >= 6.0 uses build_for_* factories)
         if self.api_key and self.commerce_code and self.commerce_code != "597055555532":
             # Configure for production Webpay
-            self.tx = Transaction().configure_for_production(
+            self.tx = Transaction.build_for_production(
                 commerce_code=self.commerce_code,
                 api_key=self.api_key
             )
         else:
             # Configure for integration (sandbox) Webpay
-            self.tx = Transaction().configure_for_integration(
+            self.tx = Transaction.build_for_integration(
                 commerce_code="597055555532",
                 api_key="579B532A7440BB0C9079DED94D31EA1615B1E9B34D75A4C46286B795E46A74E0"
             )
