@@ -7,6 +7,7 @@ Este repositorio contiene la arquitectura completa del e-commerce **Nutra Blue**
 ## 🚀 Estructura del Monorepo
 
 * **`apps/web`**: Aplicación de frontend SPA construida con React, Vite, TailwindCSS y Shadcn UI.
+* **`apps/admin`**: Panel de administración (React + Vite) para gestionar productos, órdenes y cupones — desacoplado de `apps/web`.
 * **`apps/api`**: Backend construida en Python con FastAPI, enrutadores modulares y validaciones estrictas con Pydantic.
 * **`supabase`**: Migraciones y esquemas relacionales para base de datos PostgreSQL en Supabase.
 

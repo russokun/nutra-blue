@@ -1,11 +1,14 @@
 ## Pages
-- [- Nutra Blue`}](/productdetail): No description available
-- [Carrito - Nutra Blue](/cart): Tu carrito de compras en Nutra Blue
-- [Catálogo - Nutra Blue](/shop): Explora nuestra selección de suplementos funcionales premium para salud cognitiva, gestión del estrés y longevidad.
-- [Confirmación de Orden - Nutra Blue](/orderconfirmation): Tu orden ha sido confirmada exitosamente
-- [Iniciar Sesión - Nutra Blue](/login): No description available
-- [Mi Cuenta - Nutra Blue](/account): No description available
-- [Nuestro Impacto - Nutra Blue](/impact): Descubre el impacto y la propuesta de valor de Nutra Blue. Impulsamos la longevidad celular, la claridad mental y la salud sustentable en Chile.
-- [Política de Privacidad - Nutra Blue](/privacypolicy): Política de privacidad de Nutra Blue. Conoce cómo protegemos y gestionamos tus datos personales en conformidad con las leyes chilenas.
-- [Registro - Nutra Blue](/register): No description available
-- [Términos de Servicio - Nutra Blue](/termsofservice): Términos y condiciones de uso de Nutra Blue. Conoce los términos de compra, envíos, políticas de devolución y garantías en Chile.
+- [— NutraBlue | Chile`}](/product/:id): No description available
+- [Carrito - NutraBlue](/cart): Tu carrito de compras en NutraBlue
+- [Catálogo de Suplementos Premium y Biohacking — NutraBlue](/shop): Explora nuestro catálogo de adaptógenos, nootrópicos y suplementos de longevidad celular en Chile. Calm Focus, Matcha Ritual, Dark Cacao y más.
+- [Confirmación de Orden - NutraBlue](/order-confirmation/:orderId): Tu orden ha sido confirmada exitosamente
+- [Contacto y Soporte - NutraBlue](/contacto): Comunícate con NutraBlue. Estamos aquí para ayudarte con tus dudas sobre nuestros alimentos funcionales y despachos.
+- [Iniciar Sesión - NutraBlue](/login): No description available
+- [Mi Cuenta - NutraBlue](/account): No description available
+- [Nuestra Historia - NutraBlue](/historia): Conoce la historia detrás de NutraBlue, una empresa familiar chilena dedicada a mejorar la calidad de vida mediante alimentación funcional.
+- [Nuestro Impacto - NutraBlue](/impacto): Descubre el impacto y la propuesta de valor de NutraBlue. Impulsamos la longevidad celular, la claridad mental y la salud sustentable en Chile.
+- [Política de Privacidad - NutraBlue](/privacy-policy): Política de privacidad de NutraBlue. Conoce cómo protegemos y gestionamos tus datos personales en conformidad con las leyes chilenas.
+- [Preguntas Frecuentes - NutraBlue](/faqs): Encuentra respuestas a las dudas más comunes sobre los productos y envíos de NutraBlue.
+- [Registro - NutraBlue](/register): No description available
+- [Términos de Servicio - NutraBlue](/terms-of-service): Términos y condiciones de uso de NutraBlue. Conoce los términos de compra, envíos, políticas de devolución y garantías en Chile.

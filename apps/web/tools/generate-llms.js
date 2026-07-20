@@ -19,7 +19,7 @@ const CLEAN_CONTENT_REGEX = {
 };
 
 const EXTRACTION_REGEX = {
-	route: /<Route\s+[^>]*>/g,
+	route: /<Route\s+(?:[^{}>]|\{[^{}]*\})*\/>/g,
 	path: /path=["']([^"']+)["']/,
 	element: /element=\{<(\w+)[^}]*\/?\s*>\}/,
 	helmet: /<Helmet[^>]*?>([\s\S]*?)<\/Helmet>/i,
@@ -115,7 +115,7 @@ function extractHelmetData(content, filePath, routes) {
 	const description = cleanText(descMatch?.[1]);
 
 	const fileName = path.basename(filePath, path.extname(filePath));
-	const url = routes.length && routes.has(fileName)
+	const url = routes.size && routes.has(fileName)
 		? routes.get(fileName)
 		: generateFallbackUrl(fileName);
 
