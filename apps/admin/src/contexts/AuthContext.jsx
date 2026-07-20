@@ -4,6 +4,8 @@ import { getAccessToken } from '@/lib/authClient';
 
 export const AuthContext = createContext();
 
+const ALLOW_MOCK_AUTH = import.meta.env.VITE_ALLOW_MOCK_AUTH === 'true';
+
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -55,11 +57,13 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (!supabase) {
-      const mockToken = localStorage.getItem('sb-auth-token');
-      if (mockToken && mockToken.startsWith('mock-')) {
-        setCurrentUser({ email: 'admin@nutrablue.cl', id: 'mock-admin-id' });
-        setIsAuthenticated(true);
-        setIsAdmin(true);
+      if (ALLOW_MOCK_AUTH) {
+        const mockToken = localStorage.getItem('sb-auth-token');
+        if (mockToken && mockToken.startsWith('mock-')) {
+          setCurrentUser({ email: 'admin@nutrablue.cl', id: 'mock-admin-id' });
+          setIsAuthenticated(true);
+          setIsAdmin(true);
+        }
       }
       setLoading(false);
       return;
@@ -78,6 +82,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     if (!supabase) {
+      if (!ALLOW_MOCK_AUTH) throw new Error('Autenticación no disponible. Configura Supabase.');
       const user = { email, id: 'mock-admin-id' };
       setCurrentUser(user);
       setIsAuthenticated(true);
@@ -120,7 +125,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated,
         isAdmin,
         loading,
-        authAvailable: !!supabase,
+        authAvailable: !!supabase || ALLOW_MOCK_AUTH,
         login,
         logout,
         register,

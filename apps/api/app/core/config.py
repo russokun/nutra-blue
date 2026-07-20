@@ -10,7 +10,8 @@ class Settings(BaseSettings):
     environment: str = os.getenv("ENVIRONMENT", "development")
     cors_origins: str = os.getenv("CORS_ORIGIN", "http://localhost:3000")
     internal_api_key: str = os.getenv("INTERNAL_API_KEY", "NutraBlueSync2026SecretKey!")
-    
+    allow_mock_auth_raw: bool = Field(default=False, alias="allow_mock_auth")
+
     admin_emails_raw: str = Field(default="", alias="admin_emails")
 
     @property
@@ -64,6 +65,11 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.environment.lower() == "production"
+
+    @property
+    def allow_mock_auth(self) -> bool:
+        # Nunca se activa en produccion, sin importar el valor de la env var
+        return self.allow_mock_auth_raw and not self.is_production
 
     @property
     def cors_origin_list(self) -> list[str]:

@@ -19,12 +19,13 @@ async def get_current_user(authorization: Optional[str] = Header(None)) -> Optio
     if not authorization or not authorization.startswith("Bearer "):
         return None
     if supabase_client is None:
-        token = authorization.split(" ", 1)[1]
-        if "mock" in token:
-            return {
-                "id": "mock-admin-id",
-                "email": "admin@nutrablue.cl",
-            }
+        if settings.allow_mock_auth:
+            token = authorization.split(" ", 1)[1]
+            if "mock" in token:
+                return {
+                    "id": "mock-admin-id",
+                    "email": "admin@nutrablue.cl",
+                }
         return None
 
     token = authorization.split(" ", 1)[1]
@@ -45,7 +46,9 @@ async def verify_admin_user(user: Optional[dict] = Depends(get_current_user)) ->
         raise HTTPException(status_code=401, detail="Authentication required")
 
     if supabase_client is None:
-        return user
+        if settings.allow_mock_auth:
+            return user
+        raise HTTPException(status_code=503, detail="Admin access is not configured")
 
     if not settings.admin_emails:
         raise HTTPException(status_code=503, detail="Admin access is not configured")
@@ -66,7 +69,9 @@ async def verify_admin_or_internal_key(
     user = await get_current_user(authorization)
     if user:
         if supabase_client is None:
-            return user
+            if settings.allow_mock_auth:
+                return user
+            raise HTTPException(status_code=401, detail="Invalid or missing authentication credentials")
         if settings.admin_emails and user.get("email", "").lower() in settings.admin_emails:
             return user
             
