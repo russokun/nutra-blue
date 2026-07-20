@@ -1,4 +1,4 @@
-﻿import logging
+import logging
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -84,6 +84,12 @@ app.include_router(auth.router)
 app.include_router(public.router)
 app.include_router(coupons.router)
 app.include_router(subscribers.router)
+
+import os
+from fastapi.staticfiles import StaticFiles
+uploads_dir = os.path.join(os.path.dirname(__file__), "uploads")
+os.makedirs(uploads_dir, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
 
 
 

@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Tag, RefreshCw } from 'lucide-react';
+import { Plus, Pencil, Trash2, Tag, RefreshCw, Upload, Image as ImageIcon, Loader2 } from 'lucide-react';
 
 const emptyProduct = {
   name: '', price: '', stock: '', category: 'Longevidad', image_url: '',
@@ -22,6 +22,8 @@ const ProductsPage = () => {
   const [form, setForm] = useState(emptyProduct);
   const [editingId, setEditingId] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [showUrlInput, setShowUrlInput] = useState(false);
 
   const fetchProducts = async () => {
     try {
@@ -42,6 +44,7 @@ const ProductsPage = () => {
   const openCreate = () => {
     setEditingId(null);
     setForm(emptyProduct);
+    setShowUrlInput(false);
     setModalOpen(true);
   };
 
@@ -54,7 +57,24 @@ const ProductsPage = () => {
       category: product.category,
       image_url: product.image_url || '',
     });
+    setShowUrlInput(Boolean(product.image_url && product.image_url.startsWith('http')));
     setModalOpen(true);
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingImage(true);
+      const res = await adminClient.uploadProductImage(file);
+      setForm((prev) => ({ ...prev, image_url: res.image_url }));
+      toast.success('Imagen subida con éxito');
+    } catch (err) {
+      toast.error(err.message || 'Error al subir la imagen');
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -238,13 +258,62 @@ const ProductsPage = () => {
                 </select>
               </div>
               <div>
-                <Label>URL de Imagen</Label>
-                <Input 
-                  value={form.image_url} 
-                  onChange={(e) => setForm({ ...form, image_url: e.target.value })} 
-                  placeholder="https://ejemplo.com/imagen.jpg"
-                  className="mt-1"
-                />
+                <div className="flex items-center justify-between mb-1">
+                  <Label>Imagen del Producto</Label>
+                  <button
+                    type="button"
+                    onClick={() => setShowUrlInput(!showUrlInput)}
+                    className="text-xs text-primary hover:underline font-medium"
+                  >
+                    {showUrlInput ? 'Subir archivo (PNG/JPG)' : 'Usar URL externa'}
+                  </button>
+                </div>
+
+                {form.image_url && (
+                  <div className="mb-2 relative w-20 h-20 rounded-xl border border-border overflow-hidden bg-muted/20 group">
+                    <img src={form.image_url} alt="Vista previa" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, image_url: '' })}
+                      className="absolute inset-0 bg-black/60 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs transition-opacity font-medium"
+                    >
+                      Quitar
+                    </button>
+                  </div>
+                )}
+
+                {!showUrlInput ? (
+                  <div className="mt-1">
+                    <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-border rounded-xl cursor-pointer bg-muted/10 hover:bg-muted/20 transition-colors">
+                      {uploadingImage ? (
+                        <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                          <span>Subiendo imagen...</span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center text-center px-4">
+                          <Upload className="w-5 h-5 mb-1.5 text-muted-foreground" />
+                          <p className="text-xs text-foreground font-semibold">Seleccionar o soltar archivo</p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">PNG, JPG, WEBP (Máx 10 MB)</p>
+                        </div>
+                      )}
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleFileUpload} 
+                        disabled={uploadingImage} 
+                        className="hidden" 
+                      />
+                    </label>
+                  </div>
+                ) : (
+                  <Input 
+                    value={form.image_url} 
+                    onChange={(e) => setForm({ ...form, image_url: e.target.value })} 
+                    placeholder="https://ejemplo.com/imagen.jpg"
+                    className="mt-1"
+                  />
+                )}
               </div>
               <div className="flex gap-3 pt-2">
                 <Button type="button" variant="outline" onClick={() => setModalOpen(false)} className="flex-1 rounded-xl">Cancelar</Button>

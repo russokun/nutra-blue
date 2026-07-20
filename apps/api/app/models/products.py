@@ -16,6 +16,8 @@ class ProductBase(BaseModel):
     ingredients: Optional[str] = None
     usage: Optional[str] = None
     precautions: Optional[str] = None
+    cross_selling: Optional[str] = None
+    product_profile: Optional[str] = None
 
     @field_validator("price", "stock", mode="before")
     @classmethod
@@ -52,9 +54,10 @@ class ProductUpdate(BaseModel):
     ingredients: Optional[str] = None
     usage: Optional[str] = None
     precautions: Optional[str] = None
+    cross_selling: Optional[str] = None
+    product_profile: Optional[str] = None
 
 class Product(ProductBase):
     id: str
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}

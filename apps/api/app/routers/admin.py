@@ -1,5 +1,6 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, Body
+import os
+from fastapi import APIRouter, Depends, HTTPException, Query, Body, UploadFile, File
 from app.database.supabase import supabase_client
 from app.core.security import verify_admin_user, verify_admin_or_internal_key
 from app.core.mock_store import MOCK_ORDERS
@@ -7,6 +8,7 @@ from app.core.mock_data import MOCK_PRODUCTS
 from app.models.products import Product, ProductCreate, ProductUpdate
 from app.models.orders import OrderUpdateStatus
 from app.core.config import settings
+from app.services.storage_service import upload_image
 import uuid
 import requests
 import csv
@@ -232,6 +234,34 @@ async def get_inventory_alerts(_: dict = Depends(verify_admin_user)):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch inventory alerts: {str(e)}")
+
+
+@router.post("/products/upload-image")
+async def upload_product_image(
+    file: UploadFile = File(...),
+    _: dict = Depends(verify_admin_user),
+):
+    """
+    Subir imagen de producto a Cloudflare R2 (o Supabase / local en fallback).
+    Devuelve la URL pública para asociarla al producto.
+    """
+    allowed_extensions = {".png", ".jpg", ".jpeg", ".webp", ".svg", ".gif"}
+    ext = os.path.splitext(file.filename or "")[1].lower()
+    if ext not in allowed_extensions:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Formato de imagen no permitido ({ext}). Formatos aceptados: PNG, JPG, JPEG, WEBP, SVG, GIF"
+        )
+
+    file_bytes = await file.read()
+    if len(file_bytes) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="El archivo de imagen no debe superar los 10 MB")
+
+    try:
+        image_url = upload_image(file_bytes=file_bytes, filename=file.filename or "image.jpg", content_type=file.content_type)
+        return {"success": True, "image_url": image_url}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al procesar y subir la imagen: {str(e)}")
 
 
 @router.post("/products/quick-add", response_model=Product)
@@ -482,7 +512,9 @@ async def sync_products_from_sheets(
                 origin=doc_details.get("origin") or None,
                 ingredients=doc_details.get("ingredients") or None,
                 usage=doc_details.get("usage") or None,
-                precautions=doc_details.get("precautions") or None
+                precautions=doc_details.get("precautions") or None,
+                cross_selling=doc_details.get("cross_selling") or None,
+                product_profile=doc_details.get("product_profile") or None
             )
 
         except Exception as e:

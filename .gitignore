@@ -18,6 +18,7 @@ build/
 .env.*.local
 apps/api/.env
 apps/web/.env
+apps/admin/.env.example
 
 # IDE
 .idea/

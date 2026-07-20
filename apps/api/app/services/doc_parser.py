@@ -41,6 +41,8 @@ def parse_google_doc(url: str) -> dict:
     sections = {
         "description": "",
         "origin": "",
+        "cross_selling": "",
+        "product_profile": "",
         "ingredients": "",
         "usage": "",
         "precautions": "",
@@ -65,12 +67,22 @@ def parse_google_doc(url: str) -> dict:
             if ":" in text:
                 sections[current_key] += text.split(":", 1)[1].strip() + "\n"
             continue
+        elif is_short_line and any(h in lower_text for h in ["recomendaciones con otros productos", "cross-selling", "cross selling", "venta cruzada"]):
+            current_key = "cross_selling"
+            if ":" in text:
+                sections[current_key] += text.split(":", 1)[1].strip() + "\n"
+            continue
+        elif is_short_line and any(h in lower_text for h in ["perfil del producto", "perfil producto"]):
+            current_key = "product_profile"
+            if ":" in text:
+                sections[current_key] += text.split(":", 1)[1].strip() + "\n"
+            continue
         elif is_short_line and any(h in lower_text for h in ["zona de producción", "zona de produccion", "lugar de producción", "lugar de produccion", "origen"]):
             current_key = "origin"
             if ":" in text:
                 sections[current_key] += text.split(":", 1)[1].strip() + "\n"
             continue
-        elif is_short_line and any(h in lower_text for h in ["perfil del producto", "ingrediente", "composición", "composicion", "fórmula", "formula"]):
+        elif is_short_line and any(h in lower_text for h in ["ingrediente", "composición", "composicion", "fórmula", "formula"]):
             current_key = "ingredients"
             if ":" in text:
                 sections[current_key] += text.split(":", 1)[1].strip() + "\n"
@@ -88,7 +100,7 @@ def parse_google_doc(url: str) -> dict:
         elif is_short_line and any(h in lower_text for h in ["beneficios para el cliente", "beneficios"]):
             current_key = "benefits"
             continue
-        elif is_short_line and any(h in lower_text for h in ["cross-selling", "estructura de costos", "estrategia de venta", "contacto de proveedor", "referencias"]):
+        elif is_short_line and any(h in lower_text for h in ["estructura de costos", "costos y márgenes", "costos y margenes", "márgenes", "margenes", "estrategia de venta", "contacto de proveedor", "referencias"]):
             current_key = "ignored_metadata"
             continue
             

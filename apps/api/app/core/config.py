@@ -1,4 +1,4 @@
-﻿import os
+import os
 from pydantic import Field
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
@@ -62,6 +62,13 @@ class Settings(BaseSettings):
     # n8n Webhooks
     n8n_subscriber_webhook: str = os.getenv("N8N_SUBSCRIBER_WEBHOOK", "")
 
+    # Cloudflare R2 Credentials
+    r2_account_id: str = os.getenv("R2_ACCOUNT_ID", "")
+    r2_access_key_id: str = os.getenv("R2_ACCESS_KEY_ID", "")
+    r2_secret_access_key: str = os.getenv("R2_SECRET_ACCESS_KEY", "")
+    r2_bucket_name: str = os.getenv("R2_BUCKET_NAME", "nutrablue-media")
+    r2_public_domain: str = os.getenv("R2_PUBLIC_DOMAIN", "") # e.g. https://media.nutrablue.cl or https://pub-xxx.r2.dev
+
     @property
     def is_production(self) -> bool:
         return self.environment.lower() == "production"
@@ -77,8 +84,7 @@ class Settings(BaseSettings):
             return ["*"] if not self.is_production else []
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 
-    class Config:
-        case_sensitive = False
+    model_config = {"case_sensitive": False}
 
 settings = Settings()
 

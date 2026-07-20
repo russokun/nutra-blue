@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently --kill-others --raw \"npm run dev --prefix apps/web\" \"npm run dev --prefix apps/admin\" \"python apps/api/main.py\"",
+    "dev": "concurrently --kill-others --raw \"npm run dev --prefix apps/web\" \"npm run dev --prefix apps/admin\" \"cd apps/api && .venv\\Scripts\\python.exe main.py\"",
     "build": "concurrently --raw \"npm run build --prefix apps/web\" \"npm run build --prefix apps/admin\"",
     "start": "concurrently --kill-others --raw \"npm run start --prefix apps/web\" \"npm run start --prefix apps/admin\" \"python apps/api/main.py\"",
     "lint": "concurrently --raw \"npm run lint --prefix apps/web\" \"npm run lint --prefix apps/admin\"",

@@ -1,0 +1,273 @@
+{
+  "name": "Sync Products from Google Sheets and Docs",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "18f8eb06-b31c-4b68-8ee7-16013a7cb17c",
+      "name": "When clicking \"Execute Workflow\"",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [380, 300]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 3 * * *"
+            }
+          ]
+        }
+      },
+      "id": "2de8eb06-b31c-4b68-8ee7-16013a7cb17d",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [380, 120]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list"
+        },
+        "options": {
+          "headerRow": 3
+        }
+      },
+      "id": "3be8eb06-b31c-4b68-8ee7-16013a7cb17e",
+      "name": "Read Google Sheet Rows",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [600, 220],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CRED_ID",
+          "name": "Google Sheets OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst validRows = items.filter(item => {\n  const name = item.json['Suplemento / Alimento'];\n  return name && name.trim() !== '' && name.toLowerCase() !== 'suplemento / alimento';\n});\n\nreturn validRows.map(item => {\n  const row = item.json;\n\n  let docId = null;\n  const fichaUrl = row['Link Doc'] || '';\n  const match = fichaUrl.match(/\\/d\\/([a-zA-Z0-9-_]+)/);\n  if (match) docId = match[1];\n\n  const cleanInt = (val) => {\n    if (val === undefined || val === null) return 0;\n    const str = String(val).replace(/[$.,\\s]/g, '');\n    return parseInt(str, 10) || 0;\n  };\n\n  return {\n    json: {\n      name: (row['Suplemento / Alimento'] || '').trim(),\n      price: cleanInt(row['$ Venta']),\n      stock: cleanInt(row['Stock'] || 100),\n      category: (row['Categoría / Objetivo'] || 'Otros').trim(),\n      image_url: row['Imagen'] || null,\n      benefits: [],\n      certifications: [],\n      google_doc_url: fichaUrl || null,\n      google_doc_id: docId\n    }\n  };\n});"
+      },
+      "id": "4be8eb06-b31c-4b68-8ee7-16013a7cb17f",
+      "name": "Parse and Clean Rows",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [820, 220]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "6be8eb06-b31c-4b68-8ee7-16013a7cb181",
+              "leftValue": "={{ $json.google_doc_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7be8eb06-b31c-4b68-8ee7-16013a7cb182",
+      "name": "Has Google Doc Ficha?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1040, 220]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.google_doc_id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "8be8eb06-b31c-4b68-8ee7-16013a7cb183",
+      "name": "Download Google Doc Text",
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [1260, 100],
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "YOUR_GOOGLE_DOCS_CRED_ID",
+          "name": "Google Docs OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const product = $('Has Google Doc Ficha?').item.json;\nconst docData = $input.first().json;\n\nfunction extractText(doc) {\n  const blocks = doc?.body?.content || [];\n  return blocks\n    .flatMap(b => b?.paragraph?.elements || [])\n    .map(el => el?.textRun?.content || '')\n    .join('');\n}\n\nconst docText = extractText(docData);\nconst additionalBenefits = [];\nif (docText) {\n  const lines = docText.split('\\n');\n  for (let line of lines) {\n    line = line.trim();\n    if (line.toLowerCase().startsWith('beneficio:') || line.toLowerCase().startsWith('benefit:')) {\n      additionalBenefits.push(line.replace(/^(beneficio|benefit):\\s*/i, ''));\n    }\n  }\n}\n\nreturn {\n  json: {\n    ...product,\n    benefits: [...new Set([...product.benefits, ...additionalBenefits])]\n  }\n};"
+      },
+      "id": "9be8eb06-b31c-4b68-8ee7-16013a7cb184",
+      "name": "Combine Sheet & Doc Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1480, 100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://YOUR_WEBSITE_DOMAIN/hcgi/api/admin/products/upsert",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_ADMIN_JWT_TOKEN"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ name: $json.name, price: $json.price, stock: $json.stock, category: $json.category, image_url: $json.image_url || null, benefits: $json.benefits || [], certifications: $json.certifications || [], google_doc_url: $json.google_doc_url || null }) }}",
+        "options": {}
+      },
+      "id": "abe8eb06-b31c-4b68-8ee7-16013a7cb185",
+      "name": "Upsert Product (with Doc)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1700, 100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://YOUR_WEBSITE_DOMAIN/hcgi/api/admin/products/upsert",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_ADMIN_JWT_TOKEN"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ name: $json.name, price: $json.price, stock: $json.stock, category: $json.category, image_url: $json.image_url || null, benefits: $json.benefits || [], certifications: $json.certifications || [], google_doc_url: $json.google_doc_url || null }) }}",
+        "options": {}
+      },
+      "id": "cce8eb06-b31c-4b68-8ee7-16013a7cb187",
+      "name": "Upsert Product (no Doc)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1700, 340]
+    }
+  ],
+  "connections": {
+    "When clicking \"Execute Workflow\"": {
+      "main": [
+        [
+          {
+            "node": "Read Google Sheet Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read Google Sheet Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Google Sheet Rows": {
+      "main": [
+        [
+          {
+            "node": "Parse and Clean Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse and Clean Rows": {
+      "main": [
+        [
+          {
+            "node": "Has Google Doc Ficha?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Google Doc Ficha?": {
+      "main": [
+        [
+          {
+            "node": "Download Google Doc Text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Upsert Product (no Doc)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Google Doc Text": {
+      "main": [
+        [
+          {
+            "node": "Combine Sheet & Doc Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Sheet & Doc Data": {
+      "main": [
+        [
+          {
+            "node": "Upsert Product (with Doc)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

@@ -16,7 +16,7 @@ def test_sync_products_sheets_success():
                ",,Inventario,Inventario,,\n" \
                "Proteínas,Super Beetle Protein,15000,19990,https://docs.google.com/document/123\n"
 
-    with patch("requests.get") as mock_get:
+    with patch("requests.get") as mock_get, patch("app.routers.admin.supabase_client", None):
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.text = mock_csv
@@ -64,7 +64,7 @@ def test_sync_products_sheets_validation_error():
                ",,Inventario,Inventario,,\n" \
                "Proteínas,Bad Stock Product,15000,not-a-number,https://docs.google.com/document/123\n"
 
-    with patch("requests.get") as mock_get:
+    with patch("requests.get") as mock_get, patch("app.routers.admin.supabase_client", None):
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.text = mock_csv
