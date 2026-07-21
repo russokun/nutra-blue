@@ -9,7 +9,6 @@ services:
       - ./apps/api/.env
     environment:
       - ENVIRONMENT=production
-      - CORS_ORIGIN=http://localhost:3000
     restart: unless-stopped
 
   web:
