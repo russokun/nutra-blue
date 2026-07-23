@@ -15,7 +15,8 @@ build/
 # Environment & secrets
 .env
 .env.local
-.env.*.local
+.env.*
+!.env.example
 apps/api/.env
 apps/web/.env
 apps/admin/.env.example
@@ -41,6 +42,9 @@ htmlcov/
 
 # Vite
 apps/web/node_modules/.vite/
+
+# Local fallback storage for image uploads (dev only, real uploads go to R2)
+apps/api/uploads/
 
 # GitHub workflows (ignored due to IDE token scope limits)
 .github/

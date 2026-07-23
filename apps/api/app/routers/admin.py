@@ -82,6 +82,9 @@ async def list_products(_: dict = Depends(verify_admin_user)):
 
 @router.post("/products", response_model=Product)
 async def create_product(product: ProductCreate, _: dict = Depends(verify_admin_user)):
+    if product.images:
+        product.image_url = product.images[0]
+
     if supabase_client is None:
         new_product = {
             "id": str(uuid.uuid4()),
@@ -107,6 +110,9 @@ async def update_product(
     product: ProductUpdate,
     _: dict = Depends(verify_admin_user),
 ):
+    if product.images:
+        product.image_url = product.images[0]
+
     update_data = {k: v for k, v in product.model_dump().items() if v is not None}
 
     if supabase_client is None:
@@ -536,7 +542,15 @@ async def sync_products_from_sheets(
             found = False
             for idx, p in enumerate(MOCK_PRODUCTS):
                 if p["name"].lower() == name.lower():
+                    # El sync no trae imagenes reales: preservar la galeria curada a mano
+                    # en vez de pisarla con el placeholder /logo.png
+                    preserved_images = p.get("images")
+                    preserved_image_url = p.get("image_url")
                     MOCK_PRODUCTS[idx] = product_dict
+                    if preserved_images:
+                        MOCK_PRODUCTS[idx]["images"] = preserved_images
+                    if preserved_image_url:
+                        MOCK_PRODUCTS[idx]["image_url"] = preserved_image_url
                     report["updated"] += 1
                     found = True
                     break
@@ -548,6 +562,18 @@ async def sync_products_from_sheets(
             try:
                 # Obtenemos los campos a guardar
                 db_data = product_to_validate.model_dump()
+
+                # El sync no trae imagenes reales (doc_parser no las extrae, la columna
+                # de la planilla se ignora). Si el producto ya existe, no pisar la
+                # galeria curada a mano en el admin con el placeholder /logo.png.
+                try:
+                    existing_res = supabase_client.from_("products").select("id").eq("name", name).limit(1).execute()
+                    if existing_res.data:
+                        db_data.pop("image_url", None)
+                        db_data.pop("images", None)
+                except Exception:
+                    pass
+
                 # Realizar upsert basándonos en la restricción UNIQUE de 'name'
                 res_upsert = supabase_client.from_("products").upsert(
                     db_data,

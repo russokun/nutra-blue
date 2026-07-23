@@ -8,6 +8,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
@@ -151,6 +152,7 @@ const ProductDetailPage = () => {
     },
     matches: product.matches || staticDetails.matches
   };
+  const images = product.images?.length ? product.images : [product.image_url];
 
   return (
     <>
@@ -173,11 +175,25 @@ const ProductDetailPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
             {/* Image */}
             <div className="relative rounded-2xl overflow-hidden shadow-md border border-border/40">
-              <img
-                src={product.image_url}
-                alt={product.name}
-                className="w-full h-[450px] object-cover"
-              />
+              <Carousel className="w-full">
+                <CarouselContent className="-ml-0">
+                  {images.map((url, index) => (
+                    <CarouselItem key={`${url}-${index}`} className="pl-0">
+                      <img
+                        src={url}
+                        alt={`${product.name}${images.length > 1 ? ` — foto ${index + 1}` : ''}`}
+                        className="w-full h-[450px] object-cover"
+                      />
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                {images.length > 1 && (
+                  <>
+                    <CarouselPrevious className="left-3" />
+                    <CarouselNext className="right-3" />
+                  </>
+                )}
+              </Carousel>
             </div>
 
             {/* Info */}

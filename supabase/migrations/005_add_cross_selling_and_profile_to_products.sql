@@ -1,0 +1,2 @@
+ALTER TABLE products ADD COLUMN IF NOT EXISTS cross_selling TEXT;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS product_profile TEXT;

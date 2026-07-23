@@ -8,6 +8,7 @@ class ProductBase(BaseModel):
     stock: Union[int, str]
     category: str
     image_url: Optional[str] = None
+    images: List[str] = []
     benefits: List[str] = []
     certifications: List[str] = []
     google_doc_url: Optional[str] = None
@@ -46,6 +47,7 @@ class ProductUpdate(BaseModel):
     stock: Optional[int] = None
     category: Optional[str] = None
     image_url: Optional[str] = None
+    images: Optional[List[str]] = None
     benefits: Optional[List[str]] = None
     certifications: Optional[List[str]] = None
     google_doc_url: Optional[str] = None

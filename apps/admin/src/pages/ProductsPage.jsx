@@ -5,10 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Tag, RefreshCw, Upload, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Tag, RefreshCw, Upload, Loader2, ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 const emptyProduct = {
-  name: '', price: '', stock: '', category: 'Longevidad', image_url: '',
+  name: '', price: '', stock: '', category: 'Longevidad', images: [],
 };
 
 const CATEGORIES = ['Salud Cognitiva', 'Gestión del Estrés', 'Longevidad'];
@@ -24,6 +24,7 @@ const ProductsPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
+  const [urlInputValue, setUrlInputValue] = useState('');
 
   const fetchProducts = async () => {
     try {
@@ -55,9 +56,9 @@ const ProductsPage = () => {
       price: String(product.price),
       stock: String(product.stock),
       category: product.category,
-      image_url: product.image_url || '',
+      images: product.images?.length ? product.images : (product.image_url ? [product.image_url] : []),
     });
-    setShowUrlInput(Boolean(product.image_url && product.image_url.startsWith('http')));
+    setShowUrlInput(false);
     setModalOpen(true);
   };
 
@@ -68,13 +69,33 @@ const ProductsPage = () => {
     try {
       setUploadingImage(true);
       const res = await adminClient.uploadProductImage(file);
-      setForm((prev) => ({ ...prev, image_url: res.image_url }));
+      setForm((prev) => ({ ...prev, images: [...prev.images, res.image_url] }));
       toast.success('Imagen subida con éxito');
     } catch (err) {
       toast.error(err.message || 'Error al subir la imagen');
     } finally {
       setUploadingImage(false);
+      e.target.value = '';
     }
+  };
+
+  const handleAddUrlImage = (url) => {
+    if (!url.trim()) return;
+    setForm((prev) => ({ ...prev, images: [...prev.images, url.trim()] }));
+  };
+
+  const handleRemoveImage = (index) => {
+    setForm((prev) => ({ ...prev, images: prev.images.filter((_, i) => i !== index) }));
+  };
+
+  const handleMoveImage = (index, direction) => {
+    setForm((prev) => {
+      const images = [...prev.images];
+      const target = index + direction;
+      if (target < 0 || target >= images.length) return prev;
+      [images[index], images[target]] = [images[target], images[index]];
+      return { ...prev, images };
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -84,7 +105,8 @@ const ProductsPage = () => {
       price: parseInt(form.price, 10),
       stock: parseInt(form.stock, 10),
       category: form.category,
-      image_url: form.image_url || null,
+      images: form.images,
+      image_url: form.images[0] || null,
       benefits: [],
       certifications: [],
     };
@@ -259,7 +281,7 @@ const ProductsPage = () => {
               </div>
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <Label>Imagen del Producto</Label>
+                  <Label>Imágenes del Producto</Label>
                   <button
                     type="button"
                     onClick={() => setShowUrlInput(!showUrlInput)}
@@ -269,16 +291,45 @@ const ProductsPage = () => {
                   </button>
                 </div>
 
-                {form.image_url && (
-                  <div className="mb-2 relative w-20 h-20 rounded-xl border border-border overflow-hidden bg-muted/20 group">
-                    <img src={form.image_url} alt="Vista previa" className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => setForm({ ...form, image_url: '' })}
-                      className="absolute inset-0 bg-black/60 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs transition-opacity font-medium"
-                    >
-                      Quitar
-                    </button>
+                {form.images.length > 0 && (
+                  <div className="mb-2 flex flex-wrap gap-2">
+                    {form.images.map((url, index) => (
+                      <div key={`${url}-${index}`} className="relative w-20 h-20 rounded-xl border border-border overflow-hidden bg-muted/20 group">
+                        <img src={url} alt={`Vista previa ${index + 1}`} className="w-full h-full object-cover" />
+                        {index === 0 && (
+                          <span className="absolute top-1 left-1 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                            Portada
+                          </span>
+                        )}
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
+                          <div className="flex gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleMoveImage(index, -1)}
+                              disabled={index === 0}
+                              className="text-white disabled:opacity-30 hover:text-primary"
+                            >
+                              <ChevronLeft className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveImage(index)}
+                              className="text-white hover:text-destructive"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleMoveImage(index, 1)}
+                              disabled={index === form.images.length - 1}
+                              className="text-white disabled:opacity-30 hover:text-primary"
+                            >
+                              <ChevronRight className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
 
@@ -293,26 +344,34 @@ const ProductsPage = () => {
                       ) : (
                         <div className="flex flex-col items-center justify-center text-center px-4">
                           <Upload className="w-5 h-5 mb-1.5 text-muted-foreground" />
-                          <p className="text-xs text-foreground font-semibold">Seleccionar o soltar archivo</p>
+                          <p className="text-xs text-foreground font-semibold">Agregar otra imagen</p>
                           <p className="text-[10px] text-muted-foreground mt-0.5">PNG, JPG, WEBP (Máx 10 MB)</p>
                         </div>
                       )}
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        onChange={handleFileUpload} 
-                        disabled={uploadingImage} 
-                        className="hidden" 
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileUpload}
+                        disabled={uploadingImage}
+                        className="hidden"
                       />
                     </label>
                   </div>
                 ) : (
-                  <Input 
-                    value={form.image_url} 
-                    onChange={(e) => setForm({ ...form, image_url: e.target.value })} 
-                    placeholder="https://ejemplo.com/imagen.jpg"
-                    className="mt-1"
-                  />
+                  <div className="flex gap-2 mt-1">
+                    <Input
+                      value={urlInputValue}
+                      onChange={(e) => setUrlInputValue(e.target.value)}
+                      placeholder="https://ejemplo.com/imagen.jpg"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => { handleAddUrlImage(urlInputValue); setUrlInputValue(''); }}
+                    >
+                      Agregar
+                    </Button>
+                  </div>
                 )}
               </div>
               <div className="flex gap-3 pt-2">
