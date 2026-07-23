@@ -2,7 +2,7 @@
   "routes": [
     {
       "src": "/hcgi/api/(.*)",
-      "dest": "https://api-test.nutrablue.cl/$1"
+      "dest": "https://api.nutrablue.cl/$1"
     },
     {
       "handle": "filesystem"
