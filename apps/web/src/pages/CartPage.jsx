@@ -74,7 +74,7 @@ const CartPage = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="bg-muted rounded-2xl p-12 text-center max-w-lg mx-auto border border-border/40">
               <ShoppingBag className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-foreground mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>Tu carrito está vacío</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-2" style={{ fontFamily: 'Impact, sans-serif' }}>Tu carrito está vacío</h2>
               <p className="text-muted-foreground mb-6">Agrega productos premium para comenzar tu optimización biológica.</p>
               <Button asChild className="rounded-xl px-8 py-5">
                 <Link to="/shop">Explorar Catálogo</Link>
@@ -101,7 +101,7 @@ const CartPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1
             className="text-3xl md:text-4xl font-bold text-foreground mb-8"
-            style={{ fontFamily: 'Playfair Display, serif', letterSpacing: '-0.02em' }}
+            style={{ fontFamily: 'Impact, sans-serif', letterSpacing: '-0.02em' }}
           >
             Carrito de Compras
           </h1>
@@ -234,7 +234,7 @@ const CartPage = () => {
             {/* Right Column: Order Summary & Trust */}
             <div className="lg:col-span-1">
               <div className="bg-card rounded-2xl p-6 border border-border shadow-sm sticky top-20 space-y-6">
-                <h2 className="text-xl font-bold text-card-foreground border-b border-border pb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
+                <h2 className="text-xl font-bold text-card-foreground border-b border-border pb-4" style={{ fontFamily: 'Impact, sans-serif' }}>
                   Resumen del Pedido
                 </h2>
 

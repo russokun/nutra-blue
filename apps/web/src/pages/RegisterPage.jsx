@@ -47,7 +47,7 @@ const RegisterPage = () => {
       <Header />
       <main className="min-h-screen bg-background py-12">
         <div className="max-w-md mx-auto px-4">
-          <h1 className="text-3xl font-bold text-foreground mb-8 text-center" style={{ fontFamily: 'Playfair Display, serif' }}>
+          <h1 className="text-3xl font-bold text-foreground mb-8 text-center" style={{ fontFamily: 'Impact, sans-serif' }}>
             Crear Cuenta
           </h1>
           <form onSubmit={handleSubmit} className="bg-card rounded-xl p-6 border border-border space-y-4">

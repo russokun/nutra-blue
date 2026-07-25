@@ -282,7 +282,7 @@ const HomePage = () => {
           <div className="max-w-7xl mx-auto px-4 w-full text-center">
             {/* Hero Copy */}
             <div className="max-w-3xl mx-auto mb-16 space-y-6">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-tight" style={{ fontFamily: 'Impact, sans-serif' }}>
                 Tu salud es el punto de partida de todo.
               </h1>
               <p className="text-lg md:text-xl text-slate-600 leading-relaxed">
@@ -401,7 +401,7 @@ const HomePage = () => {
               <span className="text-primary font-bold text-xs tracking-wider uppercase bg-primary/10 px-3 py-1.5 rounded-full">
                 Descuentos y Combos
               </span>
-              <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mt-3" style={{ fontFamily: 'Playfair Display, serif' }}>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mt-3" style={{ fontFamily: 'Impact, sans-serif' }}>
                 Ofertas y Packs Exclusivos
               </h2>
               <p className="text-slate-600 max-w-xl mx-auto mt-2 text-sm">
@@ -677,7 +677,7 @@ const HomePage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <h3 className="text-2xl font-black tracking-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
+                  <h3 className="text-2xl font-black tracking-tight" style={{ fontFamily: 'Impact, sans-serif' }}>
                     Optimiza tu rendimiento desde hoy
                   </h3>
                   <p className="text-sm text-slate-300 leading-relaxed max-w-md mx-auto">

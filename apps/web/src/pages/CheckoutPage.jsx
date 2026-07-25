@@ -273,7 +273,7 @@ const CheckoutPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1
             className="text-3xl md:text-4xl font-bold text-foreground mb-8"
-            style={{ fontFamily: 'Playfair Display, serif', letterSpacing: '-0.02em' }}
+            style={{ fontFamily: 'Impact, sans-serif', letterSpacing: '-0.02em' }}
           >
             Checkout
           </h1>

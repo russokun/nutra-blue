@@ -22,7 +22,7 @@ const PrivacyPolicyPage = () => {
             <span className="text-sm font-semibold text-primary uppercase tracking-wider">Compromiso de Confianza</span>
             <h1
               className="text-4xl md:text-5xl font-bold text-foreground mt-2 mb-4"
-              style={{ fontFamily: 'Playfair Display, serif', letterSpacing: '-0.02em' }}
+              style={{ fontFamily: 'Impact, sans-serif', letterSpacing: '-0.02em' }}
             >
               Política de Privacidad
             </h1>
@@ -43,7 +43,7 @@ const PrivacyPolicyPage = () => {
                 <div className="p-3 rounded-full bg-primary/10 text-primary mb-4">
                   <ShieldCheck className="h-6 w-6" />
                 </div>
-                <h3 className="text-lg font-semibold text-card-foreground mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>
+                <h3 className="text-lg font-semibold text-card-foreground mb-2" style={{ fontFamily: 'Impact, sans-serif' }}>
                   Datos Protegidos
                 </h3>
                 <p className="text-xs text-muted-foreground">
@@ -57,7 +57,7 @@ const PrivacyPolicyPage = () => {
                 <div className="p-3 rounded-full bg-primary/10 text-primary mb-4">
                   <Eye className="h-6 w-6" />
                 </div>
-                <h3 className="text-lg font-semibold text-card-foreground mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>
+                <h3 className="text-lg font-semibold text-card-foreground mb-2" style={{ fontFamily: 'Impact, sans-serif' }}>
                   Uso Exclusivo
                 </h3>
                 <p className="text-xs text-muted-foreground">
@@ -71,7 +71,7 @@ const PrivacyPolicyPage = () => {
                 <div className="p-3 rounded-full bg-primary/10 text-primary mb-4">
                   <Lock className="h-6 w-6" />
                 </div>
-                <h3 className="text-lg font-semibold text-card-foreground mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>
+                <h3 className="text-lg font-semibold text-card-foreground mb-2" style={{ fontFamily: 'Impact, sans-serif' }}>
                   Control Total (ARCO)
                 </h3>
                 <p className="text-xs text-muted-foreground">

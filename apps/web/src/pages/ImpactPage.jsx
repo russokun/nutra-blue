@@ -45,7 +45,7 @@ const ImpactPage = () => {
               
               <h1
                 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white leading-tight tracking-tight"
-                style={{ fontFamily: 'Playfair Display, serif', letterSpacing: '-0.02em', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}
+                style={{ fontFamily: 'Impact, sans-serif', letterSpacing: '-0.02em', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}
               >
                 La salud primero. <br />
                 <span className="text-accent font-black">

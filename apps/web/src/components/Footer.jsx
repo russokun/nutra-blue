@@ -20,7 +20,7 @@ const Footer = ({ minimal = false }) => {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
             <p>© 2026 NutraBlue. Todos los derechos reservados. Distribuidor Autorizado.</p>
             <div className="flex items-center space-x-6">
-              <Link to="/privacy-policy" className="hover:text-primary transition-colors duration-200">
+              <Link to="/terms-of-service" className="hover:text-primary transition-colors duration-200">
                 Términos y Condiciones
               </Link>
               <Link to="/privacy-policy" className="hover:text-primary transition-colors duration-200">
@@ -125,7 +125,7 @@ const Footer = ({ minimal = false }) => {
                 <Link to="/privacy-policy" className="hover:text-primary transition-all duration-200">
                   Política de Privacidad
                 </Link>
-                <Link to="/privacy-policy" className="hover:text-primary transition-all duration-200">
+                <Link to="/terms-of-service" className="hover:text-primary transition-all duration-200">
                   Términos de Servicio
                 </Link>
               </div>

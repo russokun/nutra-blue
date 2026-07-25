@@ -25,7 +25,7 @@ const ContactoPage = () => {
       <main className="min-h-screen bg-[#fcfbf9] py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
+            <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4" style={{ fontFamily: 'Impact, sans-serif' }}>
               Estamos para ayudarte
             </h1>
             <p className="text-lg text-slate-600">
