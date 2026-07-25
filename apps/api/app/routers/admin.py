@@ -138,11 +138,15 @@ async def admin_update_order_status(
 
 @router.get("/products", response_model=List[Product])
 async def list_products(_: dict = Depends(verify_admin_user)):
+    # __SYSTEM_SYNC_LOG__ es una fila interna donde el sync guarda su timestamp,
+    # no un producto: se oculta igual que en el catalogo publico.
     if supabase_client is None:
-        return MOCK_PRODUCTS
+        return [p for p in MOCK_PRODUCTS if p.get("name") != "__SYSTEM_SYNC_LOG__"]
 
     try:
-        response = supabase_client.from_("products").select("*").order("name").execute()
+        response = supabase_client.from_("products").select("*").neq(
+            "name", "__SYSTEM_SYNC_LOG__"
+        ).order("name").execute()
         return response.data or []
     except Exception:
         raise HTTPException(status_code=500, detail="Failed to fetch products")
@@ -533,6 +537,11 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
             idx_name = i
         elif "categor" in h_lower or h_lower == "categoria" or h_lower == "objetivo":
             idx_category = i
+        elif "inventario" in h_lower or "stock" in h_lower:
+            # Tiene que ir ANTES que la de venta: "inVENTArio" contiene "venta", asi que
+            # si se evalua despues, la columna de inventario se lleva el precio y todos
+            # los productos terminan con precio = stock * 100.
+            idx_stock = i
         elif "costo" in h_lower or "compra" in h_lower or "precio costo" in h_lower:
             # Marcar columna de costo para NO usarla como precio de venta
             idx_cost = i
@@ -551,15 +560,12 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
                 idx_price = i
                 break
 
-    # Buscar "inventario" en la subcabecera y, si no esta ahi, en la cabecera principal.
-    # Se acepta en cualquiera de las dos filas porque el write-back de n8n necesita la
-    # etiqueta en la misma fila que la columna clave (el nodo de Sheets lee un solo
-    # headerRow), y el sync tiene que seguir funcionando con ambas disposiciones.
-    for i, h in enumerate(headers_sub):
-        if "inventario" in h or "stock" in h:
-            idx_stock = i
+    # Si la etiqueta de inventario no estaba en la cabecera principal, buscarla en la
+    # subcabecera. Se acepta en cualquiera de las dos filas porque el write-back de n8n
+    # necesita la etiqueta en la misma fila que la columna clave (el nodo de Sheets lee
+    # un solo headerRow), y el sync tiene que funcionar con ambas disposiciones.
     if idx_stock == -1:
-        for i, h in enumerate(headers_main):
+        for i, h in enumerate(headers_sub):
             if "inventario" in h or "stock" in h:
                 idx_stock = i
                 break

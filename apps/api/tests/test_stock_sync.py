@@ -20,14 +20,24 @@ async def override_auth():
     return {"id": "test-admin-id", "email": "admin@nutrablue.cl"}
 
 
-# Misma estructura que la planilla real: fila de titulo, cabecera principal,
-# subcabecera (donde vive "Inventario") y despues los productos.
+# Estructura actual de la planilla: titulo, cabecera principal (con "Inventario"),
+# subcabecera (solo "Comentario") y despues los productos.
 def build_csv(stock: str, price: str = "$19,990", name: str = "Melena de Leon Gotas") -> str:
+    return (
+        "Lista de Suplementos y Alimentos,,,,,,,,\n"
+        "Categoría / Objetivo,Suplemento / Alimento,Productor,Contacto,$ Compra,$ Venta,,Inventario,Link Doc\n"
+        ",,,,,,Comentario,,\n"
+        f"Estimulación Cerebral,{name},ONGO,ongo.cl,\"$11,700\",\"{price}\",,{stock},\n"
+    )
+
+
+# Disposicion anterior, con "Inventario" en la subcabecera. Se mantiene soportada.
+def build_csv_inventario_en_subcabecera(stock: str, price: str = "$19,990") -> str:
     return (
         "Lista de Suplementos y Alimentos,,,,,,,,\n"
         "Categoría / Objetivo,Suplemento / Alimento,Productor,Contacto,$ Compra,$ Venta,,,Link Doc\n"
         ",,,,,,Comentario,Inventario,\n"
-        f"Estimulación Cerebral,{name},ONGO,ongo.cl,\"$11,700\",\"{price}\",,{stock},\n"
+        f"Estimulación Cerebral,Melena de Leon Gotas,ONGO,ongo.cl,\"$11,700\",\"{price}\",,{stock},\n"
     )
 
 
@@ -68,6 +78,30 @@ def test_precio_toma_la_columna_de_venta_y_nunca_la_de_compra():
 
     assert summary["errors"] == []
     assert find_product("Melena de Leon Gotas")["price"] == 19990
+
+
+def test_la_columna_inventario_no_se_confunde_con_la_de_venta():
+    """
+    "inVENTArio" contiene "venta": con la etiqueta Inventario en la cabecera principal,
+    la deteccion de precio se la llevaba a ella y todos los productos quedaban con
+    precio = stock * 100 ($3.000 para un stock de 30).
+    """
+    summary = run_sync(build_csv("30.00", price="$19,990"))
+
+    assert summary["errors"] == []
+    producto = find_product("Melena de Leon Gotas")
+    assert producto["price"] == 19990
+    assert producto["stock"] == 30
+
+
+def test_soporta_inventario_en_la_subcabecera():
+    """La disposicion anterior de la planilla tiene que seguir funcionando."""
+    summary = run_sync(build_csv_inventario_en_subcabecera("30.00"))
+
+    assert summary["errors"] == []
+    producto = find_product("Melena de Leon Gotas")
+    assert producto["price"] == 19990
+    assert producto["stock"] == 30
 
 
 def test_csv_sin_charset_se_lee_como_utf8():
