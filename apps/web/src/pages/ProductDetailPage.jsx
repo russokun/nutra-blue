@@ -104,7 +104,7 @@ const ProductDetailPage = () => {
   const getStockStatus = (stock) => {
     if (stock === 0) return { text: 'Agotado', color: 'text-destructive' };
     if (stock < 10) return { text: `Solo ${stock} disponibles`, color: 'text-amber-600' };
-    return { text: 'En stock', color: 'text-success' };
+    return { text: `En stock — ${stock} disponibles`, color: 'text-success' };
   };
 
   if (loading) {
@@ -161,12 +161,18 @@ const ProductDetailPage = () => {
           return match ? { emoji: match[1], text: match[2] } : { emoji: "🌱", text: b };
         })
       : staticDetails.icons,
-    technical: {
-      ingredients: product.ingredients || staticDetails.technical.ingredients,
-      usage: product.usage || staticDetails.technical.usage,
-      precautions: product.precautions || staticDetails.technical.precautions,
-    },
   };
+  // Solo se muestran las secciones que tienen datos reales de este producto. Antes se
+  // caía a un texto genérico ("Ingredientes naturales puros de la más alta calidad...")
+  // que no dice nada del producto: en un suplemento, la dosis y las precauciones son
+  // información de seguridad y no se pueden inventar. Las fichas de Google Docs que no
+  // traen esas secciones simplemente no las muestran.
+  const technicalSections = [
+    { key: 'ingredients', label: 'Ingredientes', value: product.ingredients },
+    { key: 'usage', label: 'Modo de Uso', value: product.usage },
+    { key: 'precautions', label: 'Precauciones', value: product.precautions },
+    { key: 'profile', label: 'Perfil del Producto', value: product.product_profile },
+  ].filter((s) => s.value && String(s.value).trim());
   // Las fichas traen beneficios en párrafos largos: en ese caso la grilla de 4
   // columnas no da, y se muestran apilados.
   const hasLongBenefits = extraDetails.icons.some((item) => item.text.length > 90);
@@ -368,39 +374,28 @@ const ProductDetailPage = () => {
                 </div>
 
                 {/* 3. Acordeón de Detalles Técnicos + Imagen */}
+                {technicalSections.length > 0 && (
                 <div className="bg-card/40 border border-border/40 p-6 rounded-2xl">
                   <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-6">Especificaciones Técnicas</h3>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
                     {/* Accordion (7 cols) */}
                     <div className="md:col-span-7">
                       <Accordion type="single" collapsible className="w-full">
-                        <AccordionItem value="ingredients" className="border-b border-border/40">
-                          <AccordionTrigger className="text-sm font-semibold hover:no-underline py-3.5">Ingredientes</AccordionTrigger>
-                          <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
-                            {extraDetails.technical.ingredients}
-                          </AccordionContent>
-                        </AccordionItem>
-                        <AccordionItem value="usage" className="border-b border-border/40">
-                          <AccordionTrigger className="text-sm font-semibold hover:no-underline py-3.5">Modo de Uso</AccordionTrigger>
-                          <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
-                            {extraDetails.technical.usage}
-                          </AccordionContent>
-                        </AccordionItem>
-                        <AccordionItem value="precautions" className={product.product_profile ? 'border-b border-border/40' : 'border-none'}>
-                          <AccordionTrigger className="text-sm font-semibold hover:no-underline py-3.5">Precauciones</AccordionTrigger>
-                          <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
-                            {extraDetails.technical.precautions}
-                          </AccordionContent>
-                        </AccordionItem>
-                        {product.product_profile && (
-                          <AccordionItem value="profile" className="border-none">
-                            <AccordionTrigger className="text-sm font-semibold hover:no-underline py-3.5">Perfil del Producto</AccordionTrigger>
+                        {technicalSections.map((section, idx) => (
+                          <AccordionItem
+                            key={section.key}
+                            value={section.key}
+                            className={idx === technicalSections.length - 1 ? 'border-none' : 'border-b border-border/40'}
+                          >
+                            <AccordionTrigger className="text-sm font-semibold hover:no-underline py-3.5">
+                              {section.label}
+                            </AccordionTrigger>
                             <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4 whitespace-pre-line">
-                              {product.product_profile}
+                              {section.value}
                             </AccordionContent>
                           </AccordionItem>
-                        )}
+                        ))}
                       </Accordion>
                     </div>
 
@@ -415,6 +410,7 @@ const ProductDetailPage = () => {
                     </div>
                   </div>
                 </div>
+                )}
 
               </div>
 
