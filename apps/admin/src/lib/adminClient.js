@@ -6,6 +6,18 @@ const adminFetch = createAdminFetcher(getAccessToken);
 const adminClient = {
   ...createBaseAdminClient(adminFetch),
 
+  // Sincronización del catálogo desde la planilla de Google Sheets.
+  // Corre en segundo plano: el sync completo descarga una ficha de Google Docs por
+  // producto y tarda minutos, más de lo que aguanta el proxy que hay delante.
+  startCatalogSync: () =>
+    adminFetch('/products/sync-sheets?background=true', { method: 'POST' }),
+  getCatalogSyncStatus: () => adminFetch('/products/sync-status'),
+
+  // Dashboard
+  getDashboardMetrics: () => adminFetch('/dashboard/metrics'),
+  getRecentOrders: (limit = 10) => adminFetch(`/orders/recent?limit=${limit}`),
+  getInventoryAlerts: () => adminFetch('/inventory/alerts'),
+
   // Leads, Suggestions, Coupons (específico del panel admin)
   getLeads: () => adminFetch('/leads'),
   getSuggestions: () => adminFetch('/suggestions'),

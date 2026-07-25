@@ -87,7 +87,7 @@ def parse_google_doc(url: str) -> dict:
             if ":" in text:
                 sections[current_key] += text.split(":", 1)[1].strip() + "\n"
             continue
-        elif is_short_line and any(h in lower_text for h in ["modo de uso", "instrucciones", "uso", "cómo tomar", "como tomar", "dosis"]):
+        elif is_short_line and any(h in lower_text for h in ["modo de uso", "forma de uso", "modo de empleo", "instrucciones", "cómo tomar", "como tomar", "dosis"]):
             current_key = "usage"
             if ":" in text:
                 sections[current_key] += text.split(":", 1)[1].strip() + "\n"
@@ -109,19 +109,22 @@ def parse_google_doc(url: str) -> dict:
             # Dividir por saltos de línea suaves (\n o \r) que puedan venir en un único párrafo
             sub_lines = re.split(r"[\n\r\u000b]+", text)
             for line in sub_lines:
-                line_str = line.strip()
-                # Aceptar viñetas estándar, guiones, asteriscos o el carácter especial de bullet de Word (\uf0b7)
-                if line_str.startswith("•") or line_str.startswith("-") or line_str.startswith("*") or line_str.startswith("") or line_str.startswith("\uf0b7") or re.match(r"^[^a-zA-Z0-9\s]{1,2}\s", line_str):
-                    clean_benefit = re.sub(r"^[^a-zA-Z0-9\s]{1,3}\s*", "", line_str).strip()
-                    if clean_benefit:
-                        sections["extracted_benefits"].append(clean_benefit)
+                # Las fichas usan tanto viñetas como parrafos corridos: se toma cada
+                # linea como un beneficio y solo se limpia el caracter de viñeta inicial.
+                clean_benefit = re.sub(r"^[^a-zA-Z0-9\s]{1,3}\s*", "", line.strip()).strip()
+                if clean_benefit:
+                    sections["extracted_benefits"].append(clean_benefit)
             continue
-        
-        # Capturar el primer parrafo largo (introduccion) como Descripción si aún no se ha capturado nada
-        if current_key is None and not intro_captured:
-            if len(text) > 60 and not "ficha comercial:" in lower_text and not lower_text.startswith("ficha"):
-                sections["description"] = text
-                intro_captured = True
+
+        # Acumular la introduccion (todo lo que va antes del primer encabezado) como Descripción.
+        # El primer parrafo suele ser el nombre del producto: se descarta.
+        if current_key is None:
+            if not intro_captured and len(text) <= 60:
+                continue
+            if "ficha comercial:" in lower_text or lower_text.startswith("ficha"):
+                continue
+            sections["description"] += text + "\n"
+            intro_captured = True
             continue
 
         # Acumular texto en la sección actual (excluyendo metadatos ignorados y beneficios individuales en viñetas)

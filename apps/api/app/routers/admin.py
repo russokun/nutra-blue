@@ -39,6 +39,51 @@ async def list_orders(
         raise HTTPException(status_code=500, detail="Failed to fetch orders")
 
 
+@router.post("/orders/release-expired")
+async def release_expired_orders(
+    minutes: int = Query(60, ge=1, description="Antigüedad mínima, en minutos, de las órdenes pendientes a expirar"),
+    _: dict = Depends(verify_admin_or_internal_key),
+):
+    """
+    Devuelve al inventario el stock de las órdenes que quedaron en 'pending' y nunca
+    se pagaron. El stock se descuenta al crear la orden, no al pagarla, así que sin
+    esto un checkout abandonado se queda con las unidades reservadas para siempre.
+    Lo llama n8n cada hora.
+    """
+    if supabase_client is None:
+        import datetime
+        cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=minutes)
+        expired, restocked = 0, 0
+        for order in MOCK_ORDERS.values():
+            if order.get("status") != "pending":
+                continue
+            created_at = order.get("created_at")
+            if created_at:
+                try:
+                    created = datetime.datetime.fromisoformat(str(created_at).replace("Z", "+00:00"))
+                    if created.tzinfo is None:
+                        created = created.replace(tzinfo=datetime.timezone.utc)
+                    if created > cutoff:
+                        continue
+                except ValueError:
+                    pass
+            for item in order.get("items", []):
+                for p in MOCK_PRODUCTS:
+                    if p.get("id") == item.get("product_id"):
+                        p["stock"] = int(p.get("stock", 0)) + int(item.get("quantity", 0))
+                        restocked += int(item.get("quantity", 0))
+                        break
+            order["status"] = "expired"
+            expired += 1
+        return {"expired_orders": expired, "restocked_units": restocked}
+
+    try:
+        response = supabase_client.rpc("expire_pending_orders", {"p_minutes": minutes}).execute()
+        return response.data or {"expired_orders": 0, "restocked_units": 0}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to release expired orders: {str(e)}")
+
+
 @router.patch("/orders/{order_id}/status")
 async def admin_update_order_status(
     order_id: str,
@@ -49,11 +94,34 @@ async def admin_update_order_status(
     if status_data.status not in allowed:
         raise HTTPException(status_code=400, detail=f"Invalid status. Allowed: {allowed}")
 
+    # Cancelar una orden que todavia estaba 'pending' devuelve su stock al inventario:
+    # esas unidades se descontaron al crearla y nadie las va a pagar.
+    restock = status_data.status == "cancelled"
+
     if supabase_client is None:
         if order_id not in MOCK_ORDERS:
             raise HTTPException(status_code=404, detail="Order not found")
-        MOCK_ORDERS[order_id]["status"] = status_data.status
-        return MOCK_ORDERS[order_id]
+        order = MOCK_ORDERS[order_id]
+        if restock and order.get("status") == "pending":
+            for item in order.get("items", []):
+                for p in MOCK_PRODUCTS:
+                    if p.get("id") == item.get("product_id"):
+                        p["stock"] = int(p.get("stock", 0)) + int(item.get("quantity", 0))
+                        break
+        order["status"] = status_data.status
+        return order
+
+    if restock:
+        try:
+            supabase_client.rpc("cancel_order_and_restock", {"p_order_id": order_id}).execute()
+            result = supabase_client.from_("orders").select("*").eq("id", order_id).limit(1).execute()
+            if not result.data:
+                raise HTTPException(status_code=404, detail="Order not found")
+            return result.data[0]
+        except HTTPException:
+            raise
+        except Exception:
+            raise HTTPException(status_code=500, detail="Failed to cancel order")
 
     try:
         response = supabase_client.from_("orders").update(
@@ -307,16 +375,76 @@ class SyncSheetsRequest(BaseModel):
     csv_url: Optional[str] = None
 
 
+# Estado del sync lanzado en segundo plano desde el panel admin. El sync completo
+# descarga una ficha de Google Docs por producto y tarda minutos: el proxy que hay
+# delante del admin corta la conexion antes de que termine, asi que el boton dispara
+# y despues consulta /products/sync-status.
+SYNC_STATE = {"running": False, "started_at": None, "finished_at": None, "summary": None, "error": None}
+
+
+@router.get("/products/sync-status")
+async def get_sync_status(_: dict = Depends(verify_admin_or_internal_key)):
+    return SYNC_STATE
+
+
+def _run_sync_in_background(csv_url: Optional[str]):
+    import datetime
+
+    SYNC_STATE.update({
+        "running": True,
+        "started_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "finished_at": None,
+        "summary": None,
+        "error": None,
+    })
+    try:
+        result = _sync_products_from_sheets_sync(csv_url)
+        SYNC_STATE["summary"] = result.get("summary")
+    except HTTPException as e:
+        SYNC_STATE["error"] = str(e.detail)
+    except Exception as e:
+        SYNC_STATE["error"] = str(e)
+    finally:
+        SYNC_STATE["running"] = False
+        SYNC_STATE["finished_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+
 @router.post("/products/sync-sheets")
 async def sync_products_from_sheets(
     request_data: Optional[SyncSheetsRequest] = None,
+    background: bool = Query(False, description="Lanzar el sync en segundo plano y responder de inmediato"),
     _: dict = Depends(verify_admin_or_internal_key),
 ):
+    """
+    Modo por defecto (sincrono): devuelve el reporte completo. Lo usa n8n, que pega
+    directo a la API sin proxy intermedio y puede esperar.
+
+    Con ?background=true responde al instante y el avance se consulta en
+    /admin/products/sync-status. Es el modo que usa el boton del panel admin.
+    """
+    if not background:
+        # El sync es bloqueante (requests + supabase sincronos): fuera del event loop
+        # para no congelar el resto de la API durante los minutos que tarda.
+        from fastapi.concurrency import run_in_threadpool
+        return await run_in_threadpool(
+            _sync_products_from_sheets_sync, request_data.csv_url if request_data else None
+        )
+
+    if SYNC_STATE["running"]:
+        raise HTTPException(status_code=409, detail="Ya hay una sincronización en curso")
+
+    import threading
+    csv_url = request_data.csv_url if request_data else None
+    threading.Thread(target=_run_sync_in_background, args=(csv_url,), daemon=True).start()
+    return {"status": "started"}
+
+
+def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
     """
     Sincroniza el catálogo de productos desde un Google Sheet publicado en la web como CSV.
     Si no se envía csv_url, utiliza el configurado en la variable de entorno GOOGLE_SHEET_CSV_URL.
     """
-    url = (request_data.csv_url if request_data else None) or settings.google_sheet_csv_url
+    url = csv_url or settings.google_sheet_csv_url
     if not url:
         raise HTTPException(
             status_code=400,
@@ -327,6 +455,11 @@ async def sync_products_from_sheets(
         # Descargar el CSV
         res = requests.get(url, timeout=10)
         res.raise_for_status()
+        # Google responde "text/csv" sin charset, y ante eso requests asume ISO-8859-1
+        # (default de la RFC para text/*). El CSV es UTF-8, asi que sin esto cada
+        # acento entra doble-codificado: "Energía" se guardaba como "EnergÃ­a".
+        if "charset=" not in res.headers.get("content-type", "").lower():
+            res.encoding = "utf-8"
         csv_text = res.text
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error al descargar el CSV: {str(e)}")
@@ -347,7 +480,22 @@ async def sync_products_from_sheets(
         if k in ("google_doc_url", "ficha_url", "ficha", "documento", "google doc url", "link doc", "link_doc", "linkdoc"): return "google_doc_url"
         return k
 
-    report = {"created": 0, "updated": 0, "errors": [], "warnings": []}
+    report = {"created": 0, "updated": 0, "errors": [], "warnings": [], "stock_writeback": []}
+
+    def reconcile_stock(sheet_stock: int, db_stock, stock_synced) -> int:
+        """
+        La planilla es la fuente de verdad del inventario declarado, pero las ventas y los
+        ajustes hechos en el admin no se pueden perder. `stock_synced` guarda el valor con el
+        que quedo el producto en el sync anterior, asi que la diferencia contra el stock
+        actual es exactamente lo que se movio localmente desde entonces.
+
+          - Producto nuevo (sin stock_synced): manda la planilla.
+          - Planilla sin cambios: manda el stock local (ventas/reposiciones).
+          - Planilla editada: manda el valor nuevo, descontando lo vendido desde el ultimo sync.
+        """
+        if db_stock is None or stock_synced is None:
+            return max(0, sheet_stock)
+        return max(0, sheet_stock + (int(db_stock) - int(stock_synced)))
 
     try:
         raw_reader = csv.reader(io.StringIO(csv_text))
@@ -385,7 +533,7 @@ async def sync_products_from_sheets(
             idx_name = i
         elif "categor" in h_lower or h_lower == "categoria" or h_lower == "objetivo":
             idx_category = i
-        elif "costo" in h_lower or "$ costo" in h_lower or "precio costo" in h_lower:
+        elif "costo" in h_lower or "compra" in h_lower or "precio costo" in h_lower:
             # Marcar columna de costo para NO usarla como precio de venta
             idx_cost = i
         elif "venta" in h_lower or h_lower == "$ venta":
@@ -403,10 +551,18 @@ async def sync_products_from_sheets(
                 idx_price = i
                 break
 
-    # Buscar "inventario" en la subcabecera
+    # Buscar "inventario" en la subcabecera y, si no esta ahi, en la cabecera principal.
+    # Se acepta en cualquiera de las dos filas porque el write-back de n8n necesita la
+    # etiqueta en la misma fila que la columna clave (el nodo de Sheets lee un solo
+    # headerRow), y el sync tiene que seguir funcionando con ambas disposiciones.
     for i, h in enumerate(headers_sub):
         if "inventario" in h or "stock" in h:
             idx_stock = i
+    if idx_stock == -1:
+        for i, h in enumerate(headers_main):
+            if "inventario" in h or "stock" in h:
+                idx_stock = i
+                break
 
     # Fallbacks de indices
     if idx_name == -1: idx_name = 1
@@ -457,14 +613,18 @@ async def sync_products_from_sheets(
                 raise ValueError("El precio de venta debe ser un número entero válido")
             price = int(raw_price) if raw_price else 0
             
-            # Limpiar stock (si no viene en la planilla, por defecto usamos 100 para evitar errores)
-            raw_stock = str(row.get("stock") or "").strip()
+            # Limpiar stock (si no viene en la planilla, por defecto usamos 100 para evitar errores).
+            # La planilla escribe el inventario como decimal ("30.00"), asi que se acepta y se trunca.
+            raw_stock = str(row.get("stock") or "").strip().replace(",", ".")
             if not raw_stock:
-                stock = 100
+                sheet_stock = 100
             else:
-                if not raw_stock.isdigit():
-                    raise ValueError("El stock debe ser un número entero válido")
-                stock = int(raw_stock)
+                try:
+                    sheet_stock = int(float(raw_stock))
+                except ValueError:
+                    raise ValueError("El stock debe ser un número válido")
+                if sheet_stock < 0:
+                    raise ValueError("El stock no puede ser negativo")
  
             # Procesar arreglos separados por punto y coma (o coma si no hay punto y coma)
             def parse_list(val: Optional[str]) -> List[str]:
@@ -508,7 +668,7 @@ async def sync_products_from_sheets(
             product_to_validate = ProductCreate(
                 name=name,
                 price=price,
-                stock=stock,
+                stock=sheet_stock,
                 category=category,
                 image_url=image_url,
                 benefits=all_benefits,
@@ -546,6 +706,8 @@ async def sync_products_from_sheets(
                     # en vez de pisarla con el placeholder /logo.png
                     preserved_images = p.get("images")
                     preserved_image_url = p.get("image_url")
+                    product_dict["stock"] = reconcile_stock(sheet_stock, p.get("stock"), p.get("stock_synced"))
+                    product_dict["stock_synced"] = product_dict["stock"]
                     MOCK_PRODUCTS[idx] = product_dict
                     if preserved_images:
                         MOCK_PRODUCTS[idx]["images"] = preserved_images
@@ -555,8 +717,10 @@ async def sync_products_from_sheets(
                     found = True
                     break
             if not found:
+                product_dict["stock_synced"] = product_dict["stock"]
                 MOCK_PRODUCTS.append(product_dict)
                 report["created"] += 1
+            report["stock_writeback"].append({"name": name, "stock": product_dict["stock"]})
         else:
             # Modo producción/local con Supabase
             try:
@@ -566,13 +730,22 @@ async def sync_products_from_sheets(
                 # El sync no trae imagenes reales (doc_parser no las extrae, la columna
                 # de la planilla se ignora). Si el producto ya existe, no pisar la
                 # galeria curada a mano en el admin con el placeholder /logo.png.
+                # La misma consulta trae el stock local para reconciliarlo con la planilla.
                 try:
-                    existing_res = supabase_client.from_("products").select("id").eq("name", name).limit(1).execute()
+                    existing_res = supabase_client.from_("products").select(
+                        "id, stock, stock_synced"
+                    ).eq("name", name).limit(1).execute()
                     if existing_res.data:
+                        existing = existing_res.data[0]
                         db_data.pop("image_url", None)
                         db_data.pop("images", None)
+                        db_data["stock"] = reconcile_stock(
+                            sheet_stock, existing.get("stock"), existing.get("stock_synced")
+                        )
                 except Exception:
                     pass
+
+                db_data["stock_synced"] = db_data["stock"]
 
                 # Realizar upsert basándonos en la restricción UNIQUE de 'name'
                 res_upsert = supabase_client.from_("products").upsert(
@@ -584,6 +757,8 @@ async def sync_products_from_sheets(
                     # En Supabase no sabemos directamente si fue INSERT o UPDATE a menos que comparemos
                     # o contemos. Asumimos éxito e incrementamos actualizados por defecto.
                     report["updated"] += 1
+                    # Lo que n8n escribe de vuelta en la columna Inventario de la planilla
+                    report["stock_writeback"].append({"name": name, "stock": db_data["stock"]})
                 else:
                     report["errors"].append({
                         "row": index + 1,

@@ -45,13 +45,26 @@ const ProductDetailPage = () => {
       });
       setRelatedProducts(related.slice(0, 3));
 
-      // Fetch cross-sell matches
+      // Venta cruzada: la sección "Recomendaciones con otros productos" de la ficha
+      // de Google Docs nombra los productos sugeridos en texto corrido, así que se
+      // buscan en el catálogo. Si el producto no tiene ficha, se cae al mapa estático.
       const extra = getProductExtraDetails(record.name);
-      if (extra.matches && extra.matches.length > 0) {
+      const crossSellText = (record.cross_selling || '').toLowerCase();
+      const hasStaticMatches = extra.matches && extra.matches.length > 0;
+
+      if (crossSellText || hasStaticMatches) {
         const allProducts = await dataClient.collection('products').getFullList({ $autoCancel: false });
-        const matched = allProducts.filter(p => 
-          extra.matches.includes(p.name.toLowerCase().trim()) && p.id !== id
-        );
+        const matched = allProducts.filter((p) => {
+          if (p.id === id) return false;
+          const productName = p.name.toLowerCase().trim();
+          if (hasStaticMatches && extra.matches.includes(productName)) return true;
+          if (!crossSellText) return false;
+          // El nombre completo del catálogo ("Maqui Liofilizado (60 g)") rara vez
+          // aparece literal en la ficha, que dice "Maqui Berry": se compara por la
+          // primera palabra significativa.
+          const keyword = productName.split(/\s+/)[0];
+          return keyword.length >= 5 && crossSellText.includes(keyword);
+        });
         setCrossSellProducts(matched.length > 0 ? matched.slice(0, 2) : related.slice(0, 2));
       } else {
         setCrossSellProducts(related.slice(0, 2));
@@ -140,9 +153,12 @@ const ProductDetailPage = () => {
     origin: product.origin || staticDetails.origin,
     icons: product.benefits && product.benefits.length > 0
       ? product.benefits.map((b) => {
-          // If the benefit is already a structured label or starts with an emoji, use it, else default emoji
-          const match = b.match(/^([\ud800-\udbff][\udc00-\udfff]|\S+)\s+(.+)$/);
-          return { emoji: match ? match[1] : "🌱", text: match ? match[2] : b };
+          // Los beneficios importados desde la ficha de Google Docs son texto corrido.
+          // Solo se separa el primer token cuando es de verdad un emoji; si no, el
+          // beneficio entero es el texto (antes "Diversas investigaciones…" quedaba
+          // con "Diversas" renderizado como si fuera el ícono).
+          const match = b.match(/^(\p{Extended_Pictographic}️?)\s+(.+)$/u);
+          return match ? { emoji: match[1], text: match[2] } : { emoji: "🌱", text: b };
         })
       : staticDetails.icons,
     technical: {
@@ -150,8 +166,10 @@ const ProductDetailPage = () => {
       usage: product.usage || staticDetails.technical.usage,
       precautions: product.precautions || staticDetails.technical.precautions,
     },
-    matches: product.matches || staticDetails.matches
   };
+  // Las fichas traen beneficios en párrafos largos: en ese caso la grilla de 4
+  // columnas no da, y se muestran apilados.
+  const hasLongBenefits = extraDetails.icons.some((item) => item.text.length > 90);
   const images = product.images?.length ? product.images : [product.image_url];
 
   return (
@@ -203,7 +221,7 @@ const ProductDetailPage = () => {
               </span>
               <h1
                 className="text-3xl md:text-4xl font-bold text-foreground mb-4"
-                style={{ fontFamily: 'Playfair Display, serif', letterSpacing: '-0.02em' }}
+                style={{ fontFamily: 'Impact, sans-serif', letterSpacing: '-0.02em' }}
               >
                 {product.name}
               </h1>
@@ -282,7 +300,7 @@ const ProductDetailPage = () => {
 
             {/* Left Logo */}
             <div className="flex items-center space-x-2 shrink-0 z-10 select-none">
-              <span className="text-2xl font-semibold text-primary" style={{ fontFamily: 'Playfair Display, serif' }}>
+              <span className="text-2xl font-semibold text-primary" style={{ fontFamily: 'Impact, sans-serif' }}>
                 NutraBlue
               </span>
               <span className="text-lg text-emerald-500 font-bold">🌿</span>
@@ -301,7 +319,7 @@ const ProductDetailPage = () => {
             {/* Right Logo */}
             <div className="flex items-center space-x-2 shrink-0 z-10 select-none">
               <span className="text-lg text-emerald-500 font-bold">🌿</span>
-              <span className="text-2xl font-semibold text-primary" style={{ fontFamily: 'Playfair Display, serif' }}>
+              <span className="text-2xl font-semibold text-primary" style={{ fontFamily: 'Impact, sans-serif' }}>
                 NutraBlue
               </span>
             </div>
@@ -310,7 +328,7 @@ const ProductDetailPage = () => {
           {/* --- SECCIÓN: EL ALMA DEL PRODUCTO --- */}
           <div className="pt-8 pb-16 px-6 md:px-12 rounded-3xl bg-slate-50 border border-border/30 didactic-bg mb-12">
             <div className="text-center mb-12">
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground" style={{ fontFamily: 'Playfair Display, serif' }}>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground" style={{ fontFamily: 'Impact, sans-serif' }}>
                 El Alma del Producto
               </h2>
               <div className="w-16 h-0.5 bg-primary mx-auto mt-3 rounded-full"></div>
@@ -323,11 +341,18 @@ const ProductDetailPage = () => {
                 {/* 1. Bloque de Beneficios Clave (Visual) */}
                 <div className="bg-card/45 border border-border/40 p-6 rounded-2xl">
                   <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Beneficios Clave</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className={hasLongBenefits ? 'space-y-3' : 'grid grid-cols-2 md:grid-cols-4 gap-4'}>
                     {extraDetails.icons.map((item, idx) => (
-                      <div key={idx} className="flex flex-col items-center text-center p-4 rounded-xl bg-background/60 border border-border/20 shadow-sm transition-all duration-200 hover:shadow-md hover:border-primary/20">
-                        <span className="text-3xl mb-2.5">{item.emoji}</span>
-                        <span className="text-xs font-semibold text-foreground leading-tight">{item.text}</span>
+                      <div
+                        key={idx}
+                        className={`rounded-xl bg-background/60 border border-border/20 shadow-sm transition-all duration-200 hover:shadow-md hover:border-primary/20 ${
+                          hasLongBenefits ? 'flex items-start gap-3 p-4' : 'flex flex-col items-center text-center p-4'
+                        }`}
+                      >
+                        <span className={hasLongBenefits ? 'text-2xl shrink-0' : 'text-3xl mb-2.5'}>{item.emoji}</span>
+                        <span className={`font-semibold text-foreground ${hasLongBenefits ? 'text-sm leading-relaxed font-normal text-muted-foreground' : 'text-xs leading-tight'}`}>
+                          {item.text}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -362,12 +387,20 @@ const ProductDetailPage = () => {
                             {extraDetails.technical.usage}
                           </AccordionContent>
                         </AccordionItem>
-                        <AccordionItem value="precautions" className="border-none">
+                        <AccordionItem value="precautions" className={product.product_profile ? 'border-b border-border/40' : 'border-none'}>
                           <AccordionTrigger className="text-sm font-semibold hover:no-underline py-3.5">Precauciones</AccordionTrigger>
                           <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
                             {extraDetails.technical.precautions}
                           </AccordionContent>
                         </AccordionItem>
+                        {product.product_profile && (
+                          <AccordionItem value="profile" className="border-none">
+                            <AccordionTrigger className="text-sm font-semibold hover:no-underline py-3.5">Perfil del Producto</AccordionTrigger>
+                            <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4 whitespace-pre-line">
+                              {product.product_profile}
+                            </AccordionContent>
+                          </AccordionItem>
+                        )}
                       </Accordion>
                     </div>
 
@@ -387,7 +420,7 @@ const ProductDetailPage = () => {
 
               {/* Right Column (4 columns): El Match Perfecto (Cross-selling) */}
               <div className="lg:col-span-4 bg-card/60 border border-border/40 p-6 rounded-2xl shadow-sm">
-                <h3 className="text-lg font-bold text-foreground mb-1" style={{ fontFamily: 'Playfair Display, serif' }}>El Match Perfecto</h3>
+                <h3 className="text-lg font-bold text-foreground mb-1" style={{ fontFamily: 'Impact, sans-serif' }}>El Match Perfecto</h3>
                 <p className="text-xs text-muted-foreground mb-6">Completa tu rutina natural</p>
                 
                 <div className="space-y-4">
@@ -418,7 +451,7 @@ const ProductDetailPage = () => {
             <div className="border-t border-border/40 pt-12">
               <h2
                 className="text-2xl md:text-3xl font-bold text-foreground mb-8"
-                style={{ fontFamily: 'Playfair Display, serif' }}
+                style={{ fontFamily: 'Impact, sans-serif' }}
               >
                 Productos Relacionados
               </h2>

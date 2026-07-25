@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, X, Leaf, Check } from 'lucide-react';
@@ -29,13 +29,15 @@ const ShopPage = () => {
   const [selectedSubCategory, setSelectedSubCategory] = useState('all');
   const [activeProductIngredients, setActiveProductIngredients] = useState(null);
 
-  const categories = [
+  // Las categorías salen del catálogo, que a su vez viene de la columna
+  // "Categoría / Objetivo" de la planilla. Hardcodearlas dejaba invisible en el
+  // filtro cualquier producto cuya categoría no estuviera en la lista.
+  const categories = useMemo(() => [
     { value: 'all', label: 'Todos' },
-    { value: 'Energía', label: 'Energía' },
-    { value: 'Concentración y Calma', label: 'Concentración y Calma' },
-    { value: 'Descanso y Longevidad', label: 'Descanso y Longevidad' },
-    { value: 'Alimentación Diaria', label: 'Alimentación Diaria' }
-  ];
+    ...[...new Set(products.map((p) => p.category).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, 'es'))
+      .map((c) => ({ value: c, label: c })),
+  ], [products]);
 
   useEffect(() => {
     fetchProducts();

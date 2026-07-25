@@ -87,8 +87,9 @@ const DashboardPage = () => {
     try {
       setLoading(true);
       
-      const metricsData = await fetch('/hcgi/api/admin/dashboard/metrics')
-        .then(r => r.json())
+      // Estas tres van por adminClient: sin el header Authorization el backend
+      // responde 401 en producción y el panel muestra números inventados.
+      const metricsData = await adminClient.getDashboardMetrics()
         .then(data => ({
           revenue: data?.revenue ?? 0,
           pending_orders: data?.pending_orders ?? 0,
@@ -97,16 +98,16 @@ const DashboardPage = () => {
           last_sync: data?.last_sync ?? null
         }))
         .catch(() => ({
-          revenue: 28990 * 15,
-          pending_orders: 3,
-          visits: 1250,
-          conversion_rate: 2.4,
+          revenue: 0,
+          pending_orders: 0,
+          visits: 0,
+          conversion_rate: 0,
           last_sync: null
         }));
 
-      const ordersData = await fetch('/hcgi/api/admin/orders/recent?limit=10').then(r => r.json()).catch(() => []);
-      
-      const alertsData = await fetch('/hcgi/api/admin/inventory/alerts').then(r => r.json()).catch(() => ({
+      const ordersData = await adminClient.getRecentOrders(10).catch(() => []);
+
+      const alertsData = await adminClient.getInventoryAlerts().catch(() => ({
         low_stock: [],
         expiration: []
       }));
@@ -216,6 +217,12 @@ const DashboardPage = () => {
             Resumen Operativo
           </h1>
           <p className="text-sm text-muted-foreground mt-1">Estadísticas clave y acciones inmediatas de hoy</p>
+          <p className={`text-xs mt-1.5 flex items-center gap-1.5 ${isSyncStale() ? 'text-amber-600' : 'text-muted-foreground'}`}>
+            {isSyncStale() && <AlertTriangle className="h-3.5 w-3.5" />}
+            {metrics.last_sync
+              ? `Catálogo sincronizado con la planilla el ${formatDate(metrics.last_sync)}`
+              : 'El catálogo nunca se sincronizó con la planilla'}
+          </p>
         </div>
         <Button onClick={fetchData} variant="outline" size="sm" className="rounded-xl gap-2">
           <RefreshCw className="h-4 w-4" /> Actualizar

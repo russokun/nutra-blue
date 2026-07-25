@@ -5,13 +5,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Tag, RefreshCw, Upload, Loader2, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Tag, RefreshCw, Upload, Loader2, ChevronLeft, ChevronRight, X, CloudDownload } from 'lucide-react';
 
 const emptyProduct = {
-  name: '', price: '', stock: '', category: 'Longevidad', images: [],
+  name: '', price: '', stock: '', category: '', images: [],
 };
 
-const CATEGORIES = ['Salud Cognitiva', 'Gestión del Estrés', 'Longevidad'];
+// Categorías de respaldo: solo se usan si el catálogo aún está vacío. La lista real
+// sale de los productos, que a su vez vienen de la columna "Categoría / Objetivo"
+// de la planilla — esa es la fuente de verdad.
+const FALLBACK_CATEGORIES = ['Salud Cognitiva', 'Gestión del Estrés', 'Longevidad'];
 
 const formatPrice = (price) =>
   new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(price);
@@ -25,6 +28,12 @@ const ProductsPage = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [urlInputValue, setUrlInputValue] = useState('');
+  const [syncing, setSyncing] = useState(false);
+
+  const categories = React.useMemo(() => {
+    const fromCatalog = [...new Set(products.map((p) => p.category).filter(Boolean))].sort();
+    return fromCatalog.length ? fromCatalog : FALLBACK_CATEGORIES;
+  }, [products]);
 
   const fetchProducts = async () => {
     try {
@@ -42,6 +51,41 @@ const ProductsPage = () => {
     fetchProducts();
   }, []);
 
+  const handleSync = async () => {
+    try {
+      setSyncing(true);
+      await adminClient.startCatalogSync();
+      toast.info('Sincronizando con la planilla. Esto puede tardar unos minutos.');
+
+      // El backend descarga una ficha de Google Docs por producto, así que el sync
+      // corre en segundo plano y acá seguimos su avance.
+      while (true) {
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        const status = await adminClient.getCatalogSyncStatus();
+        if (status.running) continue;
+
+        if (status.error) {
+          toast.error(`La sincronización falló: ${status.error}`);
+        } else if (status.summary) {
+          const { created, updated, errors, warnings } = status.summary;
+          toast.success(`Catálogo sincronizado: ${created + updated} productos actualizados`);
+          if (errors?.length) {
+            toast.error(`${errors.length} producto(s) con error: ${errors[0].product} — ${errors[0].error}`);
+          }
+          if (warnings?.length) {
+            toast.warning(`${warnings.length} ficha(s) de Google Docs no se pudieron leer`);
+          }
+        }
+        break;
+      }
+      fetchProducts();
+    } catch (err) {
+      toast.error(err.message || 'Error al sincronizar el catálogo');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const openCreate = () => {
     setEditingId(null);
     setForm(emptyProduct);
@@ -57,6 +101,19 @@ const ProductsPage = () => {
       stock: String(product.stock),
       category: product.category,
       images: product.images?.length ? product.images : (product.image_url ? [product.image_url] : []),
+      google_doc_url: product.google_doc_url || '',
+      // Los trae el sync desde la ficha de Google Docs: se conservan tal cual al guardar.
+      benefits: product.benefits || [],
+      certifications: product.certifications || [],
+      docFields: {
+        description: product.description,
+        origin: product.origin,
+        ingredients: product.ingredients,
+        usage: product.usage,
+        precautions: product.precautions,
+        product_profile: product.product_profile,
+        cross_selling: product.cross_selling,
+      },
     });
     setShowUrlInput(false);
     setModalOpen(true);
@@ -107,8 +164,11 @@ const ProductsPage = () => {
       category: form.category,
       images: form.images,
       image_url: form.images[0] || null,
-      benefits: [],
-      certifications: [],
+      // No vaciar lo que trajo el sync desde la ficha de Google Docs: editar el precio
+      // de un producto no puede borrarle los beneficios.
+      benefits: form.benefits || [],
+      certifications: form.certifications || [],
+      google_doc_url: form.google_doc_url || null,
     };
     try {
       if (editingId) {
@@ -149,6 +209,10 @@ const ProductsPage = () => {
         <div className="flex gap-2">
           <Button onClick={fetchProducts} variant="outline" size="sm" className="rounded-xl gap-2">
             <RefreshCw className="h-4 w-4" />
+          </Button>
+          <Button onClick={handleSync} disabled={syncing} variant="outline" className="rounded-xl gap-2">
+            {syncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <CloudDownload className="h-4 w-4" />}
+            {syncing ? 'Sincronizando…' : 'Sincronizar catálogo'}
           </Button>
           <Button onClick={openCreate} className="rounded-xl gap-2 shadow-md">
             <Plus className="h-4.5 w-4.5" /> Nuevo Producto
@@ -276,8 +340,12 @@ const ProductsPage = () => {
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value })}
                 >
-                  {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                  <option value="">Sin categoría</option>
+                  {categories.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Las categorías salen de la columna «Categoría / Objetivo» de la planilla.
+                </p>
               </div>
               <div>
                 <div className="flex items-center justify-between mb-1">
@@ -374,6 +442,57 @@ const ProductsPage = () => {
                   </div>
                 )}
               </div>
+
+              <div className="border-t border-border pt-4">
+                <Label>Ficha del producto (Google Doc)</Label>
+                <Input
+                  value={form.google_doc_url || ''}
+                  onChange={(e) => setForm({ ...form, google_doc_url: e.target.value })}
+                  placeholder="https://docs.google.com/document/d/..."
+                  className="mt-1.5"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  De acá el sync saca descripción, origen, beneficios, perfil y venta cruzada.
+                  Estos campos se sobrescriben en cada sincronización.
+                </p>
+
+                {form.benefits?.length > 0 && (
+                  <div className="mt-3">
+                    <p className="text-xs font-semibold text-foreground mb-1">
+                      Beneficios importados ({form.benefits.length})
+                    </p>
+                    <ul className="space-y-1 max-h-24 overflow-y-auto pr-1">
+                      {form.benefits.map((b, i) => (
+                        <li key={i} className="text-xs text-muted-foreground line-clamp-2">• {b}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {form.docFields && Object.entries(form.docFields).some(([, v]) => v) && (
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    {Object.entries({
+                      description: 'Descripción',
+                      origin: 'Origen',
+                      product_profile: 'Perfil',
+                      cross_selling: 'Venta cruzada',
+                      ingredients: 'Ingredientes',
+                      usage: 'Modo de uso',
+                      precautions: 'Precauciones',
+                    }).map(([key, label]) => (
+                      <div key={key} className="flex items-center gap-1.5 text-xs">
+                        <span className={form.docFields[key] ? 'text-primary' : 'text-muted-foreground/50'}>
+                          {form.docFields[key] ? '✓' : '—'}
+                        </span>
+                        <span className={form.docFields[key] ? 'text-foreground' : 'text-muted-foreground/50'}>
+                          {label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="flex gap-3 pt-2">
                 <Button type="button" variant="outline" onClick={() => setModalOpen(false)} className="flex-1 rounded-xl">Cancelar</Button>
                 <Button type="submit" className="flex-1 rounded-xl">{editingId ? 'Guardar Cambios' : 'Crear Producto'}</Button>
