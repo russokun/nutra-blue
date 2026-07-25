@@ -140,14 +140,25 @@ async def admin_update_order_status(
 async def list_products(_: dict = Depends(verify_admin_user)):
     # __SYSTEM_SYNC_LOG__ es una fila interna donde el sync guarda su timestamp,
     # no un producto: se oculta igual que en el catalogo publico.
+    #
+    # El orden replica el de la planilla (sort_order lo escribe el sync). Los productos
+    # creados a mano desde el admin no lo tienen y quedan al final, alfabeticos.
+    def en_orden_de_planilla(productos: list) -> list:
+        return sorted(
+            productos,
+            key=lambda p: (p.get("sort_order") is None, p.get("sort_order") or 0, p.get("name") or ""),
+        )
+
     if supabase_client is None:
-        return [p for p in MOCK_PRODUCTS if p.get("name") != "__SYSTEM_SYNC_LOG__"]
+        return en_orden_de_planilla(
+            [p for p in MOCK_PRODUCTS if p.get("name") != "__SYSTEM_SYNC_LOG__"]
+        )
 
     try:
         response = supabase_client.from_("products").select("*").neq(
             "name", "__SYSTEM_SYNC_LOG__"
-        ).order("name").execute()
-        return response.data or []
+        ).execute()
+        return en_orden_de_planilla(response.data or [])
     except Exception:
         raise HTTPException(status_code=500, detail="Failed to fetch products")
 
@@ -484,7 +495,7 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
         if k in ("google_doc_url", "ficha_url", "ficha", "documento", "google doc url", "link doc", "link_doc", "linkdoc"): return "google_doc_url"
         return k
 
-    report = {"created": 0, "updated": 0, "errors": [], "warnings": [], "stock_writeback": []}
+    report = {"created": 0, "updated": 0, "deleted": [], "errors": [], "warnings": [], "stock_writeback": []}
 
     def reconcile_stock(sheet_stock: int, db_stock, stock_synced) -> int:
         """
@@ -580,13 +591,21 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
     # Procesar filas de productos a partir de la fila de productos (despues de subcabeceras)
     start_row = header_row_idx + 2 if header_row_idx + 1 < len(rows_list) else header_row_idx + 1
 
+    # Posicion de cada producto en la planilla, para que el admin lo liste en el mismo
+    # orden, y el conjunto de nombres vistos para saber que sobra en la base.
+    sort_order = 0
+    nombres_en_planilla = set()
+
     for index, raw_row in enumerate(rows_list[start_row:]):
         if len(raw_row) <= idx_name:
             continue
-            
+
         name = raw_row[idx_name].strip()
         if not name or name.lower() == "suplemento / alimento":
             continue
+
+        sort_order += 1
+        nombres_en_planilla.add(name)
 
         category = raw_row[idx_category].strip() if idx_category < len(raw_row) else "Otros"
         price_val = raw_row[idx_price].strip() if idx_price < len(raw_row) else "0"
@@ -702,7 +721,8 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
             # Modo mock en memoria
             product_dict = {
                 "id": name.lower().replace(" ", "-"),
-                **product_to_validate.model_dump()
+                **product_to_validate.model_dump(),
+                "sort_order": sort_order,
             }
             # Buscar si ya existe por nombre
             found = False
@@ -752,6 +772,7 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
                     pass
 
                 db_data["stock_synced"] = db_data["stock"]
+                db_data["sort_order"] = sort_order
 
                 # Realizar upsert basándonos en la restricción UNIQUE de 'name'
                 res_upsert = supabase_client.from_("products").upsert(
@@ -777,6 +798,61 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
                     "product": name,
                     "error": f"Error al guardar en Supabase: {str(e)}"
                 })
+
+    # Borrar lo que ya no esta en la planilla, que es la fuente de verdad del catalogo.
+    #
+    # Es la operacion destructiva del sync, asi que corre solo si la lectura fue
+    # completamente limpia. El riesgo real no es que la planilla este vacia (eso se
+    # detecta), sino que se lea a medias: por eso tambien se exige que traiga al menos
+    # la mitad del catalogo actual antes de borrar nada.
+    def eliminar_los_que_sobran(nombres_actuales: set, catalogo: list) -> None:
+        vigentes = [p for p in catalogo if p.get("name") != "__SYSTEM_SYNC_LOG__"]
+        sobran = [p for p in vigentes if p.get("name") not in nombres_actuales]
+        if not sobran:
+            return
+
+        if len(nombres_actuales) * 2 < len(vigentes):
+            report["warnings"].append({
+                "row": 0,
+                "product": "-",
+                "error": (
+                    f"No se borro nada: la planilla trajo {len(nombres_actuales)} productos "
+                    f"y en el catalogo hay {len(vigentes)}. Parece una lectura incompleta."
+                ),
+            })
+            return
+
+        for p in sobran:
+            report["deleted"].append(p.get("name"))
+
+    if report["errors"] or not nombres_en_planilla:
+        if nombres_en_planilla:
+            report["warnings"].append({
+                "row": 0,
+                "product": "-",
+                "error": "No se borro nada porque hubo errores de validacion en esta corrida.",
+            })
+    elif supabase_client is None:
+        eliminar_los_que_sobran(nombres_en_planilla, MOCK_PRODUCTS)
+        if report["deleted"]:
+            MOCK_PRODUCTS[:] = [
+                p for p in MOCK_PRODUCTS if p.get("name") not in set(report["deleted"])
+            ]
+    else:
+        try:
+            catalogo = supabase_client.from_("products").select("name").execute().data or []
+            eliminar_los_que_sobran(nombres_en_planilla, catalogo)
+            if report["deleted"]:
+                supabase_client.from_("products").delete().in_(
+                    "name", report["deleted"]
+                ).execute()
+        except Exception as e:
+            report["deleted"] = []
+            report["warnings"].append({
+                "row": 0,
+                "product": "-",
+                "error": f"No se pudieron borrar los productos que ya no estan en la planilla: {str(e)}",
+            })
 
     # Guardar timestamp de última sincronización exitosa
     if len(report["errors"]) < len(rows_list):

@@ -294,3 +294,94 @@ def test_el_catalogo_publico_no_expone_la_url_de_la_ficha():
     with patch("app.routers.admin.supabase_client", None):
         admin = client.get("/admin/products").json()
     assert any("google_doc_url" in p for p in admin), "el admin si tiene que verla"
+
+
+def build_csv_multi(productos) -> str:
+    """productos: lista de (nombre, precio, stock), en el orden que tendran en la planilla."""
+    filas = "".join(
+        f"Estimulación Cerebral,{n},ONGO,ongo.cl,\"$11,700\",\"{p}\",,{s},\n"
+        for n, p, s in productos
+    )
+    return (
+        "Lista de Suplementos y Alimentos,,,,,,,,\n"
+        "Categoría / Objetivo,Suplemento / Alimento,Productor,Contacto,$ Compra,$ Venta,,Inventario,Link Doc\n"
+        ",,,,,,Comentario,,\n"
+    ) + filas
+
+
+def test_el_admin_lista_en_el_orden_de_la_planilla():
+    """El orden del Excel manda; alfabetico daria Avena, Berro, Zanahoria."""
+    MOCK_PRODUCTS.clear()
+    run_sync(build_csv_multi([("Zanahoria", "$1,000", "10"),
+                              ("Avena", "$2,000", "20"),
+                              ("Berro", "$3,000", "30")]))
+
+    from app.core.security import verify_admin_user
+    app.dependency_overrides[verify_admin_user] = override_auth
+    with patch("app.routers.admin.supabase_client", None):
+        listado = client.get("/admin/products").json()
+
+    de_la_planilla = [p["name"] for p in listado if p.get("sort_order") is not None]
+    assert de_la_planilla == ["Zanahoria", "Avena", "Berro"]
+
+
+def test_los_productos_creados_a_mano_quedan_al_final():
+    MOCK_PRODUCTS.clear()
+    run_sync(build_csv_multi([("Zanahoria", "$1,000", "10")]))
+    MOCK_PRODUCTS.append({"id": "manual", "name": "Producto A Mano", "price": 1, "stock": 1,
+                          "category": "Otros"})
+
+    from app.core.security import verify_admin_user
+    app.dependency_overrides[verify_admin_user] = override_auth
+    with patch("app.routers.admin.supabase_client", None):
+        listado = client.get("/admin/products").json()
+
+    assert listado[-1]["name"] == "Producto A Mano"
+
+
+def test_borra_los_productos_que_ya_no_estan_en_la_planilla():
+    MOCK_PRODUCTS.clear()
+    run_sync(build_csv_multi([("Zanahoria", "$1,000", "10"), ("Avena", "$2,000", "20")]))
+    assert {"Zanahoria", "Avena"} <= {p["name"] for p in MOCK_PRODUCTS}
+
+    summary = run_sync(build_csv_multi([("Zanahoria", "$1,000", "10")]))
+
+    assert summary["deleted"] == ["Avena"]
+    assert "Avena" not in {p["name"] for p in MOCK_PRODUCTS}
+    assert "Zanahoria" in {p["name"] for p in MOCK_PRODUCTS}
+
+
+def test_no_borra_nada_si_hubo_errores_de_validacion():
+    """Una corrida con errores puede estar viendo la planilla a medias: no se borra."""
+    MOCK_PRODUCTS.clear()
+    run_sync(build_csv_multi([("Zanahoria", "$1,000", "10"), ("Avena", "$2,000", "20")]))
+
+    summary = run_sync(build_csv_multi([("Zanahoria", "no-es-un-numero", "10")]))
+
+    assert summary["errors"], "el test necesita que la corrida tenga errores"
+    assert summary["deleted"] == []
+    assert "Avena" in {p["name"] for p in MOCK_PRODUCTS}
+
+
+def test_no_borra_nada_si_la_planilla_vino_casi_vacia():
+    """Proteccion contra una lectura truncada: traeria pocas filas y sin errores."""
+    MOCK_PRODUCTS.clear()
+    run_sync(build_csv_multi([(f"Producto {i}", "$1,000", "10") for i in range(10)]))
+
+    summary = run_sync(build_csv_multi([("Producto 0", "$1,000", "10")]))
+
+    assert summary["deleted"] == []
+    assert summary["warnings"], "tiene que avisar por que no borro"
+    assert "lectura incompleta" in summary["warnings"][0]["error"]
+    assert "Producto 5" in {p["name"] for p in MOCK_PRODUCTS}
+
+
+def test_el_borrado_no_toca_la_fila_interna_del_sync():
+    MOCK_PRODUCTS.clear()
+    run_sync(build_csv_multi([("Zanahoria", "$1,000", "10")]))
+    assert any(p["name"] == "__SYSTEM_SYNC_LOG__" for p in MOCK_PRODUCTS)
+
+    summary = run_sync(build_csv_multi([("Zanahoria", "$1,000", "10")]))
+
+    assert "__SYSTEM_SYNC_LOG__" not in summary["deleted"]
+    assert any(p["name"] == "__SYSTEM_SYNC_LOG__" for p in MOCK_PRODUCTS)

@@ -61,6 +61,9 @@ class ProductUpdate(BaseModel):
 
 class Product(ProductBase):
     id: str
+    # Posicion del producto en la planilla. La escribe el sync; los productos creados
+    # a mano desde el admin quedan en None y se listan al final.
+    sort_order: Optional[int] = None
 
     model_config = {"from_attributes": True}
 
