@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional, Union
 import re
 
@@ -63,3 +63,15 @@ class Product(ProductBase):
     id: str
 
     model_config = {"from_attributes": True}
+
+
+class ProductPublic(Product):
+    """
+    Producto tal como se expone en el catalogo abierto.
+
+    La ficha de Google Docs trae la estructura de costos, los margenes y los datos
+    del proveedor, y los documentos estan compartidos por enlace: publicar su URL
+    filtra todo eso a cualquiera que mire la respuesta. El storefront no la usa,
+    solo el panel admin.
+    """
+    google_doc_url: Optional[str] = Field(default=None, exclude=True)

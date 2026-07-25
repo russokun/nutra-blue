@@ -274,3 +274,23 @@ def test_sync_en_background_responde_al_instante_y_reporta_estado():
     assert status["error"] is None
     assert status["summary"]["errors"] == []
     assert status["summary"]["stock_writeback"] == [{"name": "Melena de Leon Gotas", "stock": 30}]
+
+
+def test_el_catalogo_publico_no_expone_la_url_de_la_ficha():
+    """
+    Las fichas de Google Docs traen costos, margenes y datos del proveedor, y estan
+    compartidas por enlace: publicar la URL en /products filtra todo eso. El panel
+    admin si la necesita, asi que solo se excluye del catalogo publico.
+    """
+    run_sync(build_csv("30.00"))
+
+    with patch("app.routers.products.supabase_client", None):
+        publico = client.get("/products").json()
+    assert publico, "el catalogo publico vino vacio"
+    assert all("google_doc_url" not in p for p in publico)
+
+    from app.core.security import verify_admin_user
+    app.dependency_overrides[verify_admin_user] = override_auth
+    with patch("app.routers.admin.supabase_client", None):
+        admin = client.get("/admin/products").json()
+    assert any("google_doc_url" in p for p in admin), "el admin si tiene que verla"

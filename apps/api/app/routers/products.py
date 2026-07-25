@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 import re
 from app.database.supabase import supabase_client
-from app.models.products import Product
+from app.models.products import Product, ProductPublic
 from app.core.mock_data import MOCK_PRODUCTS
 
 class HeroProductResponse(BaseModel):
@@ -15,7 +15,7 @@ class HeroProductResponse(BaseModel):
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
-@router.get("", response_model=List[Product])
+@router.get("", response_model=List[ProductPublic])
 async def get_products():
     if supabase_client is None:
         return [p for p in MOCK_PRODUCTS if p.get("name") != "__SYSTEM_SYNC_LOG__"]
@@ -101,7 +101,7 @@ async def get_hero_carousel():
         
     return output
 
-@router.get("/{product_id}", response_model=Product)
+@router.get("/{product_id}", response_model=ProductPublic)
 async def get_product(product_id: str):
     if supabase_client is None:
         product = next((p for p in MOCK_PRODUCTS if p["id"] == product_id), None)
@@ -128,7 +128,7 @@ async def get_product(product_id: str):
             return product
         raise HTTPException(status_code=500, detail=f"Failed to fetch product: {str(e)}")
 
-@router.get("/category/{category}", response_model=List[Product])
+@router.get("/category/{category}", response_model=List[ProductPublic])
 async def get_products_by_category(category: str):
     if supabase_client is None:
         return [p for p in MOCK_PRODUCTS if p["category"] == category]
