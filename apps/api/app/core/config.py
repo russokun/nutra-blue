@@ -69,6 +69,12 @@ class Settings(BaseSettings):
 
     # Mercado Pago Credentials
     mercadopago_access_token: str = _envvar("MERCADOPAGO_ACCESS_TOKEN", "")
+    mercadopago_webhook_secret: str = _envvar("MERCADOPAGO_WEBHOOK_SECRET", "")
+
+    # URLs publicas. La pasarela necesita alcanzar la API desde internet (webhook) y
+    # devolver al cliente al sitio. En local se llenan con la URL del tunel.
+    public_api_url_raw: str = _envvar("PUBLIC_API_URL", "")
+    public_web_url_raw: str = _envvar("PUBLIC_WEB_URL", "")
 
     # Transbank / Webpay Credentials (Default is sandbox integration)
     webpay_commerce_code: str = _envvar("WEBPAY_COMMERCE_CODE", "597055555532")
@@ -87,6 +93,20 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.environment.lower() == "production"
+
+    @property
+    def public_web_url(self) -> str:
+        if self.public_web_url_raw:
+            return self.public_web_url_raw.rstrip("/")
+        protocol = "http" if "localhost" in self.website_domain or "127.0.0.1" in self.website_domain else "https"
+        return f"{protocol}://{self.website_domain}"
+
+    @property
+    def public_api_url(self) -> str:
+        if self.public_api_url_raw:
+            return self.public_api_url_raw.rstrip("/")
+        # Fallback al rewrite de Vercel (/hcgi/api/* -> api.nutrablue.cl/*)
+        return f"{self.public_web_url}/hcgi/api"
 
     @property
     def allow_mock_auth(self) -> bool:
