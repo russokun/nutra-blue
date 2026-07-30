@@ -80,6 +80,8 @@ async def create_order(order_data: OrderCreate):
         "p_tax": validated_order["tax"],
         "p_shipping_cost": validated_order["shipping_cost"],
         "p_total": validated_order["total"],
+        "p_delivery_method": validated_order["delivery_method"],
+        "p_courier": validated_order["courier"],
     }
 
     try:

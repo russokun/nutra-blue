@@ -10,6 +10,20 @@ const STATUS_OPTIONS = ['pending', 'paid', 'shipped', 'cancelled', 'expired'];
 const formatPrice = (price) =>
   new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(price);
 
+const COURIER_LABELS = {
+  blue_express: 'Blue Express',
+  starken: 'Starken',
+  pullman: 'Pullman',
+};
+
+const formatDelivery = (order) => {
+  if (order.delivery_method === 'retiro_vendedor') return 'Retiro con vendedor';
+  if (order.delivery_method === 'retiro_courier') {
+    return `Retiro en ${COURIER_LABELS[order.courier] || 'transporte'}`;
+  }
+  return 'Envío a domicilio';
+};
+
 const OrdersPage = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -91,6 +105,7 @@ const OrdersPage = () => {
                   <th className="p-4">Código de Pedido</th>
                   <th className="p-4">Cliente</th>
                   <th className="p-4">Fecha</th>
+                  <th className="p-4">Entrega</th>
                   <th className="p-4">Total</th>
                   <th className="p-4">Estado Actual</th>
                   <th className="p-4 text-right">Modificar Estado</th>
@@ -114,6 +129,7 @@ const OrdersPage = () => {
                         })}
                       </div>
                     </td>
+                    <td className="p-4 text-muted-foreground">{formatDelivery(order)}</td>
                     <td className="p-4 font-semibold text-foreground">
                       {formatPrice(order.total || order.total_amount || 0)}
                     </td>
