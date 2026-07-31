@@ -406,7 +406,6 @@ const CheckoutPage = () => {
                   <div className="space-y-3">
                     {[
                       { value: 'domicilio', title: 'Envío a domicilio', detail: 'Lo despachamos a la dirección que indicaste arriba' },
-                      { value: 'retiro_vendedor', title: 'Retiro con el vendedor', detail: 'Coordinamos punto y horario de entrega contigo' },
                       { value: 'retiro_courier', title: 'Retiro en sucursal de transporte', detail: 'Blue Express, Starken o Pullman' },
                     ].map((option) => (
                       <label

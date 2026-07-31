@@ -110,6 +110,14 @@ def test_courier_is_discarded_when_not_picking_up():
 def test_delivery_method_does_not_change_shipping_cost():
     """El despacho se sigue cobrando por region; el metodo de entrega es solo un dato."""
     domicilio = validate_and_build_order(build_order())
-    retiro = validate_and_build_order(build_order(delivery_method="retiro_vendedor"))
+    retiro = validate_and_build_order(
+        build_order(delivery_method="retiro_courier", courier="pullman")
+    )
     assert domicilio["shipping_cost"] == retiro["shipping_cost"] == 5000
     assert domicilio["total"] == retiro["total"]
+
+
+def test_rejects_retiro_vendedor():
+    """Se ofrecio al principio pero NutraBlue no tiene puntos fisicos de retiro."""
+    with pytest.raises(OrderValidationError):
+        validate_and_build_order(build_order(delivery_method="retiro_vendedor"))

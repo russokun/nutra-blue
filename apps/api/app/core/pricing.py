@@ -10,7 +10,7 @@ IVA_RATE = 0.19
 
 # Metodo de entrega elegido en el checkout. No afecta el precio: el despacho se sigue
 # cobrando por region y la entrega concreta se coordina por correo/telefono.
-DELIVERY_METHODS = ["domicilio", "retiro_vendedor", "retiro_courier"]
+DELIVERY_METHODS = ["domicilio", "retiro_courier"]
 COURIERS = ["blue_express", "starken", "pullman"]
 
 
