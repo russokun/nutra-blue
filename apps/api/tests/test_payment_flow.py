@@ -1,3 +1,5 @@
+import hashlib
+import hmac
 import urllib.parse
 from types import SimpleNamespace
 
@@ -104,18 +106,34 @@ def test_mercadopago_flow_without_credentials():
     assert MOCK_ORDERS[order["id"]]["status"] == "paid"
 
 
-def test_mercadopago_flow_with_sdk_configured(monkeypatch):
-    """Simula credenciales reales: el SDK de Mercado Pago se consulta para verificar el pago."""
-    order = create_test_order()
+def install_fake_mercadopago(monkeypatch, order_id, payment_response=None, preference_error=None):
+    """
+    Simula credenciales reales de Mercado Pago. Devuelve la lista donde se acumulan
+    las preferencias creadas, para poder inspeccionar que se le mando a la pasarela.
+    """
     monkeypatch.setattr(settings, "mercadopago_access_token", "TEST-fake-token")
+    created_preferences = []
 
     class FakePreference:
         def create(self, data):
-            return {"response": {"id": "pref-123", "init_point": "https://mp.example/pay", "sandbox_init_point": "https://mp.example/sandbox-pay"}}
+            created_preferences.append(data)
+            if preference_error:
+                raise preference_error
+            return {
+                "status": 201,
+                "response": {"id": "pref-123", "init_point": "https://mp.example/pay"},
+            }
 
     class FakePayment:
         def get(self, payment_id):
-            return {"response": {"status": "approved", "external_reference": order["id"]}}
+            return {
+                "status": 200,
+                "response": payment_response or {
+                    "status": "approved",
+                    "external_reference": order_id,
+                    "live_mode": False,
+                },
+            }
 
     class FakeSDK:
         def __init__(self, token):
@@ -128,6 +146,19 @@ def test_mercadopago_flow_with_sdk_configured(monkeypatch):
             return FakePayment()
 
     monkeypatch.setattr(mercadopago_module.mercadopago, "SDK", FakeSDK)
+    return created_preferences
+
+
+def mercadopago_signature_headers(payload_data_id, secret, ts="1700000000", request_id="req-1"):
+    manifest = f"id:{payload_data_id};request-id:{request_id};ts:{ts};"
+    signature = hmac.new(secret.encode("utf-8"), manifest.encode("utf-8"), hashlib.sha256).hexdigest()
+    return {"x-signature": f"ts={ts},v1={signature}", "x-request-id": request_id}
+
+
+def test_mercadopago_flow_with_sdk_configured(monkeypatch):
+    """Con credenciales reales el SDK se consulta para verificar el pago contra Mercado Pago."""
+    order = create_test_order()
+    install_fake_mercadopago(monkeypatch, order["id"])
 
     init_response = client.post(
         "/payment/init",
@@ -139,7 +170,8 @@ def test_mercadopago_flow_with_sdk_configured(monkeypatch):
         },
     )
     assert init_response.status_code == 200
-    assert init_response.json()["redirect_url"] == "https://mp.example/sandbox-pay"
+    # El entorno lo define el token, no sandbox_init_point.
+    assert init_response.json()["redirect_url"] == "https://mp.example/pay"
 
     webhook_response = client.post(
         "/payment/mercadopago-callback",
@@ -147,6 +179,147 @@ def test_mercadopago_flow_with_sdk_configured(monkeypatch):
     )
     assert webhook_response.status_code == 200
     assert MOCK_ORDERS[order["id"]]["status"] == "paid"
+
+
+def test_mercadopago_preference_uses_public_urls(monkeypatch):
+    """El webhook tiene que apuntar a la URL publica de la API, no a website_domain."""
+    order = create_test_order()
+    monkeypatch.setattr(settings, "public_api_url_raw", "https://tunnel.example")
+    monkeypatch.setattr(settings, "public_web_url_raw", "https://nutrablue.test")
+    preferences = install_fake_mercadopago(monkeypatch, order["id"])
+
+    response = client.post(
+        "/payment/init",
+        json={
+            "order_id": order["id"],
+            "amount": order["total"],
+            "email": order["email"],
+            "gateway": "mercadopago",
+        },
+    )
+    assert response.status_code == 200
+
+    preference = preferences[0]
+    assert preference["notification_url"] == "https://tunnel.example/payment/mercadopago-callback"
+    assert preference["back_urls"]["success"] == f"https://nutrablue.test/order-confirmation/{order['id']}"
+    assert preference["external_reference"] == order["id"]
+    # El monto cobrado es la suma de los items: tiene que ser exactamente el total.
+    assert sum(i["unit_price"] * i["quantity"] for i in preference["items"]) == order["total"]
+
+
+def test_mercadopago_init_propagates_failure(monkeypatch):
+    """Si Mercado Pago falla, el checkout falla. Nunca una URL de pago inventada."""
+    order = create_test_order()
+    install_fake_mercadopago(monkeypatch, order["id"], preference_error=RuntimeError("MP caido"))
+
+    response = client.post(
+        "/payment/init",
+        json={
+            "order_id": order["id"],
+            "amount": order["total"],
+            "email": order["email"],
+            "gateway": "mercadopago",
+        },
+    )
+    assert response.status_code == 500
+    assert MOCK_ORDERS[order["id"]]["status"] != "paid"
+
+
+def test_mercadopago_webhook_persists_payment_metadata(monkeypatch):
+    """La orden pagada tiene que registrar con que se pago y si fue una prueba."""
+    order = create_test_order()
+    install_fake_mercadopago(monkeypatch, order["id"])
+
+    response = client.post(
+        "/payment/mercadopago-callback",
+        json={"type": "payment", "data": {"id": "payment-999"}},
+    )
+    assert response.status_code == 200
+
+    paid = MOCK_ORDERS[order["id"]]
+    assert paid["status"] == "paid"
+    assert paid["payment_provider"] == "mercadopago"
+    assert paid["payment_id"] == "payment-999"
+    assert paid["is_test"] is True  # live_mode=False -> credenciales de prueba
+    assert paid["paid_at"]
+
+
+def test_mercadopago_webhook_marks_live_payments_as_real(monkeypatch):
+    order = create_test_order()
+    install_fake_mercadopago(
+        monkeypatch,
+        order["id"],
+        payment_response={"status": "approved", "external_reference": order["id"], "live_mode": True},
+    )
+
+    client.post("/payment/mercadopago-callback", json={"type": "payment", "data": {"id": "payment-999"}})
+    assert MOCK_ORDERS[order["id"]]["is_test"] is False
+
+
+def test_mercadopago_webhook_ignores_rejected_payments(monkeypatch):
+    order = create_test_order()
+    install_fake_mercadopago(
+        monkeypatch,
+        order["id"],
+        payment_response={"status": "rejected", "external_reference": order["id"], "live_mode": False},
+    )
+
+    response = client.post(
+        "/payment/mercadopago-callback",
+        json={"type": "payment", "data": {"id": "payment-999"}},
+    )
+    assert response.status_code == 200
+    assert MOCK_ORDERS[order["id"]]["status"] != "paid"
+
+
+def test_mercadopago_webhook_accepts_valid_signature(monkeypatch):
+    order = create_test_order()
+    install_fake_mercadopago(monkeypatch, order["id"])
+    monkeypatch.setattr(settings, "mercadopago_webhook_secret", "webhook-secret")
+
+    response = client.post(
+        "/payment/mercadopago-callback",
+        json={"type": "payment", "data": {"id": "payment999"}},
+        headers=mercadopago_signature_headers("payment999", "webhook-secret"),
+    )
+    assert response.status_code == 200
+    assert MOCK_ORDERS[order["id"]]["status"] == "paid"
+
+
+def test_mercadopago_webhook_rejects_invalid_signature(monkeypatch):
+    order = create_test_order()
+    install_fake_mercadopago(monkeypatch, order["id"])
+    monkeypatch.setattr(settings, "mercadopago_webhook_secret", "webhook-secret")
+
+    response = client.post(
+        "/payment/mercadopago-callback",
+        json={"type": "payment", "data": {"id": "payment999"}},
+        headers={"x-signature": "ts=1700000000,v1=deadbeef", "x-request-id": "req-1"},
+    )
+    assert response.status_code == 400
+    assert MOCK_ORDERS[order["id"]]["status"] != "paid"
+
+
+def test_mercadopago_webhook_rejects_missing_signature(monkeypatch):
+    order = create_test_order()
+    install_fake_mercadopago(monkeypatch, order["id"])
+    monkeypatch.setattr(settings, "mercadopago_webhook_secret", "webhook-secret")
+
+    response = client.post(
+        "/payment/mercadopago-callback",
+        json={"type": "payment", "data": {"id": "payment999"}},
+    )
+    assert response.status_code == 400
+    assert MOCK_ORDERS[order["id"]]["status"] != "paid"
+
+
+def test_mercadopago_requires_credentials_in_production(monkeypatch):
+    """Sin token en produccion el gateway no arranca: no puede caer al mock."""
+    monkeypatch.setattr(settings, "mercadopago_access_token", "")
+    monkeypatch.setattr(settings, "environment", "production")
+
+    with pytest.raises(mercadopago_module.MercadoPagoConfigError):
+        mercadopago_module.MercadoPagoPayment()
 
 
 def test_flow_gateway_without_credentials():

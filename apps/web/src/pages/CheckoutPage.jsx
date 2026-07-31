@@ -46,7 +46,9 @@ const CheckoutPage = () => {
   });
 
   const [errors, setErrors] = useState({});
-  const [paymentMethod, setPaymentMethod] = useState('webpay');
+  const [paymentMethod, setPaymentMethod] = useState('mercadopago');
+  const [deliveryMethod, setDeliveryMethod] = useState('domicilio');
+  const [courier, setCourier] = useState('');
 
   // Coupon States
   const [couponCode, setCouponCode] = useState('');
@@ -149,6 +151,7 @@ const CheckoutPage = () => {
     if (!formData.city.trim()) newErrors.city = 'La ciudad es requerida';
     if (!formData.region) newErrors.region = 'La región es requerida';
     if (!formData.postalCode.trim()) newErrors.postalCode = 'El código postal es requerido';
+    if (deliveryMethod === 'retiro_courier' && !courier) newErrors.courier = 'Elige la empresa de transporte';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -185,6 +188,8 @@ const CheckoutPage = () => {
           image_url: item.image_url || item.imageUrl || null,
           quantity: item.quantity
         })),
+        delivery_method: deliveryMethod,
+        courier: deliveryMethod === 'retiro_courier' ? courier : null,
         subtotal,
         tax,
         shipping_cost: shippingCost,
@@ -214,26 +219,23 @@ const CheckoutPage = () => {
         customer_name: formData.name
       };
 
-      let redirectUrl = `/order-confirmation/${order.id}`;
-      
-      try {
-        const paymentPayload = {
-          ...paymentData,
-          gateway: paymentMethod
-        };
+      // Si la pasarela no responde, el checkout tiene que fallar: mandar al cliente
+      // a /order-confirmation sin haber cobrado le hace creer que ya pago.
+      const paymentResponse = await apiServerClient.fetch('/payment/init', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...paymentData, gateway: paymentMethod })
+      });
 
-        const paymentResponse = await apiServerClient.fetch('/payment/init', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(paymentPayload)
-        });
+      if (!paymentResponse.ok) {
+        throw new Error('No pudimos conectar con la pasarela de pago. Tu pedido quedo guardado, intenta de nuevo en unos minutos.');
+      }
 
-        if (paymentResponse.ok) {
-          const paymentResult = await paymentResponse.json();
-          redirectUrl = paymentResult.payment_url || paymentResult.redirect_url || redirectUrl;
-        }
-      } catch (err) {
-        console.warn('Backend payment init fallback to mock flow:', err);
+      const paymentResult = await paymentResponse.json();
+      const redirectUrl = paymentResult.payment_url || paymentResult.redirect_url;
+
+      if (!redirectUrl) {
+        throw new Error('La pasarela de pago no devolvio un link de pago. Intenta de nuevo.');
       }
 
       sessionStorage.setItem('nutra_blue_pending_order', JSON.stringify({
@@ -394,31 +396,73 @@ const CheckoutPage = () => {
                   </div>
                 </div>
 
-                {/* Section 3: Método de Pago */}
+                {/* Section 3: Método de Entrega */}
+                <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
+                  <h2 className="text-xl font-semibold text-card-foreground mb-2">Método de Entrega</h2>
+                  <p className="text-sm text-muted-foreground mb-6">
+                    Coordinamos la entrega contigo por correo y teléfono después de confirmar tu compra.
+                  </p>
+
+                  <div className="space-y-3">
+                    {[
+                      { value: 'domicilio', title: 'Envío a domicilio', detail: 'Lo despachamos a la dirección que indicaste arriba' },
+                      { value: 'retiro_vendedor', title: 'Retiro con el vendedor', detail: 'Coordinamos punto y horario de entrega contigo' },
+                      { value: 'retiro_courier', title: 'Retiro en sucursal de transporte', detail: 'Blue Express, Starken o Pullman' },
+                    ].map((option) => (
+                      <label
+                        key={option.value}
+                        className={`border rounded-xl p-4 flex items-start gap-3 cursor-pointer transition-all duration-200 ${
+                          deliveryMethod === option.value ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border/80 hover:bg-slate-50/50'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="deliveryMethod"
+                          value={option.value}
+                          checked={deliveryMethod === option.value}
+                          onChange={() => setDeliveryMethod(option.value)}
+                          className="sr-only"
+                        />
+                        <span className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-primary ${deliveryMethod === option.value ? 'opacity-100' : 'opacity-0'}`} />
+                        <span>
+                          <span className="block font-bold text-sm text-foreground">{option.title}</span>
+                          <span className="block text-[11px] text-muted-foreground leading-relaxed">{option.detail}</span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+
+                  {deliveryMethod === 'retiro_courier' && (
+                    <div className="mt-4">
+                      <Label htmlFor="courier" className="text-card-foreground">Empresa de transporte *</Label>
+                      <Select value={courier} onValueChange={setCourier}>
+                        <SelectTrigger id="courier" className={`mt-1 text-gray-900 ${errors.courier ? 'border-destructive' : ''}`}>
+                          <SelectValue placeholder="Elige una empresa" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="blue_express">Blue Express</SelectItem>
+                          <SelectItem value="starken">Starken</SelectItem>
+                          <SelectItem value="pullman">Pullman</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {errors.courier && <p className="text-sm text-destructive mt-1">{errors.courier}</p>}
+                      <p className="text-[11px] text-muted-foreground mt-2">
+                        Te avisamos por correo cuando el pedido esté disponible para retirar.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Section 4: Método de Pago */}
                 <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
                   <h2 className="text-xl font-semibold text-card-foreground mb-6">Método de Pago</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <label className={`border rounded-xl p-4 flex flex-col justify-between cursor-pointer transition-all duration-200 ${
-                      paymentMethod === 'webpay' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border/80 hover:bg-slate-50/50'
-                    }`}>
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value="webpay"
-                        checked={paymentMethod === 'webpay'}
-                        onChange={() => setPaymentMethod('webpay')}
-                        className="sr-only"
-                      />
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-bold text-sm text-foreground">Webpay Plus</span>
-                        <span className={`h-2.5 w-2.5 rounded-full bg-primary ${paymentMethod === 'webpay' ? 'opacity-100' : 'opacity-0'}`} />
-                      </div>
-                      <p className="text-[10px] text-muted-foreground leading-relaxed">Transbank (Débito, Crédito, Redcompra)</p>
-                    </label>
-
-                    <label className={`border rounded-xl p-4 flex flex-col justify-between cursor-pointer transition-all duration-200 ${
-                      paymentMethod === 'mercadopago' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border/80 hover:bg-slate-50/50'
-                    }`}>
+                  {/*
+                    Por ahora Mercado Pago es la unica pasarela habilitada. Webpay y Flow
+                    siguen implementados en el backend (app/core/payments/): para volver a
+                    ofrecerlos hay que reponer sus <label> aca y verificar sus credenciales.
+                  */}
+                  <div className="grid grid-cols-1 gap-4">
+                    <label className="border rounded-xl p-4 flex flex-col justify-between border-primary bg-primary/5 ring-1 ring-primary">
                       <input
                         type="radio"
                         name="paymentMethod"
@@ -429,33 +473,15 @@ const CheckoutPage = () => {
                       />
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-bold text-sm text-foreground">Mercado Pago</span>
-                        <span className={`h-2.5 w-2.5 rounded-full bg-primary ${paymentMethod === 'mercadopago' ? 'opacity-100' : 'opacity-0'}`} />
+                        <span className="h-2.5 w-2.5 rounded-full bg-primary" />
                       </div>
-                      <p className="text-[10px] text-muted-foreground leading-relaxed">Dinero en cuenta, tarjetas y cuotas sin interés</p>
-                    </label>
-
-                    <label className={`border rounded-xl p-4 flex flex-col justify-between cursor-pointer transition-all duration-200 ${
-                      paymentMethod === 'flow' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border/80 hover:bg-slate-50/50'
-                    }`}>
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value="flow"
-                        checked={paymentMethod === 'flow'}
-                        onChange={() => setPaymentMethod('flow')}
-                        className="sr-only"
-                      />
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-bold text-sm text-foreground">Flow</span>
-                        <span className={`h-2.5 w-2.5 rounded-full bg-primary ${paymentMethod === 'flow' ? 'opacity-100' : 'opacity-0'}`} />
-                      </div>
-                      <p className="text-[10px] text-muted-foreground leading-relaxed">Multicaja, Servipag y otros medios locales</p>
+                      <p className="text-[10px] text-muted-foreground leading-relaxed">Dinero en cuenta, tarjetas de débito y crédito, y cuotas sin interés</p>
                     </label>
                   </div>
                 </div>
               </div>
 
-              {/* Section 4: Order Summary */}
+              {/* Section 5: Order Summary */}
               <div className="lg:col-span-1">
                 <div className="bg-card rounded-xl p-6 border border-border shadow-sm sticky top-20">
                   <h2 className="text-xl font-semibold text-card-foreground mb-6">Resumen del Pedido</h2>
@@ -546,10 +572,7 @@ const CheckoutPage = () => {
                     className="w-full mt-6 transition-all duration-200 active:scale-[0.98] font-bold text-white py-6"
                     size="lg"
                   >
-                    {loading ? 'Procesando...' : `Pagar con ${
-                      paymentMethod === 'webpay' ? 'Webpay Plus' : 
-                      paymentMethod === 'mercadopago' ? 'Mercado Pago' : 'Flow'
-                    }`}
+                    {loading ? 'Procesando...' : 'Pagar con Mercado Pago'}
                   </Button>
                 </div>
               </div>

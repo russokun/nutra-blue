@@ -1,7 +1,7 @@
 from typing import Optional
 from fastapi import HTTPException
 from app.models.orders import OrderCreate
-from app.core.pricing import calculate_order_totals, CHILEAN_REGIONS
+from app.core.pricing import calculate_order_totals, CHILEAN_REGIONS, DELIVERY_METHODS, COURIERS
 from app.core.mock_store import MOCK_ORDERS
 from app.database.supabase import supabase_client
 from app.services.products_service import get_product_by_id
@@ -24,6 +24,19 @@ def validate_and_build_order(order_data: OrderCreate) -> dict:
 
     if order_data.region not in CHILEAN_REGIONS:
         raise OrderValidationError(f"Invalid region: {order_data.region}")
+
+    delivery_method = order_data.delivery_method or "domicilio"
+    if delivery_method not in DELIVERY_METHODS:
+        raise OrderValidationError(f"Invalid delivery method: {delivery_method}")
+
+    courier = order_data.courier or None
+    if delivery_method == "retiro_courier":
+        if courier not in COURIERS:
+            raise OrderValidationError("Debes elegir un courier para el retiro en sucursal")
+    else:
+        # El courier solo tiene sentido con retiro en sucursal: si viene de otro modo,
+        # se descarta para que la orden no quede con datos contradictorios.
+        courier = None
 
     cart_total = 0
     validated_items = []
@@ -96,6 +109,8 @@ def validate_and_build_order(order_data: OrderCreate) -> dict:
         "city": order_data.city,
         "region": order_data.region,
         "items": validated_items,
+        "delivery_method": delivery_method,
+        "courier": courier,
         **totals,
     }
 

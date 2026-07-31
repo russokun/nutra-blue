@@ -29,19 +29,37 @@ def validate_payment_request(order_id: str, amount: int, allow_already_paid: boo
     return order
 
 
-async def mark_order_as_paid(order_id: str):
+async def mark_order_as_paid(
+    order_id: str,
+    provider: str = None,
+    payment_id: str = None,
+    is_test: bool = False,
+):
     from app.services.email_service import send_payment_confirmation
+    from datetime import datetime, timezone
     import asyncio
+
+    # Dejar rastro de con que se pago: sin esto es imposible distinguir (ni limpiar)
+    # una orden de prueba de una venta real.
+    updates = {
+        "status": "paid",
+        "paid_at": datetime.now(timezone.utc).isoformat(),
+        "is_test": bool(is_test),
+    }
+    if provider:
+        updates["payment_provider"] = provider
+    if payment_id:
+        updates["payment_id"] = str(payment_id)
 
     if supabase_client is None:
         if order_id in MOCK_ORDERS:
-            MOCK_ORDERS[order_id]["status"] = "paid"
+            MOCK_ORDERS[order_id].update(updates)
             paid_order = MOCK_ORDERS[order_id]
             asyncio.create_task(send_payment_confirmation(paid_order))
             return paid_order
         raise Exception(f"Order {order_id} not found to mark as paid")
 
-    response = supabase_client.from_("orders").update({"status": "paid"}).eq("id", order_id).execute()
+    response = supabase_client.from_("orders").update(updates).eq("id", order_id).execute()
     if not response.data:
         raise Exception(f"Order {order_id} not found to mark as paid")
     paid_order = response.data[0]
@@ -118,7 +136,12 @@ async def _handle_payment_webhook(request: Request, provider: str):
             order = get_order_by_id(order_id)
             if order and order.get("status") != "paid":
                 validate_payment_request(order_id, order["total"])
-                await mark_order_as_paid(order_id)
+                await mark_order_as_paid(
+                    order_id,
+                    provider=verification.get("provider") or provider,
+                    payment_id=verification.get("payment_id"),
+                    is_test=verification.get("is_test", False),
+                )
             return {"success": True, "message": "Order paid successfully"}
 
         return {"success": True, "message": f"Webhook processed: {status}"}
@@ -159,7 +182,7 @@ async def transbank_return(request: Request):
             order = get_order_by_id(final_order_id)
             if order:
                 validate_payment_request(final_order_id, order["total"])
-            await mark_order_as_paid(final_order_id)
+            await mark_order_as_paid(final_order_id, provider="transbank")
             return RedirectResponse(
                 url=f"https://{settings.website_domain}/order-confirmation/{final_order_id}",
                 status_code=303,

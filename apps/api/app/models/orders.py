@@ -18,6 +18,8 @@ class OrderCreate(BaseModel):
     shipping_cost: int
     total: int
     coupon_code: Optional[str] = None
+    delivery_method: str = "domicilio"
+    courier: Optional[str] = None
 
 class OrderUpdateStatus(BaseModel):
     status: str
