@@ -51,7 +51,7 @@ const FaqPage = () => {
       <main className="min-h-screen bg-[#fcfbf9] py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6" style={{ fontFamily: 'Impact, sans-serif' }}>
+            <h1 className="text-4xl md:text-5xl font-display text-slate-900 mb-6">
               Preguntas Frecuentes
             </h1>
             <p className="text-xl text-slate-600">
