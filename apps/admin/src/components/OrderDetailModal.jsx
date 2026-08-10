@@ -3,7 +3,7 @@ import adminClient from '@/lib/adminClient';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { X, MapPin, Truck, CreditCard, Package, Mail, Phone } from 'lucide-react';
+import { X, MapPin, Truck, CreditCard, Package, Mail, Phone, MessageCircle } from 'lucide-react';
 
 const formatPrice = (price) =>
   new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(price || 0);
@@ -27,6 +27,28 @@ const formatDate = (value) => {
   return new Date(value).toLocaleString('es-CL', {
     day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
   });
+};
+
+/**
+ * Enlace de WhatsApp con el mensaje de seguimiento ya escrito.
+ *
+ * A proposito no hay integracion con la API de WhatsApp: wa.me abre el chat con el
+ * texto precargado y NutraBlue lo envia desde su propio numero. Cero credenciales,
+ * cero costo por mensaje.
+ */
+const armarEnlaceWhatsApp = (order) => {
+  const telefono = (order?.phone || '').replace(/[^\d]/g, '');
+  if (!telefono) return null;
+
+  const codigo = order.tracking_code;
+  const empresa = COURIER_LABELS[order.shipping_company] || COURIER_LABELS[order.courier];
+  const idCorto = String(order.id || '').slice(0, 8).toUpperCase();
+
+  const mensaje = codigo
+    ? `Hola ${order.customer_name || ''}, tu pedido #${idCorto} de NutraBlue ya va en camino con ${empresa || 'el courier'}. Tu código de seguimiento es ${codigo}.`
+    : `Hola ${order.customer_name || ''}, te escribimos de NutraBlue por tu pedido #${idCorto}.`;
+
+  return `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
 };
 
 const Campo = ({ label, children }) => (
@@ -86,6 +108,7 @@ const OrderDetailModal = ({ orderId, onClose }) => {
 
   const items = order?.items || [];
   const direccion = [order?.address, order?.city, order?.region].filter(Boolean).join(', ');
+  const enlaceWhatsApp = order ? armarEnlaceWhatsApp(order) : null;
 
   return (
     <div
@@ -199,6 +222,39 @@ const OrderDetailModal = ({ orderId, onClose }) => {
                 </div>
               </dl>
             </Seccion>
+
+            <div className="mt-4">
+              <Seccion icon={Truck} titulo="Seguimiento del envío">
+                <dl className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <Campo label="Código de seguimiento">
+                    <span className="font-mono text-sm font-bold text-primary">{order.tracking_code}</span>
+                  </Campo>
+                  <Campo label="Empresa">{COURIER_LABELS[order.shipping_company] || null}</Campo>
+                  <Campo label="Despachado el">{order.shipped_at ? formatDate(order.shipped_at) : null}</Campo>
+                  <Campo label="Flete">
+                    {order.shipping_payment === 'pagado' ? 'Pagado' : 'Por pagar'}
+                  </Campo>
+                </dl>
+
+                {!order.tracking_code && (
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    Todavía no se registra el despacho. Puedes hacerlo desde «Registrar Despacho» en el panel principal.
+                  </p>
+                )}
+
+                {enlaceWhatsApp && (
+                  <a
+                    href={enlaceWhatsApp}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 inline-flex items-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    Avisar por WhatsApp
+                  </a>
+                )}
+              </Seccion>
+            </div>
 
             <div className="mt-4">
               <Seccion icon={CreditCard} titulo="Pago">

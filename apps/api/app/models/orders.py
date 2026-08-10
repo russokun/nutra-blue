@@ -24,6 +24,14 @@ class OrderCreate(BaseModel):
 class OrderUpdateStatus(BaseModel):
     status: str
 
+
+class OrderShippingUpdate(BaseModel):
+    """Datos con los que el admin despacha un pedido y avisa al cliente."""
+    tracking_code: str
+    shipping_company: str
+    shipping_payment: str = "por_pagar"
+    notify_customer: bool = True
+
 class Order(OrderCreate):
     id: str
     status: str

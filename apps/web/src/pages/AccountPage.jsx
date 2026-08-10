@@ -87,34 +87,18 @@ const AccountContent = () => {
     }
   };
 
-  // Mock Orders with Tracking for the Client Dashboard
-  const mockOrders = [
-    {
-      id: 'NB-1042',
-      date: '28 de Junio, 2026',
-      total: 40490,
-      status: 'En Tránsito',
-      trackingStep: 3, // 1: Procesando, 2: Despachado, 3: En Tránsito, 4: Entregado
-      courier: 'Starken',
-      trackingCode: 'ST-9481720491',
-      items: [
-        { name: 'Calm & Focus', qty: 1, price: 18990 },
-        { name: 'Reishi Mushroom Tea', qty: 1, price: 21500 }
-      ]
-    },
-    {
-      id: 'NB-1021',
-      date: '12 de Mayo, 2026',
-      total: 24990,
-      status: 'Entregado',
-      trackingStep: 4,
-      courier: 'Chilexpress',
-      trackingCode: 'CX-1049281749',
-      items: [
-        { name: 'Matcha Ritual', qty: 1, price: 24990 }
-      ]
-    }
-  ];
+  const COURIER_LABELS = {
+    blue_express: 'Blue Express',
+    starken: 'Starken',
+    pullman: 'Pullman'
+  };
+
+  // La empresa de transporte se guarda en shipping_company al despachar; antes de eso
+  // solo esta el courier que el cliente eligio en el checkout, si eligio retiro.
+  const getCourierLabel = (order) => {
+    const clave = order.shipping_company || order.courier;
+    return COURIER_LABELS[clave] || 'Despacho NutraBlue';
+  };
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('es-CL', {
@@ -246,16 +230,16 @@ const AccountContent = () => {
                           {/* Tracking Progress Visualizer */}
                           <div className="pt-4 border-t border-border/45 space-y-4">
                             <div className="flex justify-between items-center text-xs text-muted-foreground">
-                              <span>Courier: <strong className="text-foreground">{order.courier || 'Despacho NutraBlue'}</strong></span>
+                              <span>Courier: <strong className="text-foreground">{getCourierLabel(order)}</strong></span>
                               <span>Código de Seguimiento: <strong className="text-foreground flex items-center gap-1 cursor-pointer hover:underline" onClick={() => {
-                                const trackingCode = order.tracking_code || order.trackingCode || 'Pendiente';
-                                if (trackingCode !== 'Pendiente') {
+                                const trackingCode = order.tracking_code;
+                                if (trackingCode) {
                                   navigator.clipboard.writeText(trackingCode);
                                   toast.success('Código copiado al portapapeles');
                                 } else {
                                   toast.info('Código de seguimiento pendiente de asignación');
                                 }
-                              }}>{order.tracking_code || order.trackingCode || 'Pendiente'} <ExternalLink className="h-3 w-3" /></strong></span>
+                              }}>{order.tracking_code || 'Pendiente'} <ExternalLink className="h-3 w-3" /></strong></span>
                             </div>
 
                             {/* Progress Bar */}
