@@ -21,8 +21,7 @@ const TermsOfServicePage = () => {
           <div className="text-center mb-12">
             <span className="text-sm font-semibold text-primary uppercase tracking-wider">Reglas de Operación</span>
             <h1
-              className="text-4xl md:text-5xl font-bold text-foreground mt-2 mb-4"
-              style={{ fontFamily: 'Impact, sans-serif', letterSpacing: '-0.02em' }}
+              className="text-4xl md:text-5xl font-display text-foreground mt-2 mb-4"
             >
               Términos de Servicio
             </h1>
@@ -43,7 +42,7 @@ const TermsOfServicePage = () => {
                 <div className="p-2.5 rounded-full bg-primary/10 text-primary mb-3">
                   <ShoppingBag className="h-5 w-5" />
                 </div>
-                <h3 className="text-sm font-semibold text-card-foreground mb-1" style={{ fontFamily: 'Impact, sans-serif' }}>
+                <h3 className="text-sm font-semibold text-card-foreground mb-1">
                   Compras Seguras
                 </h3>
                 <p className="text-[11px] text-muted-foreground">
@@ -57,7 +56,7 @@ const TermsOfServicePage = () => {
                 <div className="p-2.5 rounded-full bg-primary/10 text-primary mb-3">
                   <Truck className="h-5 w-5" />
                 </div>
-                <h3 className="text-sm font-semibold text-card-foreground mb-1" style={{ fontFamily: 'Impact, sans-serif' }}>
+                <h3 className="text-sm font-semibold text-card-foreground mb-1">
                   Despachos a Chile
                 </h3>
                 <p className="text-[11px] text-muted-foreground">
@@ -71,7 +70,7 @@ const TermsOfServicePage = () => {
                 <div className="p-2.5 rounded-full bg-primary/10 text-primary mb-3">
                   <RotateCcw className="h-5 w-5" />
                 </div>
-                <h3 className="text-sm font-semibold text-card-foreground mb-1" style={{ fontFamily: 'Impact, sans-serif' }}>
+                <h3 className="text-sm font-semibold text-card-foreground mb-1">
                   Garantía Legal
                 </h3>
                 <p className="text-[11px] text-muted-foreground">
@@ -85,7 +84,7 @@ const TermsOfServicePage = () => {
                 <div className="p-2.5 rounded-full bg-primary/10 text-primary mb-3">
                   <AlertTriangle className="h-5 w-5" />
                 </div>
-                <h3 className="text-sm font-semibold text-card-foreground mb-1" style={{ fontFamily: 'Impact, sans-serif' }}>
+                <h3 className="text-sm font-semibold text-card-foreground mb-1">
                   Uso Responsable
                 </h3>
                 <p className="text-[11px] text-muted-foreground">

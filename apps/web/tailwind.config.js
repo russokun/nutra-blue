@@ -16,6 +16,16 @@ module.exports = {
       },
     },
     extend: {
+      fontFamily: {
+        // Anton reemplaza al `fontFamily: 'Impact, sans-serif'` inline que estaba en 30
+        // lugares y que nunca se cargaba: Impact existe en Windows y macOS, pero no en
+        // Android ni iOS, asi que en movil toda la tipografia de marca caia al sans del
+        // sistema. Impact queda en el stack de respaldo a proposito, para que un fallo de
+        // carga degrade a algo condensado y no salte a Inter.
+        display: ["Anton", "Impact", "Haettenschweiler", "Arial Narrow", "sans-serif"],
+        heading: ["Montserrat", "ui-sans-serif", "system-ui", "sans-serif"],
+        sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
