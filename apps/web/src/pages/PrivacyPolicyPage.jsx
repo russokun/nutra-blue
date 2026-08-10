@@ -127,7 +127,7 @@ const PrivacyPolicyPage = () => {
                 NutraBlue no vende, comercializa ni arrienda tus datos personales bajo ninguna circunstancia. Solamente compartimos la información estrictamente necesaria con proveedores estratégicos para la operación de tu pedido:
               </p>
               <ul className="list-disc pl-6 space-y-2 text-sm text-muted-foreground">
-                <li>Empresas de Courier (Starken, Chilexpress, Correos de Chile u otros similares) para completar la entrega física de tus productos.</li>
+                <li>Empresas de Courier (Blue Express, Starken, Pullman u otros similares) para completar la entrega física de tus productos.</li>
                 <li>Plataformas tecnológicas de orquestación y automatización segura (como n8n) para la sincronización e integraciones internas del negocio.</li>
                 <li>Cumplimiento legal ante requerimientos de autoridades judiciales o administrativas en base a la legislación vigente.</li>
               </ul>

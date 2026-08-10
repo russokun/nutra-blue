@@ -229,7 +229,7 @@ const ShopPage = () => {
                         key={category.value}
                         onClick={() => setSelectedCategory(category.value)}
                         variant={selectedCategory === category.value ? 'default' : 'outline'}
-                        className="w-full justify-start transition-all duration-200 text-xs py-2 rounded-xl"
+                        className="w-full justify-start transition-all duration-200 text-xs py-2 rounded-xl h-auto min-h-9 whitespace-normal text-left"
                       >
                         {category.label}
                       </Button>
@@ -252,7 +252,7 @@ const ShopPage = () => {
                         key={sub.value}
                         onClick={() => setSelectedSubCategory(sub.value)}
                         variant={selectedSubCategory === sub.value ? 'default' : 'outline'}
-                        className="w-full justify-start transition-all duration-200 text-xs py-2 rounded-xl text-left"
+                        className="w-full justify-start transition-all duration-200 text-xs py-2 rounded-xl text-left h-auto min-h-9 whitespace-normal"
                       >
                         {sub.label}
                       </Button>
@@ -273,7 +273,7 @@ const ShopPage = () => {
                         key={sub.value}
                         onClick={() => setSelectedSubCategory(sub.value)}
                         variant={selectedSubCategory === sub.value ? 'default' : 'outline'}
-                        className="w-full justify-start transition-all duration-200 text-xs py-2 rounded-xl text-left"
+                        className="w-full justify-start transition-all duration-200 text-xs py-2 rounded-xl text-left h-auto min-h-9 whitespace-normal"
                       >
                         {sub.label}
                       </Button>
