@@ -11,6 +11,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import ProductTags from '@/components/common/ProductTags';
 import { toast } from 'sonner';
 import { getProductExtraDetails } from '@/lib/productExtraDetails';
 
@@ -222,9 +223,7 @@ const ProductDetailPage = () => {
 
             {/* Info */}
             <div className="flex flex-col justify-center">
-              <span className="text-xs uppercase tracking-wider text-primary font-semibold mb-2">
-                {product.category}
-              </span>
+              <ProductTags product={product} variant="meta" className="mb-2 !text-xs !text-primary" />
               <h1
                 className="text-3xl md:text-4xl font-display text-foreground mb-4"
               >

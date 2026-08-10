@@ -2,8 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
-import { ShoppingBag, Eye, Percent } from 'lucide-react';
+import { ShoppingBag, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import ProductTags from '@/components/common/ProductTags';
 import { useCart } from '@/hooks/useCart';
 import { toast } from 'sonner';
 
@@ -23,8 +24,14 @@ const SectionCarousel = ({ products }) => {
     }).format(price);
   };
 
+  // OJO: este precio "antes" es inventado (el precio actual + 25%). No corresponde a un
+  // precio al que el producto se haya vendido nunca, porque no hay columna de descuento
+  // en la planilla. Mostrar un precio de referencia fabricado junto a un "Ahorras $X" es
+  // publicidad engañosa y expone a NutraBlue ante el SERNAC.
+  //
+  // Queda pendiente de decisión del cliente: o se agrega una columna de precio anterior
+  // real a la planilla, o esta sección deja de mostrar descuentos.
   const getFakeOriginalPrice = (price) => {
-    // Generar un precio original realista ~20-25% más alto redondeado a los $100 más cercanos
     const raw = price * 1.25;
     return Math.round(raw / 100) * 100;
   };
@@ -56,17 +63,12 @@ const SectionCarousel = ({ products }) => {
       >
         {products.map((product) => {
           const originalPrice = getFakeOriginalPrice(product.price);
-          const discountPercent = 20; // 20% de descuento estimado
 
           return (
             <SwiperSlide key={product.id} className="h-auto">
               <div className="bg-card border border-border/60 rounded-2xl p-5 hover:border-primary/20 flex flex-col justify-between h-full min-h-[460px] relative group transition-all duration-300 hover:shadow-lg">
                 
-                {/* Descuento Badge */}
-                <div className="absolute top-3 left-3 z-10 bg-destructive text-destructive-foreground text-[10px] font-extrabold px-2.5 py-1 rounded-full flex items-center gap-1 uppercase tracking-wider">
-                  <Percent className="h-3 w-3" />
-                  <span>Oferta</span>
-                </div>
+                <ProductTags product={product} variant="overlay" />
 
                 <Link to={`/product/${product.id}`} className="block flex-grow flex flex-col text-left h-full">
                   {/* Image Container */}
@@ -83,9 +85,7 @@ const SectionCarousel = ({ products }) => {
                   {/* Card Body */}
                   <div className="space-y-2 flex-grow flex flex-col justify-between">
                     <div>
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">
-                        {product.category}
-                      </span>
+                      <ProductTags product={product} variant="meta" className="mb-1" />
                       <h3 className="font-bold text-foreground text-base group-hover:text-primary transition-colors line-clamp-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                         {product.name}
                       </h3>
