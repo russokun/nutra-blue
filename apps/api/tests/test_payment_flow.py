@@ -207,6 +207,35 @@ def test_mercadopago_preference_uses_public_urls(monkeypatch):
     assert sum(i["unit_price"] * i["quantity"] for i in preference["items"]) == order["total"]
 
 
+def test_mercadopago_preference_desglosa_despacho_de_ordenes_antiguas(monkeypatch):
+    """
+    Ya no cobramos despacho, pero una orden creada antes del cambio pudo quedar pendiente
+    con shipping_cost persistido y pagarse despues. En ese caso la preferencia tiene que
+    seguir desglosando el despacho, o la suma de los items no cuadraria con el total y
+    caeria a la linea unica generica.
+    """
+    order = create_test_order()
+    stored = MOCK_ORDERS[order["id"]]
+    stored["shipping_cost"] = 5000
+    stored["total"] = stored["total"] + 5000
+    preferences = install_fake_mercadopago(monkeypatch, order["id"])
+
+    response = client.post(
+        "/payment/init",
+        json={
+            "order_id": order["id"],
+            "amount": stored["total"],
+            "email": order["email"],
+            "gateway": "mercadopago",
+        },
+    )
+    assert response.status_code == 200
+
+    items = preferences[0]["items"]
+    assert any(i["title"] == "Despacho" and i["unit_price"] == 5000 for i in items)
+    assert sum(i["unit_price"] * i["quantity"] for i in items) == stored["total"]
+
+
 def test_mercadopago_init_propagates_failure(monkeypatch):
     """Si Mercado Pago falla, el checkout falla. Nunca una URL de pago inventada."""
     order = create_test_order()

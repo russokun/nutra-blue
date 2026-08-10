@@ -27,7 +27,7 @@ const FaqPage = () => {
     },
     {
       q: '¿Cuánto cuesta el envío?',
-      a: 'Sobre $50.000 el envío es gratis. Bajo ese monto, el costo se calcula según tu comuna al momento de pagar.'
+      a: 'El envío es gratis en todos nuestros pedidos, a cualquier comuna de Chile. No se cobra despacho en el checkout.'
     },
     {
       q: '¿Qué medios de pago aceptan?',

@@ -1,12 +1,17 @@
-from app.core.pricing import calculate_shipping, calculate_tax_breakdown, calculate_order_totals
+import pytest
+
+from app.core.pricing import (
+    CHILEAN_REGIONS,
+    calculate_shipping,
+    calculate_tax_breakdown,
+    calculate_order_totals,
+)
 
 
-def test_shipping_metropolitana():
-    assert calculate_shipping("Metropolitana") == 5000
-
-
-def test_shipping_default():
-    assert calculate_shipping("Magallanes") == 10000
+@pytest.mark.parametrize("region", CHILEAN_REGIONS)
+def test_shipping_is_free_in_every_region(region):
+    """NutraBlue asume el despacho: la tienda no cobra envio en ninguna region."""
+    assert calculate_shipping(region) == 0
 
 
 def test_tax_breakdown():
@@ -15,8 +20,10 @@ def test_tax_breakdown():
     assert tax == 1900
 
 
-def test_order_totals():
-    totals = calculate_order_totals(18990, "Metropolitana")
-    assert totals["shipping_cost"] == 5000
-    assert totals["total"] == 18990 + 5000
+@pytest.mark.parametrize("region", ["Metropolitana", "Magallanes"])
+def test_order_total_never_includes_shipping(region):
+    """Antes el total variaba por region y habia un umbral de $50.000. Ya no."""
+    totals = calculate_order_totals(18990, region)
+    assert totals["shipping_cost"] == 0
+    assert totals["total"] == 18990
     assert totals["subtotal"] + totals["tax"] == 18990

@@ -119,8 +119,8 @@ async def send_order_confirmation(order: dict) -> bool:
                             <td style="text-align: right; color: #334155; font-size: 14px; font-weight: 600; padding-top: 6px;">{format_clp(order.get('tax', 0))} CLP</td>
                         </tr>
                         <tr>
-                            <td style="color: #64748b; font-size: 14px; padding-top: 6px;">Costo de Envío</td>
-                            <td style="text-align: right; color: #334155; font-size: 14px; font-weight: 600; padding-top: 6px;">{format_clp(order.get('shipping_cost', 0))} CLP</td>
+                            <td style="color: #64748b; font-size: 14px; padding-top: 6px;">Envío</td>
+                            <td style="text-align: right; color: #16a34a; font-size: 14px; font-weight: 600; padding-top: 6px;">Gratis</td>
                         </tr>
                         <tr>
                             <td style="color: #0f172a; font-size: 16px; font-weight: 700; padding-top: 12px; border-t: 1px solid #e2e8f0;">Total General</td>
