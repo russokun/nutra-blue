@@ -246,15 +246,12 @@ const CartPage = () => {
                     <span>IVA Incluido (19%)</span>
                     <span className="font-medium">{formatPrice(tax)}</span>
                   </div>
+                  {/* NutraBlue asume el despacho: siempre gratis, sin condicion de monto.
+                      Antes esta fila decia "Calculado en checkout" bajo los $50.000, lo que
+                      contradecia al checkout, que ya no cobra envio en ningun caso. */}
                   <div className="flex justify-between text-muted-foreground">
                     <span>Costo de Despacho</span>
-                    <span className="font-medium">
-                      {total >= freeShippingThreshold ? (
-                        <span className="text-success font-semibold">Gratis</span>
-                      ) : (
-                        <span className="text-muted-foreground italic">Calculado en checkout</span>
-                      )}
-                    </span>
+                    <span className="text-success font-semibold">Gratis</span>
                   </div>
 
                   <div className="border-t border-border pt-4">

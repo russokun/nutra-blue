@@ -66,6 +66,10 @@ class MercadoPagoPayment(PaymentGateway):
             })
             breakdown += quantity * unit_price
 
+        # Ya no se cobra despacho (pricing.calculate_shipping devuelve 0), pero esta rama
+        # sigue haciendo falta: las ordenes creadas antes del cambio que quedaron pendientes
+        # y se pagan despues si traen shipping_cost persistido. Sin ella el desglose no
+        # cuadraria con el total y la preferencia caeria a la linea unica de mas abajo.
         shipping_cost = int(order.get("shipping_cost", 0) or 0)
         if shipping_cost > 0:
             items.append({

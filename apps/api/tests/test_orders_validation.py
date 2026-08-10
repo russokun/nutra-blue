@@ -32,8 +32,8 @@ def test_rejects_invalid_region():
         items=[OrderItem(product_id="calm-and-focus", quantity=1)],
         subtotal=1000,
         tax=100,
-        shipping_cost=5000,
-        total=6100,
+        shipping_cost=0,
+        total=1100,
     )
     with pytest.raises(OrderValidationError):
         validate_and_build_order(order)
@@ -55,7 +55,8 @@ def test_recalculates_totals_server_side():
     )
     result = validate_and_build_order(order)
     assert result["total"] != 1
-    assert result["total"] == 18990 + 5000
+    assert result["total"] == 18990
+    assert result["shipping_cost"] == 0
     assert result["items"][0]["unit_price"] == 18990
 
 
@@ -108,12 +109,12 @@ def test_courier_is_discarded_when_not_picking_up():
 
 
 def test_delivery_method_does_not_change_shipping_cost():
-    """El despacho se sigue cobrando por region; el metodo de entrega es solo un dato."""
+    """El metodo de entrega es solo un dato: no cobramos despacho en ningun caso."""
     domicilio = validate_and_build_order(build_order())
     retiro = validate_and_build_order(
         build_order(delivery_method="retiro_courier", courier="pullman")
     )
-    assert domicilio["shipping_cost"] == retiro["shipping_cost"] == 5000
+    assert domicilio["shipping_cost"] == retiro["shipping_cost"] == 0
     assert domicilio["total"] == retiro["total"]
 
 
