@@ -23,7 +23,7 @@ const FaqPage = () => {
   const faqsCompras = [
     {
       q: '¿Hacen despacho a todo Chile?',
-      a: 'Sí, llegamos a todas las regiones del país. En la Región Metropolitana el despacho demora [COMPLETAR] días hábiles y en regiones [COMPLETAR] días hábiles.'
+      a: 'Sí, llegamos a todas las regiones del país. Despachamos por Blue Express, Starken o Pullman, y te confirmamos por correo el plazo de entrega junto con los datos del envío.'
     },
     {
       q: '¿Cuánto cuesta el envío?',
@@ -31,7 +31,7 @@ const FaqPage = () => {
     },
     {
       q: '¿Qué medios de pago aceptan?',
-      a: '[COMPLETAR: Webpay / tarjetas / transferencia]'
+      a: 'Pagas con Mercado Pago: dinero en tu cuenta, tarjetas de débito y de crédito, y cuotas sin interés según tu banco.'
     },
     {
       q: '¿Puedo devolver un producto?',

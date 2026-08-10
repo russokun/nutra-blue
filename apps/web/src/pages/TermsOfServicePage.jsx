@@ -60,7 +60,7 @@ const TermsOfServicePage = () => {
                   Despachos a Chile
                 </h3>
                 <p className="text-[11px] text-muted-foreground">
-                  Envíos confiables con Starken, Chilexpress y couriers autorizados.
+                  Envíos confiables con Blue Express, Starken y Pullman.
                 </p>
               </CardContent>
             </Card>
