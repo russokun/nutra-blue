@@ -1,4 +1,6 @@
 from typing import List, Optional
+from datetime import datetime, timezone
+import logging
 import os
 from fastapi import APIRouter, Depends, HTTPException, Query, Body, UploadFile, File
 from app.database.supabase import supabase_client
@@ -6,13 +8,17 @@ from app.core.security import verify_admin_user, verify_admin_or_internal_key
 from app.core.mock_store import MOCK_ORDERS
 from app.core.mock_data import MOCK_PRODUCTS
 from app.models.products import Product, ProductCreate, ProductUpdate
-from app.models.orders import OrderUpdateStatus
+from app.models.orders import OrderUpdateStatus, OrderShippingUpdate
+from app.core.pricing import COURIERS
+from app.services.email_service import send_shipping_notification
 from app.core.config import settings
 from app.services.storage_service import upload_image
 import uuid
 import requests
 import csv
 import io
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -334,6 +340,65 @@ def _enrich_order_items(order: dict) -> dict:
         })
 
     return {**order, "items": enriquecidos}
+
+
+@router.patch("/orders/{order_id}/shipping")
+async def admin_ship_order(
+    order_id: str,
+    data: OrderShippingUpdate,
+    _: dict = Depends(verify_admin_user),
+):
+    """
+    Despacha un pedido: guarda el codigo de seguimiento, lo pasa a 'shipped' y le
+    avisa al cliente por correo.
+
+    Antes el modal de tracking del panel tiraba el codigo a la basura: solo hacia
+    PATCH del estado y lo usaba en el texto del toast.
+    """
+    tracking = (data.tracking_code or "").strip()
+    if not tracking:
+        raise HTTPException(status_code=400, detail="El código de seguimiento es obligatorio")
+
+    empresa = (data.shipping_company or "").strip().lower()
+    if empresa not in COURIERS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Empresa de transporte inválida. Permitidas: {sorted(COURIERS)}",
+        )
+
+    if data.shipping_payment not in ("por_pagar", "pagado"):
+        raise HTTPException(status_code=400, detail="shipping_payment debe ser 'por_pagar' o 'pagado'")
+
+    updates = {
+        "status": "shipped",
+        "tracking_code": tracking,
+        "shipping_company": empresa,
+        "shipping_payment": data.shipping_payment,
+        "shipped_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    if supabase_client is None:
+        if order_id not in MOCK_ORDERS:
+            raise HTTPException(status_code=404, detail="Order not found")
+        MOCK_ORDERS[order_id].update(updates)
+        order = MOCK_ORDERS[order_id]
+    else:
+        try:
+            response = supabase_client.from_("orders").update(updates).eq("id", order_id).execute()
+        except Exception:
+            raise HTTPException(status_code=500, detail="Failed to update shipping")
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Order not found")
+        order = response.data[0]
+
+    if data.notify_customer and order.get("email"):
+        # Que falle el correo no puede dejar el pedido sin despachar: ya se guardo.
+        try:
+            await send_shipping_notification(order)
+        except Exception:
+            logger.exception("No se pudo enviar el aviso de despacho del pedido %s", order_id)
+
+    return order
 
 
 @router.get("/orders/{order_id}")
