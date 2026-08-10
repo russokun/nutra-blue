@@ -3,7 +3,8 @@ import adminClient from '@/lib/adminClient';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { RefreshCw, Filter, Calendar, DollarSign, User } from 'lucide-react';
+import { RefreshCw, Filter, Calendar, DollarSign, User, Eye } from 'lucide-react';
+import OrderDetailModal from '@/components/OrderDetailModal';
 
 const STATUS_OPTIONS = ['pending', 'paid', 'shipped', 'cancelled', 'expired'];
 
@@ -28,6 +29,8 @@ const OrdersPage = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  // Modal en vez de ruta propia: asi el filtro y el scroll de la lista no se pierden.
+  const [detalleId, setDetalleId] = useState(null);
 
   const fetchOrders = async () => {
     try {
@@ -109,6 +112,7 @@ const OrdersPage = () => {
                   <th className="p-4">Total</th>
                   <th className="p-4">Estado Actual</th>
                   <th className="p-4 text-right">Modificar Estado</th>
+                  <th className="p-4 text-right">Detalle</th>
                 </tr>
               </thead>
               <tbody>
@@ -155,6 +159,16 @@ const OrdersPage = () => {
                         ))}
                       </select>
                     </td>
+                    <td className="p-4 text-right">
+                      <Button
+                        onClick={() => setDetalleId(order.id)}
+                        variant="outline"
+                        size="sm"
+                        className="rounded-lg gap-1.5"
+                      >
+                        <Eye className="h-3.5 w-3.5" /> Ver
+                      </Button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -162,6 +176,8 @@ const OrdersPage = () => {
           </div>
         </div>
       )}
+
+      <OrderDetailModal orderId={detalleId} onClose={() => setDetalleId(null)} />
     </div>
   );
 };
