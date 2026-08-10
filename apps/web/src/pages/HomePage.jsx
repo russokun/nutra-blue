@@ -11,6 +11,7 @@ import { useCart } from '@/hooks/useCart';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import SectionCarousel from '@/components/common/SectionCarousel';
+import ProductTags from '@/components/common/ProductTags';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 
@@ -40,27 +41,38 @@ const HomePage = () => {
         setHeroProducts(data);
       } catch (err) {
         console.warn('Failed to fetch hero products, using mock:', err);
+        // Fallback offline: las etiquetas tienen que ser las mismas que devuelve la
+        // taxonomia del backend, o el carrusel diria una cosa distinta al catalogo.
         setHeroProducts([
           {
             id: 'calm-and-focus',
             name: 'Calm & Focus',
             price: 18990,
             image_url: 'https://horizons-cdn.hostinger.com/b35461a0-e424-4767-bd53-3b70fb21c1bf/947065a3f4ef376351578339a9ba0e35.jpg',
-            benefit_tag: 'Enfoque Sostenido'
+            category: 'Concentración y Calma',
+            benefit: 'Foco y Calma',
+            benefit_tag: 'Foco y Calma',
+            product_type: 'Suplemento'
           },
           {
             id: 'dark-cacao',
             name: 'Dark Cacao',
             price: 22500,
             image_url: 'https://horizons-cdn.hostinger.com/b35461a0-e424-4767-bd53-3b70fb21c1bf/8b9759abb5ce079dcc1b31532e0e3ce2.jpg',
-            benefit_tag: 'Antioxidante Potente'
+            category: 'Descanso y Longevidad',
+            benefit: 'Descanso y Longevidad',
+            benefit_tag: 'Descanso y Longevidad',
+            product_type: 'Suplemento'
           },
           {
             id: 'matcha-ritual',
             name: 'Matcha Ritual',
             price: 24990,
             image_url: 'https://horizons-cdn.hostinger.com/b35461a0-e424-4767-bd53-3b70fb21c1bf/db395fe43818aef950855c1429a35f3f.jpg',
-            benefit_tag: 'Energía sin Crash'
+            category: 'Concentración y Calma',
+            benefit: 'Foco y Calma',
+            benefit_tag: 'Foco y Calma',
+            product_type: 'Suplemento'
           }
         ]);
       } finally {
@@ -165,15 +177,14 @@ const HomePage = () => {
         // Destacados (Los 3 primeros)
         setFeaturedProducts(list.slice(0, 3));
         
-        // Filtrar Ofertas y Packs con la misma lógica de ShopPage
+        // Los packs ahora salen del campo real `product_type`, no de adivinar por el
+        // nombre. Lo de "oferta" sigue siendo una heurística (precio < 18.000) porque
+        // no existe columna de descuento en la planilla: esos productos no están en
+        // oferta, simplemente son los más baratos. Ver nota en SectionCarousel.
         const filtered = list.filter(p => {
-          const isSale = p.price < 18000;
-          const isPack = p.name.toLowerCase().includes('mix') || 
-                         p.name.toLowerCase().includes('blend') || 
-                         p.name.toLowerCase().includes('tea') || 
-                         p.name.toLowerCase().includes('pack') || 
-                         p.name.toLowerCase().includes('desde');
-          return (isSale || isPack) && p.name !== '__SYSTEM_SYNC_LOG__';
+          const esPack = p.product_type === 'Pack';
+          const esBarato = p.price < 18000;
+          return (esBarato || esPack) && p.name !== '__SYSTEM_SYNC_LOG__';
         });
         
         setSaleProducts(filtered.slice(0, 10)); // Limitar a las 10 mejores ofertas/packs
@@ -332,13 +343,12 @@ const HomePage = () => {
                               className="max-h-52 object-contain transition-transform duration-500 group-hover:scale-105"
                               style={{ width: 'auto', height: '208px' }}
                             />
-                            <span className="absolute top-2 left-2 px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#0284c7]/10 text-[#0284c7] uppercase tracking-wider">
-                              {product.benefit_tag}
-                            </span>
+                            <ProductTags product={product} variant="overlay" />
                           </div>
 
                           {/* Card Body */}
                           <div className="space-y-2 flex-grow flex flex-col justify-center text-center">
+                            <ProductTags product={product} variant="meta" />
                             <h3 className="font-bold text-slate-800 text-lg group-hover:text-[#0284c7] transition-colors line-clamp-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                               {product.name}
                             </h3>
@@ -607,14 +617,19 @@ const HomePage = () => {
                           loading="lazy"
                           className="h-full w-auto object-contain drop-shadow-[0_15px_25px_rgba(0,0,0,0.08)] group-hover:scale-105 transition-transform duration-300"
                         />
-                        <span className="absolute top-0 left-0 max-w-[48%] truncate bg-primary/10 text-primary border border-primary/20 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                          {product.category}
-                        </span>
-                        <span className="absolute top-0 right-0 max-w-[48%] truncate bg-amber-500/10 text-amber-700 border border-amber-500/20 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                          Stock Limitado
-                        </span>
+                        <ProductTags product={product} variant="overlay" className="!top-0 !left-0" />
+                        {/* Antes esta pildora decia "Stock Limitado" en TODAS las
+                            tarjetas, hubiera o no poco stock. Ahora solo aparece
+                            cuando de verdad queda poco, con el mismo umbral que usa
+                            el catalogo. */}
+                        {product.stock > 0 && product.stock <= 10 && (
+                          <span className="absolute top-0 right-0 max-w-[48%] truncate bg-amber-500/10 text-amber-700 border border-amber-500/20 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                            Solo {product.stock}
+                          </span>
+                        )}
                       </div>
 
+                      <ProductTags product={product} variant="meta" className="mb-1" />
                       <h3 className="text-base font-bold text-foreground mb-1 group-hover:text-primary transition-colors line-clamp-1">
                         {product.name}
                       </h3>

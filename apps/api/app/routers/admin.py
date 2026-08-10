@@ -14,6 +14,7 @@ from app.services.email_service import send_shipping_notification
 from app.core.config import settings
 from app.services.storage_service import upload_image
 import uuid
+import unicodedata
 import requests
 import csv
 import io
@@ -607,6 +608,12 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error al descargar el CSV: {str(e)}")
 
+    def _norm_header(cell: str) -> str:
+        """Cabecera comparable: minusculas y sin acentos. La planilla escribe
+        'Categoría', 'Beneficio Principal' o 'TIPO' segun el dia."""
+        h = (cell or "").strip().lower()
+        return "".join(c for c in unicodedata.normalize("NFD", h) if unicodedata.category(c) != "Mn")
+
     # Parsear y mapear columnas de forma flexible
     def normalize_key(key: str) -> str:
         k = key.lower().strip()
@@ -669,11 +676,19 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
     idx_category = -1
     idx_doc = -1
     idx_cost = -1  # Columna de precio de costo — ignorar al sincronizar
+    idx_benefit = -1  # Columna "Beneficio" — opcional, puede no existir todavia
+    idx_type = -1     # Columna "Tipo" — opcional, puede no existir todavia
 
     for i, h in enumerate(headers_main):
-        h_lower = h.lower().strip()
+        h_lower = _norm_header(h)
         if "suplemento / alimento" in h_lower or h_lower == "suplemento" or h_lower == "alimento":
             idx_name = i
+        elif "beneficio" in h_lower:
+            # Va antes que "categor" y que "venta" a proposito: si el cliente rotula la
+            # columna "Beneficio / Objetivo" o "Beneficio de venta", tiene que ganar esta.
+            idx_benefit = i
+        elif h_lower.startswith("tipo") or h_lower in ("formato", "presentacion"):
+            idx_type = i
         elif "categor" in h_lower or h_lower == "categoria" or h_lower == "objetivo":
             idx_category = i
         elif "inventario" in h_lower or "stock" in h_lower:
@@ -709,6 +724,30 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
                 idx_stock = i
                 break
 
+    # Misma tolerancia de dos filas para las columnas de taxonomia.
+    if idx_benefit == -1 or idx_type == -1:
+        for i, h in enumerate(headers_sub):
+            h_sub = _norm_header(h)
+            if idx_benefit == -1 and "beneficio" in h_sub:
+                idx_benefit = i
+            elif idx_type == -1 and (h_sub.startswith("tipo") or h_sub in ("formato", "presentacion")):
+                idx_type = i
+
+    # A proposito NO hay fallback posicional para Beneficio ni Tipo: adivinar la posicion
+    # escribiria basura (un link, un telefono) en la taxonomia de todos los productos. Que
+    # la columna falte es un estado benigno, porque el backend deriva ambos de la categoria
+    # al leer. Se avisa en el reporte en vez de adivinar.
+    if idx_benefit == -1 or idx_type == -1:
+        faltantes = [n for n, i in (("Beneficio", idx_benefit), ("Tipo", idx_type)) if i == -1]
+        report["warnings"].append({
+            "row": 0,
+            "product": "-",
+            "error": (
+                f"La planilla no trae la(s) columna(s) {', '.join(faltantes)}. "
+                "Esos productos se muestran con el beneficio/tipo derivado de la categoría."
+            ),
+        })
+
     # Fallbacks de indices
     if idx_name == -1: idx_name = 1
     if idx_category == -1: idx_category = 0
@@ -740,6 +779,12 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
         stock_val = raw_row[idx_stock].strip() if idx_stock < len(raw_row) else "20"
         doc_val = raw_row[idx_doc].strip() if idx_doc < len(raw_row) else ""
 
+        # Ojo con la guarda: el patron `idx < len(raw_row)` de arriba da True con idx = -1
+        # e indexa la ultima celda. Los indices de mas arriba siempre tienen un fallback
+        # positivo asi que nunca se dispara, pero estos dos si pueden quedar en -1.
+        benefit_val = raw_row[idx_benefit].strip() if 0 <= idx_benefit < len(raw_row) else ""
+        type_val = raw_row[idx_type].strip() if 0 <= idx_type < len(raw_row) else ""
+
         # Mapear llaves normalizadas
         row = {
             "name": name,
@@ -747,6 +792,8 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
             "price": price_val,
             "stock": stock_val,
             "google_doc_url": doc_val,
+            "benefit": benefit_val,
+            "product_type": type_val,
             "benefits": "",
             "certifications": "",
             "image_url": ""
@@ -823,6 +870,10 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
                 price=price,
                 stock=sheet_stock,
                 category=category,
+                # Vacio -> None, nunca "": asi "la planilla no lo dice" tiene una sola
+                # representacion y el backend sabe que tiene que derivarlo al leer.
+                benefit=row.get("benefit", "").strip() or None,
+                product_type=row.get("product_type", "").strip() or None,
                 image_url=image_url,
                 benefits=all_benefits,
                 certifications=certifications,
@@ -860,6 +911,10 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
                     # en vez de pisarla con el placeholder /logo.png
                     preserved_images = p.get("images")
                     preserved_image_url = p.get("image_url")
+                    # Misma proteccion que en Supabase: sin columna en la planilla, se
+                    # conserva la taxonomia que se haya cargado a mano en el admin.
+                    preserved_benefit = p.get("benefit") if idx_benefit == -1 else None
+                    preserved_type = p.get("product_type") if idx_type == -1 else None
                     product_dict["stock"] = reconcile_stock(sheet_stock, p.get("stock"), p.get("stock_synced"))
                     product_dict["stock_synced"] = product_dict["stock"]
                     MOCK_PRODUCTS[idx] = product_dict
@@ -867,6 +922,10 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
                         MOCK_PRODUCTS[idx]["images"] = preserved_images
                     if preserved_image_url:
                         MOCK_PRODUCTS[idx]["image_url"] = preserved_image_url
+                    if preserved_benefit:
+                        MOCK_PRODUCTS[idx]["benefit"] = preserved_benefit
+                    if preserved_type:
+                        MOCK_PRODUCTS[idx]["product_type"] = preserved_type
                     report["updated"] += 1
                     found = True
                     break
@@ -880,6 +939,15 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
             try:
                 # Obtenemos los campos a guardar
                 db_data = product_to_validate.model_dump()
+
+                # Si la planilla todavia no tiene estas columnas, el sync no opina sobre
+                # ellas: lo que se haya cargado a mano en el admin se conserva. Sin esto,
+                # cada sincronizacion las dejaria en NULL. Cuando el cliente agregue las
+                # columnas, la planilla vuelve a ser la fuente de verdad.
+                if idx_benefit == -1:
+                    db_data.pop("benefit", None)
+                if idx_type == -1:
+                    db_data.pop("product_type", None)
 
                 # El sync no trae imagenes reales (doc_parser no las extrae, la columna
                 # de la planilla se ignora). Si el producto ya existe, no pisar la

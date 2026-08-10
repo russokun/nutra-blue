@@ -41,6 +41,20 @@ def build_csv_inventario_en_subcabecera(stock: str, price: str = "$19,990") -> s
     )
 
 
+# Planilla con las columnas de taxonomia agregadas al final, despues de "Link Doc",
+# que es donde el cliente tiene que ponerlas. Sirve de regresion: los fallbacks
+# posicionales (precio=5, stock=7, doc=8) estan calibrados a las 9 columnas originales,
+# asi que agregar columnas al final no puede correrlos.
+def build_csv_con_taxonomia(stock: str = "12", price: str = "$19,990",
+                            beneficio: str = "Foco y Calma", tipo: str = "Gotas") -> str:
+    return (
+        "Lista de Suplementos y Alimentos,,,,,,,,,,\n"
+        "Categoría / Objetivo,Suplemento / Alimento,Productor,Contacto,$ Compra,$ Venta,,Inventario,Link Doc,Beneficio,Tipo\n"
+        ",,,,,,Comentario,,,,\n"
+        f"Estimulación Cerebral,Melena de Leon Gotas,ONGO,ongo.cl,\"$11,700\",\"{price}\",,{stock},,{beneficio},{tipo}\n"
+    )
+
+
 def run_sync(csv_text: str):
     with patch("requests.get") as mock_get, patch("app.routers.admin.supabase_client", None):
         mock_get.return_value = MagicMock(status_code=200, text=csv_text, headers={"content-type": "text/csv"})
@@ -372,7 +386,9 @@ def test_no_borra_nada_si_la_planilla_vino_casi_vacia():
 
     assert summary["deleted"] == []
     assert summary["warnings"], "tiene que avisar por que no borro"
-    assert "lectura incompleta" in summary["warnings"][0]["error"]
+    # Se busca en todos los warnings, no en el primero: el sync tambien avisa por otras
+    # cosas (por ejemplo que la planilla no trae las columnas Beneficio y Tipo).
+    assert any("lectura incompleta" in w["error"] for w in summary["warnings"])
     assert "Producto 5" in {p["name"] for p in MOCK_PRODUCTS}
 
 
@@ -385,3 +401,67 @@ def test_el_borrado_no_toca_la_fila_interna_del_sync():
 
     assert "__SYSTEM_SYNC_LOG__" not in summary["deleted"]
     assert any(p["name"] == "__SYSTEM_SYNC_LOG__" for p in MOCK_PRODUCTS)
+
+
+# --------------------------------------------------------------- taxonomia
+
+
+def test_la_planilla_manda_en_beneficio_y_tipo():
+    MOCK_PRODUCTS.clear()
+    run_sync(build_csv_con_taxonomia(beneficio="Foco y Calma", tipo="Gotas"))
+
+    producto = find_product("Melena de Leon Gotas")
+    assert producto["benefit"] == "Foco y Calma"
+    assert producto["product_type"] == "Gotas"
+
+
+def test_agregar_columnas_al_final_no_corre_precio_ni_stock():
+    """
+    Regresion del riesgo real: los fallbacks posicionales estan calibrados a las 9
+    columnas originales. Si el cliente agrega Beneficio y Tipo al final, precio, stock,
+    nombre y categoria tienen que seguir mapeando igual.
+    """
+    MOCK_PRODUCTS.clear()
+    run_sync(build_csv_con_taxonomia(stock="12", price="$19,990"))
+
+    producto = find_product("Melena de Leon Gotas")
+    assert producto["price"] == 19990
+    assert producto["stock"] == 12
+    assert producto["category"] == "Estimulación Cerebral"
+
+
+def test_avisa_cuando_la_planilla_no_trae_las_columnas():
+    """Sin columnas no se adivina la posicion: se avisa y se deriva de la categoria."""
+    MOCK_PRODUCTS.clear()
+    summary = run_sync(build_csv("10"))
+
+    assert any(
+        "Beneficio" in w["error"] and "Tipo" in w["error"] for w in summary["warnings"]
+    ), summary["warnings"]
+
+
+def test_sin_columnas_no_se_borra_lo_cargado_a_mano():
+    """
+    Sin esta proteccion, cada sync dejaria en NULL la taxonomia que el cliente cargo
+    desde el panel admin.
+    """
+    MOCK_PRODUCTS.clear()
+    run_sync(build_csv_con_taxonomia(beneficio="Foco y Calma", tipo="Gotas"))
+    assert find_product("Melena de Leon Gotas")["benefit"] == "Foco y Calma"
+
+    # Ahora la planilla vuelve a la disposicion sin las columnas de taxonomia.
+    run_sync(build_csv("10"))
+
+    producto = find_product("Melena de Leon Gotas")
+    assert producto["benefit"] == "Foco y Calma"
+    assert producto["product_type"] == "Gotas"
+
+
+def test_una_columna_vacia_no_queda_como_string_vacio():
+    """Vacio tiene que ser None, para que el backend sepa que debe derivarlo."""
+    MOCK_PRODUCTS.clear()
+    run_sync(build_csv_con_taxonomia(beneficio="", tipo=""))
+
+    producto = find_product("Melena de Leon Gotas")
+    assert producto["benefit"] is None
+    assert producto["product_type"] is None
