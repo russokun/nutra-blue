@@ -49,7 +49,11 @@ const dataClient = {
       getFullList: async (options = {}) => {
         if (tableName === 'products' || !isSupabaseConfigured) {
           try {
-            const url = tableName === 'products' ? '/products' : `/${tableName}`;
+            let url = tableName === 'products' ? '/products' : `/${tableName}`;
+            // Solo el modo prueba pide los ocultos; el catálogo normal nunca los ve.
+            if (tableName === 'products' && options.includeHidden) {
+              url += '?include_hidden=true';
+            }
             let data = await fetchFromApi(url);
 
             let mappedData = (data || []).map(mapCreatedTimestamp);
