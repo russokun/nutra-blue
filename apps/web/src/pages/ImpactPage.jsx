@@ -385,7 +385,11 @@ const ImpactPage = () => {
                   Empieza tu Transformación
                 </Link>
               </Button>
-              <p className="text-xs text-muted-foreground mt-3">Envío gratis en todas tus compras, a todo Chile</p>
+              {/* mx-auto es necesario: la regla global `p { max-width: 65ch }` de
+                  index.css limita el ancho del parrafo, y sin margen automatico su caja
+                  queda pegada a la izquierda. El text-center centra el texto DENTRO de
+                  esa caja, no bajo el boton. */}
+              <p className="text-xs text-muted-foreground mt-3 mx-auto">Envío gratis en pedidos sobre $50.000, a todo Chile</p>
             </motion.div>
           </div>
         </section>

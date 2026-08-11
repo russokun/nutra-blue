@@ -28,7 +28,7 @@ const ContactoPage = () => {
             <h1 className="text-4xl md:text-5xl font-display text-slate-900 mb-4">
               Estamos para ayudarte
             </h1>
-            <p className="text-lg text-slate-600">
+            <p className="text-lg text-slate-600 mx-auto">
               ¿Dudas sobre un producto, tu pedido o qué elegir para ti? Escríbenos — somos una familia, no un call center, y te responderemos personalmente.
             </p>
           </div>

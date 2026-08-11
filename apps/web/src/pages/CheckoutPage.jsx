@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Truck } from 'lucide-react';
+import { isFreeShipping, shippingHint } from '@/lib/shipping';
 import { toast } from 'sonner';
 
 const CheckoutPage = () => {
@@ -112,11 +113,12 @@ const CheckoutPage = () => {
   const cartTotalAmountAfterDiscount = cartTotalAmount - discountAmount;
   const tax = Math.round(cartTotalAmountAfterDiscount - (cartTotalAmountAfterDiscount / 1.19)); // 19% IVA incluido
   const subtotal = cartTotalAmountAfterDiscount - tax;
-  // NutraBlue asume el despacho, asi que la tienda nunca lo cobra. La variable se mantiene
-  // porque la orden sigue enviando shipping_cost (la columna es NOT NULL) y porque el
-  // backend, que es el que manda en los totales, tambien lo calcula en cero.
+  // La tienda nunca cobra flete: se paga por fuera. La variable se mantiene porque la
+  // orden sigue enviando shipping_cost (la columna es NOT NULL) y porque el backend, que
+  // es el que manda en los totales, tambien lo calcula en cero.
   const shippingCost = 0;
   const total = cartTotalAmountAfterDiscount + shippingCost;
+  const envioGratis = isFreeShipping(cartTotalAmountAfterDiscount);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -546,14 +548,22 @@ const CheckoutPage = () => {
                       <span>IVA (19%)</span>
                       <span className="font-medium">{formatPrice(tax)}</span>
                     </div>
-                    {/* Envio: NutraBlue asume el costo, asi que esta fila no muestra monto.
-                        Va centrada y a lo ancho para que se lea como beneficio y no como un
-                        precio pendiente de calcular, que era lo que pasaba antes cuando en la
-                        columna del monto aparecia "Selecciona region". */}
-                    <div className="flex items-center justify-center gap-2 rounded-lg border border-dashed border-emerald-300 bg-emerald-50 px-3 py-2.5">
-                      <Truck className="h-4 w-4 text-emerald-700 shrink-0" aria-hidden="true" />
-                      <span className="text-sm font-bold uppercase tracking-wide text-emerald-700">
-                        Envío sin costo
+                    {/* Envio: la tienda no cobra flete en ningun caso, asi que esta fila no
+                        muestra monto. Lo que cambia con el umbral es QUIEN lo paga: sobre
+                        $50.000 lo asume NutraBlue, y bajo ese monto el pedido va por pagar.
+                        Va centrada y a lo ancho para que no se lea como un precio pendiente
+                        de calcular, que era lo que pasaba cuando aca decia "Selecciona region". */}
+                    <div className={`flex flex-col items-center gap-1 rounded-lg border border-dashed px-3 py-2.5 text-center ${
+                      envioGratis ? 'border-emerald-300 bg-emerald-50' : 'border-amber-300 bg-amber-50'
+                    }`}>
+                      <span className={`flex items-center gap-2 text-sm font-bold uppercase tracking-wide ${
+                        envioGratis ? 'text-emerald-700' : 'text-amber-700'
+                      }`}>
+                        <Truck className="h-4 w-4 shrink-0" aria-hidden="true" />
+                        {envioGratis ? 'Envío gratis' : 'Envío por pagar'}
+                      </span>
+                      <span className="text-[11px] leading-snug text-muted-foreground">
+                        {shippingHint(cartTotalAmountAfterDiscount)}
                       </span>
                     </div>
                     <div className="border-t border-border pt-3">

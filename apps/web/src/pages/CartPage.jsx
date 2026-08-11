@@ -7,6 +7,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import dataClient from '@/lib/dataClient';
+import { isFreeShipping, shippingHint, shippingLabel } from '@/lib/shipping';
 import { toast } from 'sonner';
 
 const CartPage = () => {
@@ -26,6 +27,7 @@ const CartPage = () => {
   const total = getCartTotal();
   const tax = Math.round(total - (total / 1.19)); // 19% IVA incluido
   const subtotal = total - tax;
+  const envioGratis = isFreeShipping(total);
 
   useEffect(() => {
     const loadUpsellProduct = async () => {
@@ -105,14 +107,19 @@ const CartPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column: Cart Items & Upsell */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Acá había una barra de progreso que decía "Estás a $X de obtener Envío
-                  Gratis". Ya no cobramos despacho en ningún caso, así que le pedía al
-                  cliente sumar productos para ganarse algo que ya tenía, y una pantalla
-                  después el checkout le decía "Envío sin costo". */}
+              {/* Aviso de despacho. Dice lo mismo que el checkout, para que el cliente no
+                  se encuentre con una condicion distinta una pantalla despues. */}
               <div className="bg-card rounded-2xl p-5 border border-border shadow-sm">
-                <span className="flex items-center gap-2 text-sm font-semibold text-card-foreground">
-                  <Truck className="h-4 w-4 text-success shrink-0" />
-                  <span className="text-success font-bold">Envío gratis en todos los pedidos</span>
+                <span className="flex items-start gap-2 text-sm font-semibold text-card-foreground">
+                  <Truck className={`h-4 w-4 shrink-0 mt-0.5 ${envioGratis ? 'text-success' : 'text-amber-600'}`} />
+                  <span>
+                    <span className={`block font-bold ${envioGratis ? 'text-success' : 'text-amber-700'}`}>
+                      {envioGratis ? 'Envío gratis a todo Chile' : 'Envío por pagar'}
+                    </span>
+                    <span className="block text-xs font-normal text-muted-foreground mt-0.5">
+                      {shippingHint(total)}
+                    </span>
+                  </span>
                 </span>
               </div>
 
@@ -233,12 +240,14 @@ const CartPage = () => {
                     <span>IVA Incluido (19%)</span>
                     <span className="font-medium">{formatPrice(tax)}</span>
                   </div>
-                  {/* NutraBlue asume el despacho: siempre gratis, sin condicion de monto.
-                      Antes esta fila decia "Calculado en checkout" bajo los $50.000, lo que
-                      contradecia al checkout, que ya no cobra envio en ningun caso. */}
+                  {/* El monto nunca se cobra en la tienda; el umbral define quien paga el
+                      flete. Antes esta fila decia "Calculado en checkout" bajo los $50.000,
+                      lo que hacia pensar que se sumaria algo al total. */}
                   <div className="flex justify-between text-muted-foreground">
                     <span>Costo de Despacho</span>
-                    <span className="text-success font-semibold">Gratis</span>
+                    <span className={envioGratis ? 'text-success font-semibold' : 'text-amber-700 font-semibold'}>
+                      {shippingLabel(total)}
+                    </span>
                   </div>
 
                   <div className="border-t border-border pt-4">

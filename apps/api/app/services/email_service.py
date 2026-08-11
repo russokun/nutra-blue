@@ -1,6 +1,7 @@
 import logging
 import httpx
 from app.core.config import settings
+from app.core.pricing import has_free_shipping
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +57,11 @@ async def send_order_confirmation(order: dict) -> bool:
         """
         for item in order.get("items", [])
     )
-    
+
+    # El total de la orden es solo el de los productos (nunca se cobra flete), asi que
+    # sirve directo para decidir si el despacho lo asume NutraBlue o va por pagar.
+    envio_gratis = has_free_shipping(order.get("total", 0))
+
     html = f"""
     <!DOCTYPE html>
     <html>
@@ -120,7 +125,7 @@ async def send_order_confirmation(order: dict) -> bool:
                         </tr>
                         <tr>
                             <td style="color: #64748b; font-size: 14px; padding-top: 6px;">Envío</td>
-                            <td style="text-align: right; color: #16a34a; font-size: 14px; font-weight: 600; padding-top: 6px;">Gratis</td>
+                            <td style="text-align: right; color: {'#16a34a' if envio_gratis else '#b45309'}; font-size: 14px; font-weight: 600; padding-top: 6px;">{'Gratis' if envio_gratis else 'Por pagar'}</td>
                         </tr>
                         <tr>
                             <td style="color: #0f172a; font-size: 16px; font-weight: 700; padding-top: 12px; border-t: 1px solid #e2e8f0;">Total General</td>
