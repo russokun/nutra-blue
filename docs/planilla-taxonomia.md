@@ -7,20 +7,38 @@ producto, y en el catálogo además son tres filtros independientes.
 | Etiqueta | De dónde sale |
 |---|---|
 | Categoría (objetivo) | Columna `Categoría / Objetivo` de la planilla |
-| Beneficio | Sección **«Beneficios para el cliente»** de la ficha de Google Docs |
-| Tipo | Sección **«Descripción del tipo de producto»** de la ficha de Google Docs |
+| Beneficio | **Títulos de las viñetas** de «Beneficios para el Cliente», en la ficha |
+| Tipo | Nombre del producto y, si no lo dice, «Descripción del Tipo de Producto» |
 
 **No hay que agregar columnas a la planilla.** El beneficio y el tipo salen de la misma
 ficha de Google Docs que ya está enlazada en la columna `Link Doc`.
 
-## Cómo se normaliza
+## Cómo se elige el beneficio
 
-En la ficha el texto es libre: cada una escribe con sus palabras («Reduce la niebla
-mental», «Ayuda a conciliar el sueño», «Presentación en polvo para batidos»). La tienda
-lleva ese texto a un vocabulario acotado.
+Las viñetas de la ficha tienen forma `Título: cuerpo explicativo`. **Se usa el título de
+la primera viñeta que se reconozca**, porque las fichas las ordenan por importancia y el
+título es lo que quiso decir quien la redactó.
 
-Si cada producto mostrara su propia frase, el filtro «Beneficio» del catálogo terminaría
-con un valor distinto por producto y dejaría de servir para filtrar.
+El cuerpo se mira solo si ningún título se reconoce. Esto importa: el cuerpo toca muchos
+temas y desvía la etiqueta. Ejemplos reales:
+
+| Viñeta | Si se mira el cuerpo | Correcto (título) |
+|---|---|---|
+| «Energía y Resistencia Sostenida» (Maca) — su cuerpo dice *adaptógeno* | Manejo del Estrés | **Energía Natural** |
+| «Densidad Antioxidante Duplicada» (Ajo Negro) — su cuerpo dice *estrés oxidativo* | Manejo del Estrés | **Descanso y Longevidad** |
+
+## Cómo se elige el tipo
+
+Primero el **nombre del producto**, después la ficha. El nombre identifica el formato del
+producto que se vende («Maca en Polvo», «Melena de León en Gotas»), mientras que la ficha
+describe la familia («Raíz tuberosa andina», «Extracto en polvo»). Cuando difieren, manda
+el nombre.
+
+## El vocabulario
+
+El texto de la ficha se lleva a una lista acotada. Si cada producto mostrara su propia
+frase, el filtro «Beneficio» del catálogo terminaría con un valor distinto por producto y
+dejaría de servir para filtrar.
 
 **Beneficios:** `Energía Natural`, `Foco y Calma`, `Descanso y Longevidad`,
 `Manejo del Estrés`, `Nutrición Diaria`.
@@ -28,17 +46,14 @@ con un valor distinto por producto y dejaría de servir para filtrar.
 **Tipos:** `Polvo`, `Gotas`, `Aceite`, `Infusión`, `Cápsulas`, `Pack`, `Alimento`,
 `Suplemento`.
 
-Ejemplos de cómo se reconoce:
+Resultado con las cuatro fichas revisadas:
 
-| Lo que dice la ficha | Etiqueta |
-|---|---|
-| «Reduce la niebla mental» | Foco y Calma |
-| «Aporta energía sostenida sin bajones» | Energía Natural |
-| «Rico en antioxidantes y polifenoles» | Descanso y Longevidad |
-| «Adaptógeno que ayuda a regular el cortisol» | Manejo del Estrés |
-| «Fuente de proteína completa» | Nutrición Diaria |
-| «Extracto líquido en gotas» | Gotas |
-| «Presentación en polvo para batidos» | Polvo |
+| Producto | Título de viñeta que decide | Beneficio | Tipo |
+|---|---|---|---|
+| Melena de León | «Regeneración Neuronal y Neuroplasticidad» | Foco y Calma | Gotas |
+| Ajo Negro | «Escudo Cardiovascular Absoluto» | Nutrición Diaria | Alimento |
+| Maca | «Energía y Resistencia Sostenida» | Energía Natural | Polvo |
+| Superfrutos | «Máximo Poder Antioxidante y Antienvejecimiento» | Descanso y Longevidad | Polvo |
 
 ## Si la ficha no dice nada reconocible
 

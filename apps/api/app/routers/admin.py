@@ -881,15 +881,19 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
                         ),
                     })
 
-            if not type_final and texto_tipo:
-                type_final = normalize_product_type(texto_tipo)
-                if not type_final:
+            if not type_final:
+                # El NOMBRE gana sobre la ficha: la ficha describe la familia de producto
+                # ("Raíz tuberosa andina", "Extracto en polvo") mientras que el nombre
+                # identifica el formato del SKU que se vende ("Maca en Polvo", "Melena de
+                # León en Gotas"). Cuando difieren, manda el nombre.
+                type_final = normalize_product_type(name) or normalize_product_type(texto_tipo)
+                if not type_final and texto_tipo:
                     report["warnings"].append({
                         "row": index + 1,
                         "product": name,
                         "error": (
-                            "No se reconoció el tipo de producto en la ficha de Google Docs; "
-                            "se usa el derivado del nombre."
+                            "No se reconoció el tipo de producto ni en el nombre ni en la "
+                            "ficha de Google Docs; se usa el derivado de la categoría."
                         ),
                     })
 
