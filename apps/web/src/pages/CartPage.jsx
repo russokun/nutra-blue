@@ -26,9 +26,6 @@ const CartPage = () => {
   const total = getCartTotal();
   const tax = Math.round(total - (total / 1.19)); // 19% IVA incluido
   const subtotal = total - tax;
-  const freeShippingThreshold = 50000;
-  const progressToFreeShipping = Math.min((total / freeShippingThreshold) * 100, 100);
-  const amountNeededForFreeShipping = freeShippingThreshold - total;
 
   useEffect(() => {
     const loadUpsellProduct = async () => {
@@ -108,25 +105,15 @@ const CartPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column: Cart Items & Upsell */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Free Shipping Progress Indicator */}
-              <div className="bg-card rounded-2xl p-5 border border-border shadow-sm space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-2 text-xs md:text-sm font-semibold text-card-foreground">
-                    <Truck className="h-4 w-4 text-primary" />
-                    {total >= freeShippingThreshold ? (
-                      <span className="text-success font-bold">¡Tienes envío gratis asegurado!</span>
-                    ) : (
-                      <span>Estás a <strong className="text-primary">{formatPrice(amountNeededForFreeShipping)}</strong> de obtener <strong>Envío Gratis</strong></span>
-                    )}
-                  </span>
-                  <span className="text-xs text-muted-foreground font-medium">Meta: {formatPrice(freeShippingThreshold)}</span>
-                </div>
-                <div className="w-full bg-muted h-2.5 rounded-full overflow-hidden">
-                  <div
-                    className="bg-accent h-full transition-all duration-500 rounded-full"
-                    style={{ width: `${progressToFreeShipping}%` }}
-                  />
-                </div>
+              {/* Acá había una barra de progreso que decía "Estás a $X de obtener Envío
+                  Gratis". Ya no cobramos despacho en ningún caso, así que le pedía al
+                  cliente sumar productos para ganarse algo que ya tenía, y una pantalla
+                  después el checkout le decía "Envío sin costo". */}
+              <div className="bg-card rounded-2xl p-5 border border-border shadow-sm">
+                <span className="flex items-center gap-2 text-sm font-semibold text-card-foreground">
+                  <Truck className="h-4 w-4 text-success shrink-0" />
+                  <span className="text-success font-bold">Envío gratis en todos los pedidos</span>
+                </span>
               </div>
 
               {/* Cart Items List */}

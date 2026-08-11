@@ -177,17 +177,15 @@ const HomePage = () => {
         // Destacados (Los 3 primeros)
         setFeaturedProducts(list.slice(0, 3));
         
-        // Los packs ahora salen del campo real `product_type`, no de adivinar por el
-        // nombre. Lo de "oferta" sigue siendo una heurística (precio < 18.000) porque
-        // no existe columna de descuento en la planilla: esos productos no están en
-        // oferta, simplemente son los más baratos. Ver nota en SectionCarousel.
-        const filtered = list.filter(p => {
-          const esPack = p.product_type === 'Pack';
-          const esBarato = p.price < 18000;
-          return (esBarato || esPack) && p.name !== '__SYSTEM_SYNC_LOG__';
-        });
+        // Los packs salen del campo real `product_type`. Antes se colaban acá también
+        // los productos con precio < 18.000, presentados como "ofertas": no estaban en
+        // oferta, simplemente eran los más baratos. Se completa con el resto del
+        // catálogo para que la sección no quede coja, sin llamarle oferta a nada.
+        const packs = list.filter(p => p.product_type === 'Pack' && p.name !== '__SYSTEM_SYNC_LOG__');
+        const resto = list.filter(p => p.product_type !== 'Pack' && p.name !== '__SYSTEM_SYNC_LOG__');
+        const filtered = [...packs, ...resto];
         
-        setSaleProducts(filtered.slice(0, 10)); // Limitar a las 10 mejores ofertas/packs
+        setSaleProducts(filtered.slice(0, 10));
       } catch (e) {
         console.error('Failed to load products for homepage:', e);
       } finally {
@@ -255,7 +253,7 @@ const HomePage = () => {
                 <span className="text-white/20">|</span>
                 <div className="flex items-center gap-2">
                   <span className="text-lg">📦</span>
-                  <span>Envío Gratis (Sobre $50.000)</span>
+                  <span>Envío Gratis a todo Chile</span>
                 </div>
                 <span className="text-white/20">|</span>
               </div>
@@ -279,7 +277,7 @@ const HomePage = () => {
                 <span className="text-white/20">|</span>
                 <div className="flex items-center gap-2">
                   <span className="text-lg">📦</span>
-                  <span>Envío Gratis (Sobre $50.000)</span>
+                  <span>Envío Gratis a todo Chile</span>
                 </div>
                 <span className="text-white/20">|</span>
               </div>
@@ -404,18 +402,20 @@ const HomePage = () => {
           </div>
         </section>
 
-        {/* Ofertas y Packs Exclusivos Section */}
+        {/* Packs y Favoritos Section */}
         <section className="py-20 bg-white border-b border-slate-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <div className="mb-12">
+              {/* No decimos "Descuentos" ni "Ofertas": no hay descuentos reales detrás.
+                  Anunciarlos sin un precio anterior verdadero es publicidad engañosa. */}
               <span className="text-primary font-bold text-xs tracking-wider uppercase bg-primary/10 px-3 py-1.5 rounded-full">
-                Descuentos y Combos
+                Packs y Combinaciones
               </span>
               <h2 className="text-3xl md:text-4xl font-display text-slate-900 mt-3">
-                Ofertas y Packs Exclusivos
+                Packs y Favoritos
               </h2>
               <p className="text-slate-600 max-w-xl mx-auto mt-2 text-sm">
-                Optimiza tu rendimiento al mejor precio con nuestras selecciones y combos especiales.
+                Nuestras combinaciones y los productos que más eligen quienes ya nos conocen.
               </p>
             </div>
             

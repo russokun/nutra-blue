@@ -24,22 +24,19 @@ const SectionCarousel = ({ products }) => {
     }).format(price);
   };
 
-  // OJO: este precio "antes" es inventado (el precio actual + 25%). No corresponde a un
-  // precio al que el producto se haya vendido nunca, porque no hay columna de descuento
-  // en la planilla. Mostrar un precio de referencia fabricado junto a un "Ahorras $X" es
-  // publicidad engañosa y expone a NutraBlue ante el SERNAC.
+  // Acá había un precio "antes" inventado (precio actual + 25%) que se mostraba tachado
+  // junto a un "Ahorras $X". Ese precio nunca existió: no hay columna de precio anterior
+  // ni de descuento en la planilla. Un precio de referencia fabricado es publicidad
+  // engañosa (Ley 19.496) y expone a NutraBlue ante el SERNAC, así que se eliminó.
   //
-  // Queda pendiente de decisión del cliente: o se agrega una columna de precio anterior
-  // real a la planilla, o esta sección deja de mostrar descuentos.
-  const getFakeOriginalPrice = (price) => {
-    const raw = price * 1.25;
-    return Math.round(raw / 100) * 100;
-  };
+  // Si más adelante quieren mostrar descuentos de verdad, hace falta una columna con el
+  // precio anterior real en la planilla y mostrar el tachado solo cuando ese precio
+  // exista y sea mayor al actual.
 
   if (!products || products.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground text-sm">
-        No hay ofertas o packs disponibles en este momento.
+        No hay packs disponibles en este momento.
       </div>
     );
   }
@@ -62,8 +59,6 @@ const SectionCarousel = ({ products }) => {
         className="offers-swiper pb-14"
       >
         {products.map((product) => {
-          const originalPrice = getFakeOriginalPrice(product.price);
-
           return (
             <SwiperSlide key={product.id} className="h-auto">
               <div className="bg-card border border-border/60 rounded-2xl p-5 hover:border-primary/20 flex flex-col justify-between h-full min-h-[460px] relative group transition-all duration-300 hover:shadow-lg">
@@ -92,16 +87,8 @@ const SectionCarousel = ({ products }) => {
                     </div>
 
                     <div className="pt-2">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-sm text-muted-foreground line-through">
-                          {formatPrice(originalPrice)}
-                        </span>
-                        <span className="text-lg font-black text-destructive">
-                          {formatPrice(product.price)}
-                        </span>
-                      </div>
-                      <span className="text-[10px] font-semibold text-emerald-600 block mt-0.5">
-                        Ahorras {formatPrice(originalPrice - product.price)}
+                      <span className="text-lg font-black text-primary">
+                        {formatPrice(product.price)}
                       </span>
                     </div>
                   </div>
