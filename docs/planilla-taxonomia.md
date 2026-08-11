@@ -1,48 +1,70 @@
-# Columnas de taxonomía en la planilla
+# De dónde salen las etiquetas de producto
 
-La tienda clasifica cada producto con tres etiquetas. Las tres salen de la planilla de
-Google Sheets, que es la fuente de verdad.
+La tienda clasifica cada producto con tres etiquetas. Se muestran igual en el carrusel
+del inicio, en el de packs, en la grilla de favoritos, en el catálogo y en la ficha del
+producto, y en el catálogo además son tres filtros independientes.
 
-| Etiqueta | Columna en la planilla | Ejemplo |
-|---|---|---|
-| Categoría (objetivo) | `Categoría / Objetivo` — ya existe | `Energía` |
-| Beneficio | `Beneficio` — **hay que agregarla** | `Energía Natural` |
-| Tipo | `Tipo` — **hay que agregarla** | `Polvo` |
+| Etiqueta | De dónde sale |
+|---|---|
+| Categoría (objetivo) | Columna `Categoría / Objetivo` de la planilla |
+| Beneficio | Sección **«Beneficios para el cliente»** de la ficha de Google Docs |
+| Tipo | Sección **«Descripción del tipo de producto»** de la ficha de Google Docs |
 
-## Cómo agregarlas
+**No hay que agregar columnas a la planilla.** El beneficio y el tipo salen de la misma
+ficha de Google Docs que ya está enlazada en la columna `Link Doc`.
 
-**Agregar las dos columnas al final, después de `Link Doc`.**
+## Cómo se normaliza
 
-Esto no es un detalle estético. Si el sync no encuentra una cabecera por su nombre, cae a
-posiciones fijas calibradas a la disposición actual de 9 columnas: precio en la columna 6,
-inventario en la 8, link en la 9. Insertar columnas en el medio corre esas posiciones y, si
-además se renombra alguna cabecera, el sync puede escribir el inventario como precio.
+En la ficha el texto es libre: cada una escribe con sus palabras («Reduce la niebla
+mental», «Ayuda a conciliar el sueño», «Presentación en polvo para batidos»). La tienda
+lleva ese texto a un vocabulario acotado.
 
-**Nombrarlas exactamente `Beneficio` y `Tipo`.** El sync tolera mayúsculas y acentos
-(`BENEFICIO`, `Tipo de producto`, `Formato` y `Presentación` también funcionan).
+Si cada producto mostrara su propia frase, el filtro «Beneficio» del catálogo terminaría
+con un valor distinto por producto y dejaría de servir para filtrar.
 
-**Nunca llamar `Objetivo` a la columna de beneficio.** Ese nombre ya está tomado: es un
-alias de la columna de categoría, y el sync se la llevaría como categoría.
+**Beneficios:** `Energía Natural`, `Foco y Calma`, `Descanso y Longevidad`,
+`Manejo del Estrés`, `Nutrición Diaria`.
 
-## Qué pasa mientras estén vacías
+**Tipos:** `Polvo`, `Gotas`, `Aceite`, `Infusión`, `Cápsulas`, `Pack`, `Alimento`,
+`Suplemento`.
 
-Nada se rompe. Si la planilla no trae las columnas, o si una celda queda en blanco, la
-tienda deriva el beneficio y el tipo a partir de la categoría y del nombre del producto
-(`apps/api/app/core/taxonomy.py`). El panel de administración avisa con un mensaje al
-sincronizar.
+Ejemplos de cómo se reconoce:
 
-En cuanto la planilla traiga un valor, ese valor manda por sobre la derivación.
+| Lo que dice la ficha | Etiqueta |
+|---|---|
+| «Reduce la niebla mental» | Foco y Calma |
+| «Aporta energía sostenida sin bajones» | Energía Natural |
+| «Rico en antioxidantes y polifenoles» | Descanso y Longevidad |
+| «Adaptógeno que ayuda a regular el cortisol» | Manejo del Estrés |
+| «Fuente de proteína completa» | Nutrición Diaria |
+| «Extracto líquido en gotas» | Gotas |
+| «Presentación en polvo para batidos» | Polvo |
 
-## Cargar valores sin tocar la planilla
+## Si la ficha no dice nada reconocible
 
-También se pueden escribir desde el panel de administración, en el formulario de cada
-producto. Mientras la planilla no tenga las columnas, el sync no los pisa: lo que se cargó
-a mano se conserva en cada sincronización. Cuando se agreguen las columnas, la planilla
-vuelve a mandar.
+No se muestra la frase suelta como etiqueta. La tienda deriva el beneficio a partir de la
+categoría y el tipo a partir del nombre del producto, y el panel de administración avisa
+al sincronizar con un mensaje por producto:
 
-## Dónde se ven
+> No se reconoció el beneficio en la ficha de Google Docs; se usa el derivado de la
+> categoría.
 
-Las tres etiquetas se muestran igual en el carrusel del inicio, en el carrusel de packs, en
-la grilla de favoritos, en el catálogo y en la ficha del producto: una píldora con el
-beneficio sobre la imagen, y una línea `categoría · tipo` bajo el título. En el catálogo,
-además, cada una es un filtro independiente.
+Si eso aparece seguido, hay dos caminos: redactar esa sección de la ficha con un término
+que la tienda reconozca, o cargar el valor a mano (ver abajo).
+
+## Cargar un valor a mano
+
+En el formulario de cada producto del panel de administración hay campos **Beneficio** y
+**Tipo**. Lo que se cargue ahí se conserva en cada sincronización, mientras la ficha no
+aporte un valor reconocible.
+
+## Override desde la planilla (opcional)
+
+El sync también acepta columnas `Beneficio` y `Tipo` en la planilla, y esas le ganan a la
+ficha. No hacen falta, pero si alguna vez se agregan:
+
+- **Al final, después de `Link Doc`.** El sync cae a posiciones fijas calibradas a la
+  disposición actual de 9 columnas cuando no encuentra una cabecera por su nombre;
+  insertarlas al medio corre esas posiciones y podría leer el inventario como precio.
+- **Nunca llamar `Objetivo` a la columna de beneficio**: ese nombre ya es un alias de la
+  columna de categoría.

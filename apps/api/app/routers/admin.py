@@ -10,6 +10,7 @@ from app.core.mock_data import MOCK_PRODUCTS
 from app.models.products import Product, ProductCreate, ProductUpdate
 from app.models.orders import OrderUpdateStatus, OrderShippingUpdate
 from app.core.pricing import COURIERS
+from app.core.taxonomy import normalize_benefit, normalize_product_type
 from app.services.email_service import send_shipping_notification
 from app.core.config import settings
 from app.services.storage_service import upload_image
@@ -734,19 +735,9 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
                 idx_type = i
 
     # A proposito NO hay fallback posicional para Beneficio ni Tipo: adivinar la posicion
-    # escribiria basura (un link, un telefono) en la taxonomia de todos los productos. Que
-    # la columna falte es un estado benigno, porque el backend deriva ambos de la categoria
-    # al leer. Se avisa en el reporte en vez de adivinar.
-    if idx_benefit == -1 or idx_type == -1:
-        faltantes = [n for n, i in (("Beneficio", idx_benefit), ("Tipo", idx_type)) if i == -1]
-        report["warnings"].append({
-            "row": 0,
-            "product": "-",
-            "error": (
-                f"La planilla no trae la(s) columna(s) {', '.join(faltantes)}. "
-                "Esos productos se muestran con el beneficio/tipo derivado de la categoría."
-            ),
-        })
+    # escribiria basura (un link, un telefono) en la taxonomia de todos los productos.
+    # Que falten es el estado normal, no un problema: la taxonomia sale de la ficha de
+    # Google Docs de cada producto. Estas columnas solo existen como override manual.
 
     # Fallbacks de indices
     if idx_name == -1: idx_name = 1
@@ -864,16 +855,52 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
                     if b not in all_benefits:
                         all_benefits.append(b)
 
+            # Taxonomia. Prioridad: columna de la planilla (override manual) > ficha de
+            # Google Docs (el caso normal) > derivacion por categoria y nombre.
+            #
+            # El texto de la ficha es libre, asi que se normaliza contra el vocabulario
+            # canonico: si cada producto trajera su propia frase, el filtro del catalogo
+            # tendria un valor distinto por producto y dejaria de servir como filtro.
+            benefit_final = row.get("benefit", "").strip() or None
+            type_final = row.get("product_type", "").strip() or None
+
+            texto_beneficios = " ".join(doc_details.get("extracted_benefits") or [])
+            texto_tipo = doc_details.get("description") or ""
+
+            if not benefit_final and texto_beneficios:
+                benefit_final = normalize_benefit(texto_beneficios)
+                if not benefit_final:
+                    report["warnings"].append({
+                        "row": index + 1,
+                        "product": name,
+                        "error": (
+                            "No se reconoció el beneficio en la ficha de Google Docs; "
+                            "se usa el derivado de la categoría."
+                        ),
+                    })
+
+            if not type_final and texto_tipo:
+                type_final = normalize_product_type(texto_tipo)
+                if not type_final:
+                    report["warnings"].append({
+                        "row": index + 1,
+                        "product": name,
+                        "error": (
+                            "No se reconoció el tipo de producto en la ficha de Google Docs; "
+                            "se usa el derivado del nombre."
+                        ),
+                    })
+
             # Validar con Pydantic
             product_to_validate = ProductCreate(
                 name=name,
                 price=price,
                 stock=sheet_stock,
                 category=category,
-                # Vacio -> None, nunca "": asi "la planilla no lo dice" tiene una sola
+                # Vacio -> None, nunca "": asi "no lo sabemos" tiene una sola
                 # representacion y el backend sabe que tiene que derivarlo al leer.
-                benefit=row.get("benefit", "").strip() or None,
-                product_type=row.get("product_type", "").strip() or None,
+                benefit=benefit_final,
+                product_type=type_final,
                 image_url=image_url,
                 benefits=all_benefits,
                 certifications=certifications,
@@ -911,10 +938,10 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
                     # en vez de pisarla con el placeholder /logo.png
                     preserved_images = p.get("images")
                     preserved_image_url = p.get("image_url")
-                    # Misma proteccion que en Supabase: sin columna en la planilla, se
-                    # conserva la taxonomia que se haya cargado a mano en el admin.
-                    preserved_benefit = p.get("benefit") if idx_benefit == -1 else None
-                    preserved_type = p.get("product_type") if idx_type == -1 else None
+                    # Misma proteccion que en Supabase: si esta corrida no consiguio
+                    # valor, se conserva el que ya estuviera cargado.
+                    preserved_benefit = p.get("benefit") if product_dict.get("benefit") is None else None
+                    preserved_type = p.get("product_type") if product_dict.get("product_type") is None else None
                     product_dict["stock"] = reconcile_stock(sheet_stock, p.get("stock"), p.get("stock_synced"))
                     product_dict["stock_synced"] = product_dict["stock"]
                     MOCK_PRODUCTS[idx] = product_dict
@@ -940,13 +967,13 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
                 # Obtenemos los campos a guardar
                 db_data = product_to_validate.model_dump()
 
-                # Si la planilla todavia no tiene estas columnas, el sync no opina sobre
-                # ellas: lo que se haya cargado a mano en el admin se conserva. Sin esto,
-                # cada sincronizacion las dejaria en NULL. Cuando el cliente agregue las
-                # columnas, la planilla vuelve a ser la fuente de verdad.
-                if idx_benefit == -1:
+                # Si esta corrida no consiguio valor (ni de la planilla ni de la ficha),
+                # el sync no opina: se conserva lo que hubiera en la base, que puede ser
+                # algo cargado a mano desde el admin. Sin esto, cada sincronizacion lo
+                # dejaria en NULL.
+                if db_data.get("benefit") is None:
                     db_data.pop("benefit", None)
-                if idx_type == -1:
+                if db_data.get("product_type") is None:
                     db_data.pop("product_type", None)
 
                 # El sync no trae imagenes reales (doc_parser no las extrae, la columna
