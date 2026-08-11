@@ -385,7 +385,7 @@ const ImpactPage = () => {
                   Empieza tu Transformación
                 </Link>
               </Button>
-              <p className="text-xs text-muted-foreground mt-3">Envío gratis en compras sobre $50.000 a todo Chile</p>
+              <p className="text-xs text-muted-foreground mt-3">Envío gratis en todas tus compras, a todo Chile</p>
             </motion.div>
           </div>
         </section>
