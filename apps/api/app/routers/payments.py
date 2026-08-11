@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import RedirectResponse
-from app.core.payments.factory import PaymentGatewayFactory
+from app.core.payments.factory import PaymentGatewayFactory, UnknownGatewayError
 from app.database.supabase import supabase_client
 from app.core.config import settings
 from app.core.mock_store import MOCK_ORDERS
@@ -90,7 +90,10 @@ async def initialize_payment(request: Request):
         raise HTTPException(status_code=403, detail="Email does not match order")
 
     gateway_name = payload.get("gateway")
-    gateway = PaymentGatewayFactory.get_gateway(gateway_name)
+    try:
+        gateway = PaymentGatewayFactory.get_gateway(gateway_name)
+    except UnknownGatewayError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     try:
         result = gateway.create_transaction(
@@ -135,7 +138,19 @@ async def _handle_payment_webhook(request: Request, provider: str):
         if status == "success" and order_id:
             order = get_order_by_id(order_id)
             if order and order.get("status") != "paid":
-                validate_payment_request(order_id, order["total"])
+                # Antes esto llamaba a validate_payment_request(order_id, order["total"]),
+                # o sea comparaba el total de la orden contra si mismo: la comprobacion
+                # era tautologica y un pago aprobado por cualquier monto marcaba la orden
+                # como pagada. Ahora se compara contra lo que la pasarela dice que cobro.
+                monto_cobrado = verification.get("amount")
+                if monto_cobrado is not None and int(round(float(monto_cobrado))) != int(order["total"]):
+                    raise HTTPException(
+                        status_code=400,
+                        detail=(
+                            f"El monto pagado ({monto_cobrado}) no coincide con el total "
+                            f"de la orden ({order['total']})"
+                        ),
+                    )
                 await mark_order_as_paid(
                     order_id,
                     provider=verification.get("provider") or provider,

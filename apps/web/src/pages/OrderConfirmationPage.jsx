@@ -126,8 +126,7 @@ const OrderConfirmationPage = () => {
           <div className="bg-success/10 border border-success/20 rounded-2xl p-8 mb-8 text-center">
             <CheckCircle2 className="h-16 w-16 text-success mx-auto mb-4" />
             <h1
-              className="text-3xl md:text-4xl font-bold text-foreground mb-2"
-              style={{ fontFamily: 'Impact, sans-serif', letterSpacing: '-0.02em' }}
+              className="text-3xl md:text-4xl font-display text-foreground mb-2"
             >
               Pago Confirmado
             </h1>

@@ -23,15 +23,15 @@ const FaqPage = () => {
   const faqsCompras = [
     {
       q: '¿Hacen despacho a todo Chile?',
-      a: 'Sí, llegamos a todas las regiones del país. En la Región Metropolitana el despacho demora [COMPLETAR] días hábiles y en regiones [COMPLETAR] días hábiles.'
+      a: 'Sí, llegamos a todas las regiones del país. Despachamos por Blue Express, Starken o Pullman, y te confirmamos por correo el plazo de entrega junto con los datos del envío.'
     },
     {
       q: '¿Cuánto cuesta el envío?',
-      a: 'Sobre $50.000 el envío es gratis. Bajo ese monto, el costo se calcula según tu comuna al momento de pagar.'
+      a: 'El envío es gratis en todos nuestros pedidos, a cualquier comuna de Chile. No se cobra despacho en el checkout.'
     },
     {
       q: '¿Qué medios de pago aceptan?',
-      a: '[COMPLETAR: Webpay / tarjetas / transferencia]'
+      a: 'Pagas con Mercado Pago: dinero en tu cuenta, tarjetas de débito y de crédito, y cuotas sin interés según tu banco.'
     },
     {
       q: '¿Puedo devolver un producto?',
@@ -51,7 +51,7 @@ const FaqPage = () => {
       <main className="min-h-screen bg-[#fcfbf9] py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6" style={{ fontFamily: 'Impact, sans-serif' }}>
+            <h1 className="text-4xl md:text-5xl font-display text-slate-900 mb-6">
               Preguntas Frecuentes
             </h1>
             <p className="text-xl text-slate-600">

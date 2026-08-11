@@ -41,6 +41,20 @@ def build_csv_inventario_en_subcabecera(stock: str, price: str = "$19,990") -> s
     )
 
 
+# Planilla con las columnas de taxonomia agregadas al final, despues de "Link Doc",
+# que es donde el cliente tiene que ponerlas. Sirve de regresion: los fallbacks
+# posicionales (precio=5, stock=7, doc=8) estan calibrados a las 9 columnas originales,
+# asi que agregar columnas al final no puede correrlos.
+def build_csv_con_taxonomia(stock: str = "12", price: str = "$19,990",
+                            beneficio: str = "Foco y Calma", tipo: str = "Gotas") -> str:
+    return (
+        "Lista de Suplementos y Alimentos,,,,,,,,,,\n"
+        "Categoría / Objetivo,Suplemento / Alimento,Productor,Contacto,$ Compra,$ Venta,,Inventario,Link Doc,Beneficio,Tipo\n"
+        ",,,,,,Comentario,,,,\n"
+        f"Estimulación Cerebral,Melena de Leon Gotas,ONGO,ongo.cl,\"$11,700\",\"{price}\",,{stock},,{beneficio},{tipo}\n"
+    )
+
+
 def run_sync(csv_text: str):
     with patch("requests.get") as mock_get, patch("app.routers.admin.supabase_client", None):
         mock_get.return_value = MagicMock(status_code=200, text=csv_text, headers={"content-type": "text/csv"})
@@ -372,7 +386,9 @@ def test_no_borra_nada_si_la_planilla_vino_casi_vacia():
 
     assert summary["deleted"] == []
     assert summary["warnings"], "tiene que avisar por que no borro"
-    assert "lectura incompleta" in summary["warnings"][0]["error"]
+    # Se busca en todos los warnings, no en el primero: el sync tambien avisa por otras
+    # cosas (por ejemplo que la planilla no trae las columnas Beneficio y Tipo).
+    assert any("lectura incompleta" in w["error"] for w in summary["warnings"])
     assert "Producto 5" in {p["name"] for p in MOCK_PRODUCTS}
 
 
@@ -385,3 +401,159 @@ def test_el_borrado_no_toca_la_fila_interna_del_sync():
 
     assert "__SYSTEM_SYNC_LOG__" not in summary["deleted"]
     assert any(p["name"] == "__SYSTEM_SYNC_LOG__" for p in MOCK_PRODUCTS)
+
+
+# --------------------------------------------------------------- taxonomia
+
+
+def test_la_columna_de_la_planilla_es_un_override_manual():
+    """
+    La taxonomia sale normalmente de la ficha de Google Docs, pero si alguien agrega
+    columnas Beneficio y Tipo a la planilla, esas mandan.
+    """
+    MOCK_PRODUCTS.clear()
+    run_sync(build_csv_con_taxonomia(beneficio="Foco y Calma", tipo="Gotas"))
+
+    producto = find_product("Melena de Leon Gotas")
+    assert producto["benefit"] == "Foco y Calma"
+    assert producto["product_type"] == "Gotas"
+
+
+def test_agregar_columnas_al_final_no_corre_precio_ni_stock():
+    """
+    Regresion del riesgo real: los fallbacks posicionales estan calibrados a las 9
+    columnas originales. Si el cliente agrega Beneficio y Tipo al final, precio, stock,
+    nombre y categoria tienen que seguir mapeando igual.
+    """
+    MOCK_PRODUCTS.clear()
+    run_sync(build_csv_con_taxonomia(stock="12", price="$19,990"))
+
+    producto = find_product("Melena de Leon Gotas")
+    assert producto["price"] == 19990
+    assert producto["stock"] == 12
+    assert producto["category"] == "Estimulación Cerebral"
+
+
+def test_sin_columnas_ni_ficha_no_avisa_nada():
+    """
+    Que la planilla no traiga columnas de taxonomia es el estado normal: los datos vienen
+    de la ficha. No tiene que ensuciar el reporte con avisos en cada corrida.
+    """
+    MOCK_PRODUCTS.clear()
+    summary = run_sync(build_csv("10"))
+
+    assert not any("columna(s)" in w["error"] for w in summary["warnings"]), summary["warnings"]
+
+
+def test_sin_valor_nuevo_no_se_borra_lo_cargado_a_mano():
+    """
+    Sin esta proteccion, cada sync dejaria en NULL la taxonomia que el cliente cargo
+    desde el panel admin.
+    """
+    MOCK_PRODUCTS.clear()
+    run_sync(build_csv_con_taxonomia(beneficio="Foco y Calma", tipo="Gotas"))
+    assert find_product("Melena de Leon Gotas")["benefit"] == "Foco y Calma"
+
+    # Ahora la planilla vuelve a la disposicion sin las columnas de taxonomia.
+    run_sync(build_csv("10"))
+
+    producto = find_product("Melena de Leon Gotas")
+    assert producto["benefit"] == "Foco y Calma"
+    assert producto["product_type"] == "Gotas"
+
+
+def test_una_columna_vacia_no_queda_como_string_vacio():
+    """
+    Vacio tiene que ser None, para que el backend sepa que debe derivarlo al leer, y
+    nunca "" (que seria un valor y se mostraria como etiqueta en blanco).
+
+    El tipo si queda resuelto: el producto se llama "Melena de Leon Gotas" y el nombre
+    es la primera fuente del formato, antes que la ficha.
+    """
+    MOCK_PRODUCTS.clear()
+    run_sync(build_csv_con_taxonomia(beneficio="", tipo=""))
+
+    producto = find_product("Melena de Leon Gotas")
+    assert producto["benefit"] is None
+    assert producto["product_type"] == "Gotas"
+
+
+# ------------------------------------------------ taxonomia desde la ficha de Google Docs
+
+
+def build_csv_con_doc(doc_url: str = "https://docs.google.com/document/d/abc123/edit") -> str:
+    return (
+        "Lista de Suplementos y Alimentos,,,,,,,,\n"
+        "Categoría / Objetivo,Suplemento / Alimento,Productor,Contacto,$ Compra,$ Venta,,Inventario,Link Doc\n"
+        ",,,,,,Comentario,,\n"
+        f"Estimulación Cerebral,Melena de Leon Gotas,ONGO,ongo.cl,\"$11,700\",\"$19,990\",,10,{doc_url}\n"
+    )
+
+
+def run_sync_con_ficha(secciones: dict, csv_text: str = None):
+    """Corre el sync simulando la ficha de Google Docs que devolveria el parser."""
+    ficha = {
+        "description": "", "origin": "", "cross_selling": "", "product_profile": "",
+        "ingredients": "", "usage": "", "precautions": "", "extracted_benefits": [],
+        **secciones,
+    }
+    with patch("app.services.doc_parser.parse_google_doc", return_value=ficha):
+        return run_sync(csv_text or build_csv_con_doc())
+
+
+def test_el_beneficio_sale_de_la_ficha_normalizado():
+    """
+    La ficha escribe con sus palabras ("Reduce la niebla mental"). Se lleva al vocabulario
+    canonico para que sirva como etiqueta Y como filtro del catalogo.
+    """
+    MOCK_PRODUCTS.clear()
+    run_sync_con_ficha({
+        "extracted_benefits": ["Reduce la niebla mental", "Mejora la memoria"],
+    })
+
+    assert find_product("Melena de Leon Gotas")["benefit"] == "Foco y Calma"
+
+
+def test_el_tipo_sale_de_la_descripcion_de_la_ficha():
+    MOCK_PRODUCTS.clear()
+    run_sync_con_ficha({
+        "description": "Extracto liquido en gotas, de uso diario bajo la lengua.",
+    })
+
+    assert find_product("Melena de Leon Gotas")["product_type"] == "Gotas"
+
+
+def test_fichas_distintas_dan_beneficios_distintos():
+    """El bug original era que todas las tarjetas mostraban la misma etiqueta."""
+    resultados = []
+    for vinetas in (
+        ["Aporta energía sostenida durante el día"],
+        ["Ayuda a conciliar el sueño"],
+        ["Apoya tus defensas"],
+    ):
+        MOCK_PRODUCTS.clear()
+        run_sync_con_ficha({"extracted_benefits": vinetas})
+        resultados.append(find_product("Melena de Leon Gotas")["benefit"])
+
+    assert resultados == ["Energía Natural", "Descanso y Longevidad", "Nutrición Diaria"]
+
+
+def test_si_la_ficha_no_calza_avisa_y_deja_derivar():
+    """No se muestra una frase suelta como etiqueta: se avisa y cae a la derivacion."""
+    MOCK_PRODUCTS.clear()
+    summary = run_sync_con_ficha({"extracted_benefits": ["Producto de origen chileno"]})
+
+    assert find_product("Melena de Leon Gotas")["benefit"] is None
+    assert any("No se reconoció el beneficio" in w["error"] for w in summary["warnings"])
+
+
+def test_la_planilla_le_gana_a_la_ficha():
+    MOCK_PRODUCTS.clear()
+    run_sync_con_ficha(
+        {"extracted_benefits": ["Aporta energía sostenida"]},
+        csv_text=build_csv_con_taxonomia(beneficio="Manejo del Estrés", tipo="Cápsulas"),
+    )
+
+    producto = find_product("Melena de Leon Gotas")
+    assert producto["benefit"] == "Manejo del Estrés"
+    assert producto["product_type"] == "Cápsulas"

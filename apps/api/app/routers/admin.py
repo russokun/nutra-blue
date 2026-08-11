@@ -1,4 +1,6 @@
 from typing import List, Optional
+from datetime import datetime, timezone
+import logging
 import os
 from fastapi import APIRouter, Depends, HTTPException, Query, Body, UploadFile, File
 from app.database.supabase import supabase_client
@@ -6,13 +8,19 @@ from app.core.security import verify_admin_user, verify_admin_or_internal_key
 from app.core.mock_store import MOCK_ORDERS
 from app.core.mock_data import MOCK_PRODUCTS
 from app.models.products import Product, ProductCreate, ProductUpdate
-from app.models.orders import OrderUpdateStatus
+from app.models.orders import OrderUpdateStatus, OrderShippingUpdate
+from app.core.pricing import COURIERS
+from app.core.taxonomy import normalize_benefit_from_bullets, normalize_product_type
+from app.services.email_service import send_shipping_notification
 from app.core.config import settings
 from app.services.storage_service import upload_image
 import uuid
+import unicodedata
 import requests
 import csv
 import io
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -293,6 +301,128 @@ async def get_recent_orders(limit: int = 10, _: dict = Depends(verify_admin_user
         raise HTTPException(status_code=500, detail=f"Failed to fetch recent orders: {str(e)}")
 
 
+def _enrich_order_items(order: dict) -> dict:
+    """
+    Completa cada linea del pedido con el nombre, precio e imagen del producto.
+
+    En la base los items se guardan solo como [{product_id, quantity}]: el RPC
+    create_order_with_stock_check descarta el nombre y el precio unitario que arma
+    validate_and_build_order. Sin esto el detalle mostraria UUIDs pelados.
+    """
+    items = order.get("items") or []
+    if not items:
+        return order
+
+    ids = [i.get("product_id") for i in items if i.get("product_id")]
+    catalogo = {}
+    if ids:
+        if supabase_client is None:
+            catalogo = {p["id"]: p for p in MOCK_PRODUCTS if p.get("id") in ids}
+        else:
+            try:
+                res = supabase_client.from_("products").select(
+                    "id, name, price, image_url"
+                ).in_("id", ids).execute()
+                catalogo = {p["id"]: p for p in (res.data or [])}
+            except Exception:
+                # Un producto borrado del catalogo no puede romper la vista del pedido.
+                catalogo = {}
+
+    enriquecidos = []
+    for item in items:
+        producto = catalogo.get(item.get("product_id")) or {}
+        cantidad = int(item.get("quantity", 0) or 0)
+        precio = int(producto.get("price", 0) or 0)
+        enriquecidos.append({
+            **item,
+            "name": producto.get("name") or "Producto ya no disponible",
+            "price": precio,
+            "image_url": producto.get("image_url"),
+            "line_total": precio * cantidad,
+        })
+
+    return {**order, "items": enriquecidos}
+
+
+@router.patch("/orders/{order_id}/shipping")
+async def admin_ship_order(
+    order_id: str,
+    data: OrderShippingUpdate,
+    _: dict = Depends(verify_admin_user),
+):
+    """
+    Despacha un pedido: guarda el codigo de seguimiento, lo pasa a 'shipped' y le
+    avisa al cliente por correo.
+
+    Antes el modal de tracking del panel tiraba el codigo a la basura: solo hacia
+    PATCH del estado y lo usaba en el texto del toast.
+    """
+    tracking = (data.tracking_code or "").strip()
+    if not tracking:
+        raise HTTPException(status_code=400, detail="El código de seguimiento es obligatorio")
+
+    empresa = (data.shipping_company or "").strip().lower()
+    if empresa not in COURIERS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Empresa de transporte inválida. Permitidas: {sorted(COURIERS)}",
+        )
+
+    if data.shipping_payment not in ("por_pagar", "pagado"):
+        raise HTTPException(status_code=400, detail="shipping_payment debe ser 'por_pagar' o 'pagado'")
+
+    updates = {
+        "status": "shipped",
+        "tracking_code": tracking,
+        "shipping_company": empresa,
+        "shipping_payment": data.shipping_payment,
+        "shipped_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    if supabase_client is None:
+        if order_id not in MOCK_ORDERS:
+            raise HTTPException(status_code=404, detail="Order not found")
+        MOCK_ORDERS[order_id].update(updates)
+        order = MOCK_ORDERS[order_id]
+    else:
+        try:
+            response = supabase_client.from_("orders").update(updates).eq("id", order_id).execute()
+        except Exception:
+            raise HTTPException(status_code=500, detail="Failed to update shipping")
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Order not found")
+        order = response.data[0]
+
+    if data.notify_customer and order.get("email"):
+        # Que falle el correo no puede dejar el pedido sin despachar: ya se guardo.
+        try:
+            await send_shipping_notification(order)
+        except Exception:
+            logger.exception("No se pudo enviar el aviso de despacho del pedido %s", order_id)
+
+    return order
+
+
+@router.get("/orders/{order_id}")
+async def get_order_detail(order_id: str, _: dict = Depends(verify_admin_user)):
+    """Pedido completo para la vista de detalle del panel: datos del cliente,
+    direccion, entrega, lineas de producto y rastro del pago."""
+    if supabase_client is None:
+        order = MOCK_ORDERS.get(order_id)
+        if not order:
+            raise HTTPException(status_code=404, detail="Order not found")
+        return _enrich_order_items(order)
+
+    try:
+        response = supabase_client.from_("orders").select("*").eq("id", order_id).limit(1).execute()
+    except Exception:
+        raise HTTPException(status_code=500, detail="Failed to fetch order")
+
+    if not response.data:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return _enrich_order_items(response.data[0])
+
+
 @router.get("/inventory/alerts")
 async def get_inventory_alerts(_: dict = Depends(verify_admin_user)):
     if supabase_client is None:
@@ -479,6 +609,12 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error al descargar el CSV: {str(e)}")
 
+    def _norm_header(cell: str) -> str:
+        """Cabecera comparable: minusculas y sin acentos. La planilla escribe
+        'Categoría', 'Beneficio Principal' o 'TIPO' segun el dia."""
+        h = (cell or "").strip().lower()
+        return "".join(c for c in unicodedata.normalize("NFD", h) if unicodedata.category(c) != "Mn")
+
     # Parsear y mapear columnas de forma flexible
     def normalize_key(key: str) -> str:
         k = key.lower().strip()
@@ -541,11 +677,19 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
     idx_category = -1
     idx_doc = -1
     idx_cost = -1  # Columna de precio de costo — ignorar al sincronizar
+    idx_benefit = -1  # Columna "Beneficio" — opcional, puede no existir todavia
+    idx_type = -1     # Columna "Tipo" — opcional, puede no existir todavia
 
     for i, h in enumerate(headers_main):
-        h_lower = h.lower().strip()
+        h_lower = _norm_header(h)
         if "suplemento / alimento" in h_lower or h_lower == "suplemento" or h_lower == "alimento":
             idx_name = i
+        elif "beneficio" in h_lower:
+            # Va antes que "categor" y que "venta" a proposito: si el cliente rotula la
+            # columna "Beneficio / Objetivo" o "Beneficio de venta", tiene que ganar esta.
+            idx_benefit = i
+        elif h_lower.startswith("tipo") or h_lower in ("formato", "presentacion"):
+            idx_type = i
         elif "categor" in h_lower or h_lower == "categoria" or h_lower == "objetivo":
             idx_category = i
         elif "inventario" in h_lower or "stock" in h_lower:
@@ -581,6 +725,20 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
                 idx_stock = i
                 break
 
+    # Misma tolerancia de dos filas para las columnas de taxonomia.
+    if idx_benefit == -1 or idx_type == -1:
+        for i, h in enumerate(headers_sub):
+            h_sub = _norm_header(h)
+            if idx_benefit == -1 and "beneficio" in h_sub:
+                idx_benefit = i
+            elif idx_type == -1 and (h_sub.startswith("tipo") or h_sub in ("formato", "presentacion")):
+                idx_type = i
+
+    # A proposito NO hay fallback posicional para Beneficio ni Tipo: adivinar la posicion
+    # escribiria basura (un link, un telefono) en la taxonomia de todos los productos.
+    # Que falten es el estado normal, no un problema: la taxonomia sale de la ficha de
+    # Google Docs de cada producto. Estas columnas solo existen como override manual.
+
     # Fallbacks de indices
     if idx_name == -1: idx_name = 1
     if idx_category == -1: idx_category = 0
@@ -612,6 +770,12 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
         stock_val = raw_row[idx_stock].strip() if idx_stock < len(raw_row) else "20"
         doc_val = raw_row[idx_doc].strip() if idx_doc < len(raw_row) else ""
 
+        # Ojo con la guarda: el patron `idx < len(raw_row)` de arriba da True con idx = -1
+        # e indexa la ultima celda. Los indices de mas arriba siempre tienen un fallback
+        # positivo asi que nunca se dispara, pero estos dos si pueden quedar en -1.
+        benefit_val = raw_row[idx_benefit].strip() if 0 <= idx_benefit < len(raw_row) else ""
+        type_val = raw_row[idx_type].strip() if 0 <= idx_type < len(raw_row) else ""
+
         # Mapear llaves normalizadas
         row = {
             "name": name,
@@ -619,6 +783,8 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
             "price": price_val,
             "stock": stock_val,
             "google_doc_url": doc_val,
+            "benefit": benefit_val,
+            "product_type": type_val,
             "benefits": "",
             "certifications": "",
             "image_url": ""
@@ -689,12 +855,58 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
                     if b not in all_benefits:
                         all_benefits.append(b)
 
+            # Taxonomia. Prioridad: columna de la planilla (override manual) > ficha de
+            # Google Docs (el caso normal) > derivacion por categoria y nombre.
+            #
+            # El texto de la ficha es libre, asi que se normaliza contra el vocabulario
+            # canonico: si cada producto trajera su propia frase, el filtro del catalogo
+            # tendria un valor distinto por producto y dejaria de servir como filtro.
+            benefit_final = row.get("benefit", "").strip() or None
+            type_final = row.get("product_type", "").strip() or None
+
+            vinetas_beneficios = doc_details.get("extracted_benefits") or []
+            # Solo la sección "Descripción del Tipo de Producto": si se usara la
+            # descripción completa, la introducción de marketing podría decidir el tipo.
+            texto_tipo = doc_details.get("type_description") or doc_details.get("description") or ""
+
+            if not benefit_final and vinetas_beneficios:
+                benefit_final = normalize_benefit_from_bullets(vinetas_beneficios)
+                if not benefit_final:
+                    report["warnings"].append({
+                        "row": index + 1,
+                        "product": name,
+                        "error": (
+                            "No se reconoció el beneficio en la ficha de Google Docs; "
+                            "se usa el derivado de la categoría."
+                        ),
+                    })
+
+            if not type_final:
+                # El NOMBRE gana sobre la ficha: la ficha describe la familia de producto
+                # ("Raíz tuberosa andina", "Extracto en polvo") mientras que el nombre
+                # identifica el formato del SKU que se vende ("Maca en Polvo", "Melena de
+                # León en Gotas"). Cuando difieren, manda el nombre.
+                type_final = normalize_product_type(name) or normalize_product_type(texto_tipo)
+                if not type_final and texto_tipo:
+                    report["warnings"].append({
+                        "row": index + 1,
+                        "product": name,
+                        "error": (
+                            "No se reconoció el tipo de producto ni en el nombre ni en la "
+                            "ficha de Google Docs; se usa el derivado de la categoría."
+                        ),
+                    })
+
             # Validar con Pydantic
             product_to_validate = ProductCreate(
                 name=name,
                 price=price,
                 stock=sheet_stock,
                 category=category,
+                # Vacio -> None, nunca "": asi "no lo sabemos" tiene una sola
+                # representacion y el backend sabe que tiene que derivarlo al leer.
+                benefit=benefit_final,
+                product_type=type_final,
                 image_url=image_url,
                 benefits=all_benefits,
                 certifications=certifications,
@@ -732,6 +944,10 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
                     # en vez de pisarla con el placeholder /logo.png
                     preserved_images = p.get("images")
                     preserved_image_url = p.get("image_url")
+                    # Misma proteccion que en Supabase: si esta corrida no consiguio
+                    # valor, se conserva el que ya estuviera cargado.
+                    preserved_benefit = p.get("benefit") if product_dict.get("benefit") is None else None
+                    preserved_type = p.get("product_type") if product_dict.get("product_type") is None else None
                     product_dict["stock"] = reconcile_stock(sheet_stock, p.get("stock"), p.get("stock_synced"))
                     product_dict["stock_synced"] = product_dict["stock"]
                     MOCK_PRODUCTS[idx] = product_dict
@@ -739,6 +955,10 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
                         MOCK_PRODUCTS[idx]["images"] = preserved_images
                     if preserved_image_url:
                         MOCK_PRODUCTS[idx]["image_url"] = preserved_image_url
+                    if preserved_benefit:
+                        MOCK_PRODUCTS[idx]["benefit"] = preserved_benefit
+                    if preserved_type:
+                        MOCK_PRODUCTS[idx]["product_type"] = preserved_type
                     report["updated"] += 1
                     found = True
                     break
@@ -752,6 +972,15 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
             try:
                 # Obtenemos los campos a guardar
                 db_data = product_to_validate.model_dump()
+
+                # Si esta corrida no consiguio valor (ni de la planilla ni de la ficha),
+                # el sync no opina: se conserva lo que hubiera en la base, que puede ser
+                # algo cargado a mano desde el admin. Sin esto, cada sincronizacion lo
+                # dejaria en NULL.
+                if db_data.get("benefit") is None:
+                    db_data.pop("benefit", None)
+                if db_data.get("product_type") is None:
+                    db_data.pop("product_type", None)
 
                 # El sync no trae imagenes reales (doc_parser no las extrae, la columna
                 # de la planilla se ignora). Si el producto ya existe, no pisar la
@@ -806,7 +1035,13 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
     # detecta), sino que se lea a medias: por eso tambien se exige que traiga al menos
     # la mitad del catalogo actual antes de borrar nada.
     def eliminar_los_que_sobran(nombres_actuales: set, catalogo: list) -> None:
-        vigentes = [p for p in catalogo if p.get("name") != "__SYSTEM_SYNC_LOG__"]
+        # Los productos ocultos se crean a mano desde el panel (el de prueba con el que
+        # se valida el cobro real, por ejemplo) y nunca estan en la planilla: sin esta
+        # exencion el sync los borraria en la siguiente corrida.
+        vigentes = [
+            p for p in catalogo
+            if p.get("name") != "__SYSTEM_SYNC_LOG__" and not p.get("is_hidden")
+        ]
         sobran = [p for p in vigentes if p.get("name") not in nombres_actuales]
         if not sobran:
             return
@@ -840,7 +1075,7 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
             ]
     else:
         try:
-            catalogo = supabase_client.from_("products").select("name").execute().data or []
+            catalogo = supabase_client.from_("products").select("name, is_hidden").execute().data or []
             eliminar_los_que_sobran(nombres_en_planilla, catalogo)
             if report["deleted"]:
                 supabase_client.from_("products").delete().in_(

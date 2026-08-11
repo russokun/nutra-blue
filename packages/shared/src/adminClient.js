@@ -33,6 +33,12 @@ export function createAdminFetcher(getAccessToken, { apiBase = '/hcgi/api/admin'
 export function createBaseAdminClient(adminFetch) {
   return {
     getOrders: (status) => adminFetch(status ? `/orders?status=${status}` : '/orders'),
+    getOrder: (orderId) => adminFetch(`/orders/${orderId}`),
+    shipOrder: (orderId, data) =>
+      adminFetch(`/orders/${orderId}/shipping`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
     updateOrderStatus: (orderId, status) =>
       adminFetch(`/orders/${orderId}/status`, {
         method: 'PATCH',

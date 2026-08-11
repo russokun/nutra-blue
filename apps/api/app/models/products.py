@@ -7,6 +7,15 @@ class ProductBase(BaseModel):
     price: Union[int, str]
     stock: Union[int, str]
     category: str
+    # Taxonomia: `category` es la columna "Categoría / Objetivo" de la planilla; estas
+    # dos son columnas propias. Vacias significa "la planilla no lo dice" y el backend
+    # las deriva al leer (app/core/taxonomy.py). No confundir `benefit` con `benefits`,
+    # que es la lista de vinetas sacada de la ficha de Google Docs.
+    benefit: Optional[str] = None
+    product_type: Optional[str] = None
+    # Producto comprable por URL directa pero fuera del catálogo. Se usa para el producto
+    # de prueba con el que se valida el cobro real en producción.
+    is_hidden: bool = False
     image_url: Optional[str] = None
     images: List[str] = []
     benefits: List[str] = []
@@ -46,6 +55,9 @@ class ProductUpdate(BaseModel):
     price: Optional[int] = None
     stock: Optional[int] = None
     category: Optional[str] = None
+    benefit: Optional[str] = None
+    product_type: Optional[str] = None
+    is_hidden: Optional[bool] = None
     image_url: Optional[str] = None
     images: Optional[List[str]] = None
     benefits: Optional[List[str]] = None

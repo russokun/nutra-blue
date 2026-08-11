@@ -2,8 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
-import { ShoppingBag, Eye, Percent } from 'lucide-react';
+import { ShoppingBag, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import ProductTags from '@/components/common/ProductTags';
 import { useCart } from '@/hooks/useCart';
 import { toast } from 'sonner';
 
@@ -23,16 +24,19 @@ const SectionCarousel = ({ products }) => {
     }).format(price);
   };
 
-  const getFakeOriginalPrice = (price) => {
-    // Generar un precio original realista ~20-25% más alto redondeado a los $100 más cercanos
-    const raw = price * 1.25;
-    return Math.round(raw / 100) * 100;
-  };
+  // Acá había un precio "antes" inventado (precio actual + 25%) que se mostraba tachado
+  // junto a un "Ahorras $X". Ese precio nunca existió: no hay columna de precio anterior
+  // ni de descuento en la planilla. Un precio de referencia fabricado es publicidad
+  // engañosa (Ley 19.496) y expone a NutraBlue ante el SERNAC, así que se eliminó.
+  //
+  // Si más adelante quieren mostrar descuentos de verdad, hace falta una columna con el
+  // precio anterior real en la planilla y mostrar el tachado solo cuando ese precio
+  // exista y sea mayor al actual.
 
   if (!products || products.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground text-sm">
-        No hay ofertas o packs disponibles en este momento.
+        No hay packs disponibles en este momento.
       </div>
     );
   }
@@ -55,18 +59,11 @@ const SectionCarousel = ({ products }) => {
         className="offers-swiper pb-14"
       >
         {products.map((product) => {
-          const originalPrice = getFakeOriginalPrice(product.price);
-          const discountPercent = 20; // 20% de descuento estimado
-
           return (
             <SwiperSlide key={product.id} className="h-auto">
               <div className="bg-card border border-border/60 rounded-2xl p-5 hover:border-primary/20 flex flex-col justify-between h-full min-h-[460px] relative group transition-all duration-300 hover:shadow-lg">
                 
-                {/* Descuento Badge */}
-                <div className="absolute top-3 left-3 z-10 bg-destructive text-destructive-foreground text-[10px] font-extrabold px-2.5 py-1 rounded-full flex items-center gap-1 uppercase tracking-wider">
-                  <Percent className="h-3 w-3" />
-                  <span>Oferta</span>
-                </div>
+                <ProductTags product={product} variant="overlay" />
 
                 <Link to={`/product/${product.id}`} className="block flex-grow flex flex-col text-left h-full">
                   {/* Image Container */}
@@ -83,25 +80,15 @@ const SectionCarousel = ({ products }) => {
                   {/* Card Body */}
                   <div className="space-y-2 flex-grow flex flex-col justify-between">
                     <div>
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">
-                        {product.category}
-                      </span>
+                      <ProductTags product={product} variant="meta" className="mb-1" />
                       <h3 className="font-bold text-foreground text-base group-hover:text-primary transition-colors line-clamp-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                         {product.name}
                       </h3>
                     </div>
 
                     <div className="pt-2">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-sm text-muted-foreground line-through">
-                          {formatPrice(originalPrice)}
-                        </span>
-                        <span className="text-lg font-black text-destructive">
-                          {formatPrice(product.price)}
-                        </span>
-                      </div>
-                      <span className="text-[10px] font-semibold text-emerald-600 block mt-0.5">
-                        Ahorras {formatPrice(originalPrice - product.price)}
+                      <span className="text-lg font-black text-primary">
+                        {formatPrice(product.price)}
                       </span>
                     </div>
                   </div>

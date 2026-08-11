@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useCart } from '@/hooks/useCart';
 import { toast } from 'sonner';
 import apiServerClient from '@/lib/apiServerClient';
+import ProductTags from '@/components/common/ProductTags';
 
 const ShopPage = () => {
   const navigate = useNavigate();
@@ -26,18 +27,35 @@ const ShopPage = () => {
   const [selectedCategory, setSelectedCategory] = useState(categoryParam || 'all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('name');
-  const [selectedSubCategory, setSelectedSubCategory] = useState('all');
+  // Beneficio y Tipo tenían un solo estado compartido, así que se pisaban entre sí:
+  // elegir un tipo borraba silenciosamente el beneficio seleccionado. Ahora son
+  // independientes.
+  const [selectedBenefit, setSelectedBenefit] = useState('all');
+  const [selectedType, setSelectedType] = useState('all');
   const [activeProductIngredients, setActiveProductIngredients] = useState(null);
 
-  // Las categorías salen del catálogo, que a su vez viene de la columna
-  // "Categoría / Objetivo" de la planilla. Hardcodearlas dejaba invisible en el
-  // filtro cualquier producto cuya categoría no estuviera en la lista.
-  const categories = useMemo(() => [
-    { value: 'all', label: 'Todos' },
-    ...[...new Set(products.map((p) => p.category).filter(Boolean))]
+  // Las tres etiquetas salen del catálogo, que a su vez viene de la planilla.
+  // Hardcodearlas dejaba invisible en el filtro cualquier producto cuya etiqueta no
+  // estuviera en la lista.
+  const buildOptions = (items, field, allLabel) => [
+    { value: 'all', label: allLabel },
+    ...[...new Set(items.map((p) => p[field]).filter(Boolean))]
       .sort((a, b) => a.localeCompare(b, 'es'))
-      .map((c) => ({ value: c, label: c })),
-  ], [products]);
+      .map((v) => ({ value: v, label: v })),
+  ];
+
+  const categories = useMemo(
+    () => buildOptions(products, 'category', 'Todos'),
+    [products]
+  );
+  const benefits = useMemo(
+    () => buildOptions(products, 'benefit', 'Todos los Beneficios'),
+    [products]
+  );
+  const productTypes = useMemo(
+    () => buildOptions(products, 'product_type', 'Todos los Tipos'),
+    [products]
+  );
 
   useEffect(() => {
     fetchProducts();
@@ -70,25 +88,15 @@ const ShopPage = () => {
     .filter(product => {
       const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
       const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      let matchesSub = true;
-      if (selectedSubCategory === 'ofertas') {
-        matchesSub = product.price < 18000;
-      } else if (selectedSubCategory === 'packs') {
-        matchesSub = product.name.toLowerCase().includes('mix') || product.name.toLowerCase().includes('blend') || product.name.toLowerCase().includes('tea');
-      } else if (selectedSubCategory === 'individuales') {
-        matchesSub = !product.name.toLowerCase().includes('mix') && !product.name.toLowerCase().includes('blend') && !product.name.toLowerCase().includes('tea');
-      } else if (selectedSubCategory === 'energia') {
-        matchesSub = product.category === 'Energía';
-      } else if (selectedSubCategory === 'concentracion') {
-        matchesSub = product.category === 'Concentración y Calma';
-      } else if (selectedSubCategory === 'descanso') {
-        matchesSub = product.category === 'Descanso y Longevidad';
-      } else if (selectedSubCategory === 'alimentacion') {
-        matchesSub = product.category === 'Alimentación Diaria';
-      }
 
-      return matchesCategory && matchesSearch && matchesSub;
+      // Antes "Beneficio" filtraba por product.category (o sea, era un duplicado
+      // literal de Categoría) y "Tipo" era una heurística falsa: precio < 18000 para
+      // "ofertas" y el nombre conteniendo mix/blend/tea para "packs". Ahora ambos usan
+      // los campos reales que trae la planilla.
+      const matchesBenefit = selectedBenefit === 'all' || product.benefit === selectedBenefit;
+      const matchesType = selectedType === 'all' || product.product_type === selectedType;
+
+      return matchesCategory && matchesSearch && matchesBenefit && matchesType;
     })
     .sort((a, b) => {
       if (sortBy === 'price-asc') return a.price - b.price;
@@ -229,7 +237,7 @@ const ShopPage = () => {
                         key={category.value}
                         onClick={() => setSelectedCategory(category.value)}
                         variant={selectedCategory === category.value ? 'default' : 'outline'}
-                        className="w-full justify-start transition-all duration-200 text-xs py-2 rounded-xl"
+                        className="w-full justify-start transition-all duration-200 text-xs py-2 rounded-xl h-auto min-h-9 whitespace-normal text-left"
                       >
                         {category.label}
                       </Button>
@@ -241,20 +249,14 @@ const ShopPage = () => {
                 <div className="pt-4 border-t border-border">
                   <span className="text-sm font-semibold text-foreground mb-3 block">Filtrar por beneficio</span>
                   <div className="space-y-1.5">
-                    {[
-                      { value: 'all', label: 'Todos los Beneficios' },
-                      { value: 'energia', label: '⚡ Energía' },
-                      { value: 'concentracion', label: '🧠 Concentración y Calma' },
-                      { value: 'descanso', label: '🌙 Descanso y Longevidad' },
-                      { value: 'alimentacion', label: '🥑 Alimentación Diaria' }
-                    ].map(sub => (
+                    {benefits.map(opcion => (
                       <Button
-                        key={sub.value}
-                        onClick={() => setSelectedSubCategory(sub.value)}
-                        variant={selectedSubCategory === sub.value ? 'default' : 'outline'}
-                        className="w-full justify-start transition-all duration-200 text-xs py-2 rounded-xl text-left"
+                        key={opcion.value}
+                        onClick={() => setSelectedBenefit(opcion.value)}
+                        variant={selectedBenefit === opcion.value ? 'default' : 'outline'}
+                        className="w-full justify-start transition-all duration-200 text-xs py-2 rounded-xl text-left h-auto min-h-9 whitespace-normal"
                       >
-                        {sub.label}
+                        {opcion.label}
                       </Button>
                     ))}
                   </div>
@@ -264,18 +266,14 @@ const ShopPage = () => {
                 <div className="pt-4 border-t border-border">
                   <span className="text-sm font-semibold text-foreground mb-3 block">Filtrar por tipo</span>
                   <div className="space-y-1.5">
-                    {[
-                      { value: 'ofertas', label: '🏷️ Ofertas Especiales' },
-                      { value: 'packs', label: '📦 Packs Mensuales' },
-                      { value: 'individuales', label: '🧬 Productos Individuales' }
-                    ].map(sub => (
+                    {productTypes.map(opcion => (
                       <Button
-                        key={sub.value}
-                        onClick={() => setSelectedSubCategory(sub.value)}
-                        variant={selectedSubCategory === sub.value ? 'default' : 'outline'}
-                        className="w-full justify-start transition-all duration-200 text-xs py-2 rounded-xl text-left"
+                        key={opcion.value}
+                        onClick={() => setSelectedType(opcion.value)}
+                        variant={selectedType === opcion.value ? 'default' : 'outline'}
+                        className="w-full justify-start transition-all duration-200 text-xs py-2 rounded-xl text-left h-auto min-h-9 whitespace-normal"
                       >
-                        {sub.label}
+                        {opcion.label}
                       </Button>
                     ))}
                   </div>
@@ -308,7 +306,7 @@ const ShopPage = () => {
                 <div className="space-y-8">
                   <div className="bg-muted rounded-xl p-12 text-center">
                     <p className="text-muted-foreground text-lg mb-4">No se encontraron productos para tu búsqueda o filtros.</p>
-                    <Button onClick={() => { setSelectedCategory('all'); setSelectedSubCategory('all'); setSearchQuery(''); }} className="rounded-xl">
+                    <Button onClick={() => { setSelectedCategory('all'); setSelectedBenefit('all'); setSelectedType('all'); setSearchQuery(''); }} className="rounded-xl">
                       Limpiar filtros
                     </Button>
                   </div>
@@ -362,11 +360,10 @@ const ShopPage = () => {
                               alt={product.name}
                               className="h-full w-auto object-contain group-hover:scale-103 transition-all duration-300 drop-shadow-md"
                             />
-                            <span className="absolute top-3 left-3 bg-primary/10 text-primary border border-primary/20 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                              {product.category}
-                            </span>
+                            <ProductTags product={product} variant="overlay" />
                           </div>
                           <div className="p-4 pb-2">
+                            <ProductTags product={product} variant="meta" className="mb-1" />
                             <h3 className="text-base font-bold text-card-foreground mb-1 line-clamp-1">
                               {product.name}
                             </h3>

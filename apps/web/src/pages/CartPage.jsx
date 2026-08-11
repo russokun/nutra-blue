@@ -26,9 +26,6 @@ const CartPage = () => {
   const total = getCartTotal();
   const tax = Math.round(total - (total / 1.19)); // 19% IVA incluido
   const subtotal = total - tax;
-  const freeShippingThreshold = 50000;
-  const progressToFreeShipping = Math.min((total / freeShippingThreshold) * 100, 100);
-  const amountNeededForFreeShipping = freeShippingThreshold - total;
 
   useEffect(() => {
     const loadUpsellProduct = async () => {
@@ -74,7 +71,7 @@ const CartPage = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="bg-muted rounded-2xl p-12 text-center max-w-lg mx-auto border border-border/40">
               <ShoppingBag className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-foreground mb-2" style={{ fontFamily: 'Impact, sans-serif' }}>Tu carrito está vacío</h2>
+              <h2 className="text-2xl font-display text-foreground mb-2">Tu carrito está vacío</h2>
               <p className="text-muted-foreground mb-6">Agrega productos premium para comenzar tu optimización biológica.</p>
               <Button asChild className="rounded-xl px-8 py-5">
                 <Link to="/shop">Explorar Catálogo</Link>
@@ -100,8 +97,7 @@ const CartPage = () => {
       <main className="min-h-screen bg-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1
-            className="text-3xl md:text-4xl font-bold text-foreground mb-8"
-            style={{ fontFamily: 'Impact, sans-serif', letterSpacing: '-0.02em' }}
+            className="text-3xl md:text-4xl font-display text-foreground mb-8"
           >
             Carrito de Compras
           </h1>
@@ -109,25 +105,15 @@ const CartPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column: Cart Items & Upsell */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Free Shipping Progress Indicator */}
-              <div className="bg-card rounded-2xl p-5 border border-border shadow-sm space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-2 text-xs md:text-sm font-semibold text-card-foreground">
-                    <Truck className="h-4 w-4 text-primary" />
-                    {total >= freeShippingThreshold ? (
-                      <span className="text-success font-bold">¡Tienes envío gratis asegurado!</span>
-                    ) : (
-                      <span>Estás a <strong className="text-primary">{formatPrice(amountNeededForFreeShipping)}</strong> de obtener <strong>Envío Gratis</strong></span>
-                    )}
-                  </span>
-                  <span className="text-xs text-muted-foreground font-medium">Meta: {formatPrice(freeShippingThreshold)}</span>
-                </div>
-                <div className="w-full bg-muted h-2.5 rounded-full overflow-hidden">
-                  <div
-                    className="bg-accent h-full transition-all duration-500 rounded-full"
-                    style={{ width: `${progressToFreeShipping}%` }}
-                  />
-                </div>
+              {/* Acá había una barra de progreso que decía "Estás a $X de obtener Envío
+                  Gratis". Ya no cobramos despacho en ningún caso, así que le pedía al
+                  cliente sumar productos para ganarse algo que ya tenía, y una pantalla
+                  después el checkout le decía "Envío sin costo". */}
+              <div className="bg-card rounded-2xl p-5 border border-border shadow-sm">
+                <span className="flex items-center gap-2 text-sm font-semibold text-card-foreground">
+                  <Truck className="h-4 w-4 text-success shrink-0" />
+                  <span className="text-success font-bold">Envío gratis en todos los pedidos</span>
+                </span>
               </div>
 
               {/* Cart Items List */}
@@ -234,7 +220,7 @@ const CartPage = () => {
             {/* Right Column: Order Summary & Trust */}
             <div className="lg:col-span-1">
               <div className="bg-card rounded-2xl p-6 border border-border shadow-sm sticky top-20 space-y-6">
-                <h2 className="text-xl font-bold text-card-foreground border-b border-border pb-4" style={{ fontFamily: 'Impact, sans-serif' }}>
+                <h2 className="text-xl font-display text-card-foreground border-b border-border pb-4">
                   Resumen del Pedido
                 </h2>
 
@@ -247,15 +233,12 @@ const CartPage = () => {
                     <span>IVA Incluido (19%)</span>
                     <span className="font-medium">{formatPrice(tax)}</span>
                   </div>
+                  {/* NutraBlue asume el despacho: siempre gratis, sin condicion de monto.
+                      Antes esta fila decia "Calculado en checkout" bajo los $50.000, lo que
+                      contradecia al checkout, que ya no cobra envio en ningun caso. */}
                   <div className="flex justify-between text-muted-foreground">
                     <span>Costo de Despacho</span>
-                    <span className="font-medium">
-                      {total >= freeShippingThreshold ? (
-                        <span className="text-success font-semibold">Gratis</span>
-                      ) : (
-                        <span className="text-muted-foreground italic">Calculado en checkout</span>
-                      )}
-                    </span>
+                    <span className="text-success font-semibold">Gratis</span>
                   </div>
 
                   <div className="border-t border-border pt-4">

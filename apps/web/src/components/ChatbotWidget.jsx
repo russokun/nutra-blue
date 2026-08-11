@@ -38,7 +38,7 @@ const ChatbotWidget = () => {
             <div className="h-full flex flex-col">
               {/* Header */}
               <div className="bg-primary text-primary-foreground px-6 py-4 border-b border-primary/20">
-                <span className="text-lg font-semibold" style={{ fontFamily: 'Impact, sans-serif' }}>
+                <span className="text-lg font-heading font-semibold">
                   Asesor NutraBlue
                 </span>
                 <p className="text-sm text-primary-foreground/80 mt-1">

@@ -8,13 +8,13 @@ import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Tag, RefreshCw, Upload, Loader2, ChevronLeft, ChevronRight, X, CloudDownload } from 'lucide-react';
 
 const emptyProduct = {
-  name: '', price: '', stock: '', category: '', images: [],
+  name: '', price: '', stock: '', category: '', benefit: '', product_type: '', is_hidden: false, images: [],
 };
 
 // Categorías de respaldo: solo se usan si el catálogo aún está vacío. La lista real
 // sale de los productos, que a su vez vienen de la columna "Categoría / Objetivo"
 // de la planilla — esa es la fuente de verdad.
-const FALLBACK_CATEGORIES = ['Salud Cognitiva', 'Gestión del Estrés', 'Longevidad'];
+const FALLBACK_CATEGORIES = ['Energía', 'Concentración y Calma', 'Descanso y Longevidad', 'Alimentación Diaria'];
 
 const formatPrice = (price) =>
   new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(price);
@@ -34,6 +34,17 @@ const ProductsPage = () => {
     const fromCatalog = [...new Set(products.map((p) => p.category).filter(Boolean))].sort();
     return fromCatalog.length ? fromCatalog : FALLBACK_CATEGORIES;
   }, [products]);
+
+  // Sugerencias para los datalist de beneficio y tipo. Se dejan como texto libre para
+  // no encajonar al cliente: la planilla puede traer valores nuevos en cualquier momento.
+  const benefitOptions = React.useMemo(
+    () => [...new Set(products.map((p) => p.benefit).filter(Boolean))].sort(),
+    [products]
+  );
+  const typeOptions = React.useMemo(
+    () => [...new Set(products.map((p) => p.product_type).filter(Boolean))].sort(),
+    [products]
+  );
 
   const fetchProducts = async () => {
     try {
@@ -73,7 +84,10 @@ const ProductsPage = () => {
             toast.error(`${errors.length} producto(s) con error: ${errors[0].product} — ${errors[0].error}`);
           }
           if (warnings?.length) {
-            toast.warning(`${warnings.length} ficha(s) de Google Docs no se pudieron leer`);
+            // Antes esto daba por sentado que todo warning era una ficha de Google Docs
+            // ilegible. El sync también avisa por otras cosas — por ejemplo que la
+            // planilla no trae las columnas Beneficio y Tipo — y se reportaban mal.
+            warnings.slice(0, 3).forEach((w) => toast.warning(w.error));
           }
         }
         break;
@@ -100,6 +114,9 @@ const ProductsPage = () => {
       price: String(product.price),
       stock: String(product.stock),
       category: product.category,
+      benefit: product.benefit || '',
+      product_type: product.product_type || '',
+      is_hidden: Boolean(product.is_hidden),
       images: product.images?.length ? product.images : (product.image_url ? [product.image_url] : []),
       google_doc_url: product.google_doc_url || '',
       // Los trae el sync desde la ficha de Google Docs: se conservan tal cual al guardar.
@@ -162,6 +179,11 @@ const ProductsPage = () => {
       price: parseInt(form.price, 10),
       stock: parseInt(form.stock, 10),
       category: form.category,
+      // Se manda '' y no null a proposito: el backend descarta los campos None al
+      // actualizar, asi que con null nunca se podria vaciar un beneficio ya cargado.
+      benefit: form.benefit || '',
+      product_type: form.product_type || '',
+      is_hidden: Boolean(form.is_hidden),
       images: form.images,
       image_url: form.images[0] || null,
       // No vaciar lo que trajo el sync desde la ficha de Google Docs: editar el precio
@@ -346,6 +368,56 @@ const ProductsPage = () => {
                 <p className="mt-1 text-xs text-muted-foreground">
                   Las categorías salen de la columna «Categoría / Objetivo» de la planilla.
                 </p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Beneficio</Label>
+                  <Input
+                    list="benefit-options"
+                    value={form.benefit}
+                    onChange={(e) => setForm({ ...form, benefit: e.target.value })}
+                    placeholder="Ej: Energía Natural"
+                    className="mt-1"
+                  />
+                  <datalist id="benefit-options">
+                    {benefitOptions.map((b) => <option key={b} value={b} />)}
+                  </datalist>
+                </div>
+                <div>
+                  <Label>Tipo</Label>
+                  <Input
+                    list="type-options"
+                    value={form.product_type}
+                    onChange={(e) => setForm({ ...form, product_type: e.target.value })}
+                    placeholder="Ej: Polvo"
+                    className="mt-1"
+                  />
+                  <datalist id="type-options">
+                    {typeOptions.map((t) => <option key={t} value={t} />)}
+                  </datalist>
+                </div>
+              </div>
+              <p className="-mt-2 text-xs text-muted-foreground">
+                Normalmente salen de la ficha de Google Docs del producto. Lo que cargues
+                acá se conserva mientras la ficha no aporte un valor reconocible.
+              </p>
+              <div className="rounded-lg border border-border bg-muted/30 p-3">
+                <label className="flex items-start gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(form.is_hidden)}
+                    onChange={(e) => setForm({ ...form, is_hidden: e.target.checked })}
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+                  />
+                  <span>
+                    <span className="block text-sm font-medium text-foreground">Ocultar del catálogo</span>
+                    <span className="block text-xs text-muted-foreground">
+                      No aparece en la tienda ni en los carruseles, pero sigue siendo
+                      comprable por su URL directa. Se usa para el producto de prueba con
+                      el que se valida el cobro real.
+                    </span>
+                  </span>
+                </label>
               </div>
               <div>
                 <div className="flex items-center justify-between mb-1">

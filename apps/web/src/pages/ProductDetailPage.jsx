@@ -11,6 +11,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import ProductTags from '@/components/common/ProductTags';
 import { toast } from 'sonner';
 import { getProductExtraDetails } from '@/lib/productExtraDetails';
 
@@ -222,12 +223,9 @@ const ProductDetailPage = () => {
 
             {/* Info */}
             <div className="flex flex-col justify-center">
-              <span className="text-xs uppercase tracking-wider text-primary font-semibold mb-2">
-                {product.category}
-              </span>
+              <ProductTags product={product} variant="meta" className="mb-2 !text-xs !text-primary" />
               <h1
-                className="text-3xl md:text-4xl font-bold text-foreground mb-4"
-                style={{ fontFamily: 'Impact, sans-serif', letterSpacing: '-0.02em' }}
+                className="text-3xl md:text-4xl font-display text-foreground mb-4"
               >
                 {product.name}
               </h1>
@@ -306,7 +304,7 @@ const ProductDetailPage = () => {
 
             {/* Left Logo */}
             <div className="flex items-center space-x-2 shrink-0 z-10 select-none">
-              <span className="text-2xl font-semibold text-primary" style={{ fontFamily: 'Impact, sans-serif' }}>
+              <span className="text-2xl font-display text-primary">
                 NutraBlue
               </span>
               <span className="text-lg text-emerald-500 font-bold">🌿</span>
@@ -325,7 +323,7 @@ const ProductDetailPage = () => {
             {/* Right Logo */}
             <div className="flex items-center space-x-2 shrink-0 z-10 select-none">
               <span className="text-lg text-emerald-500 font-bold">🌿</span>
-              <span className="text-2xl font-semibold text-primary" style={{ fontFamily: 'Impact, sans-serif' }}>
+              <span className="text-2xl font-display text-primary">
                 NutraBlue
               </span>
             </div>
@@ -334,7 +332,7 @@ const ProductDetailPage = () => {
           {/* --- SECCIÓN: EL ALMA DEL PRODUCTO --- */}
           <div className="pt-8 pb-16 px-6 md:px-12 rounded-3xl bg-slate-50 border border-border/30 didactic-bg mb-12">
             <div className="text-center mb-12">
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground" style={{ fontFamily: 'Impact, sans-serif' }}>
+              <h2 className="text-2xl md:text-3xl font-display text-foreground">
                 El Alma del Producto
               </h2>
               <div className="w-16 h-0.5 bg-primary mx-auto mt-3 rounded-full"></div>
@@ -416,7 +414,7 @@ const ProductDetailPage = () => {
 
               {/* Right Column (4 columns): El Match Perfecto (Cross-selling) */}
               <div className="lg:col-span-4 bg-card/60 border border-border/40 p-6 rounded-2xl shadow-sm">
-                <h3 className="text-lg font-bold text-foreground mb-1" style={{ fontFamily: 'Impact, sans-serif' }}>El Match Perfecto</h3>
+                <h3 className="text-lg font-bold text-foreground mb-1">El Match Perfecto</h3>
                 <p className="text-xs text-muted-foreground mb-6">Completa tu rutina natural</p>
                 
                 <div className="space-y-4">
@@ -446,8 +444,7 @@ const ProductDetailPage = () => {
           {relatedProducts.length > 0 && (
             <div className="border-t border-border/40 pt-12">
               <h2
-                className="text-2xl md:text-3xl font-bold text-foreground mb-8"
-                style={{ fontFamily: 'Impact, sans-serif' }}
+                className="text-2xl md:text-3xl font-display text-foreground mb-8"
               >
                 Productos Relacionados
               </h2>

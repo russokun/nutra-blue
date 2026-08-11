@@ -66,6 +66,10 @@ class MercadoPagoPayment(PaymentGateway):
             })
             breakdown += quantity * unit_price
 
+        # Ya no se cobra despacho (pricing.calculate_shipping devuelve 0), pero esta rama
+        # sigue haciendo falta: las ordenes creadas antes del cambio que quedaron pendientes
+        # y se pagan despues si traen shipping_cost persistido. Sin ella el desglose no
+        # cuadraria con el total y la preferencia caeria a la linea unica de mas abajo.
         shipping_cost = int(order.get("shipping_cost", 0) or 0)
         if shipping_cost > 0:
             items.append({
@@ -146,6 +150,15 @@ class MercadoPagoPayment(PaymentGateway):
         """
         secret = settings.mercadopago_webhook_secret
         if not secret:
+            # Sin secreto no hay forma de saber que la notificacion viene de Mercado
+            # Pago. Fuera de produccion se deja pasar para poder probar con un tunel,
+            # pero en produccion tiene que estar configurado si o si: el endpoint es
+            # publico y marca ordenes como pagadas.
+            if settings.is_production:
+                raise ValueError(
+                    "MERCADOPAGO_WEBHOOK_SECRET no esta configurado: el webhook no se "
+                    "puede verificar en produccion"
+                )
             return
 
         signature = self._header(headers, "x-signature")
@@ -224,6 +237,9 @@ class MercadoPagoPayment(PaymentGateway):
             "provider": "mercadopago",
             "payment_id": str(payment_id),
             "status_detail": payment.get("status_detail"),
+            # Lo que Mercado Pago dice que se cobro realmente. El router lo compara
+            # contra el total de la orden antes de marcarla como pagada.
+            "amount": payment.get("transaction_amount"),
             # live_mode=False son los pagos hechos con credenciales de prueba.
             "is_test": payment.get("live_mode") is False,
         }

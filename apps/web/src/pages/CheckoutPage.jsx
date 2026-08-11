@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Truck } from 'lucide-react';
 import { toast } from 'sonner';
 
 const CheckoutPage = () => {
@@ -98,13 +99,6 @@ const CheckoutPage = () => {
     'Magallanes'
   ];
 
-  const calculateShipping = (region) => {
-    if (region === 'Metropolitana') return 5000;
-    if (region === 'Valparaíso') return 7000;
-    if (region === 'Bío-Bío') return 8000;
-    return 10000;
-  };
-
   const formatPrice = (price) => {
     return new Intl.NumberFormat('es-CL', {
       style: 'currency',
@@ -118,7 +112,10 @@ const CheckoutPage = () => {
   const cartTotalAmountAfterDiscount = cartTotalAmount - discountAmount;
   const tax = Math.round(cartTotalAmountAfterDiscount - (cartTotalAmountAfterDiscount / 1.19)); // 19% IVA incluido
   const subtotal = cartTotalAmountAfterDiscount - tax;
-  const shippingCost = (formData.region && cartTotalAmountAfterDiscount < 50000) ? calculateShipping(formData.region) : 0;
+  // NutraBlue asume el despacho, asi que la tienda nunca lo cobra. La variable se mantiene
+  // porque la orden sigue enviando shipping_cost (la columna es NOT NULL) y porque el
+  // backend, que es el que manda en los totales, tambien lo calcula en cero.
+  const shippingCost = 0;
   const total = cartTotalAmountAfterDiscount + shippingCost;
 
   const handleInputChange = (e) => {
@@ -274,8 +271,7 @@ const CheckoutPage = () => {
       <main className="min-h-screen bg-background py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1
-            className="text-3xl md:text-4xl font-bold text-foreground mb-8"
-            style={{ fontFamily: 'Impact, sans-serif', letterSpacing: '-0.02em' }}
+            className="text-3xl md:text-4xl font-display text-foreground mb-8"
           >
             Checkout
           </h1>
@@ -446,7 +442,7 @@ const CheckoutPage = () => {
                       </Select>
                       {errors.courier && <p className="text-sm text-destructive mt-1">{errors.courier}</p>}
                       <p className="text-[11px] text-muted-foreground mt-2">
-                        Te avisamos por correo cuando el pedido esté disponible para retirar.
+                        Te enviaremos a tu correo los detalles del envío y de tu compra.
                       </p>
                     </div>
                   )}
@@ -550,10 +546,14 @@ const CheckoutPage = () => {
                       <span>IVA (19%)</span>
                       <span className="font-medium">{formatPrice(tax)}</span>
                     </div>
-                    <div className="flex justify-between text-card-foreground">
-                      <span>Envío</span>
-                      <span className="font-medium">
-                        {formData.region ? formatPrice(shippingCost) : 'Selecciona región'}
+                    {/* Envio: NutraBlue asume el costo, asi que esta fila no muestra monto.
+                        Va centrada y a lo ancho para que se lea como beneficio y no como un
+                        precio pendiente de calcular, que era lo que pasaba antes cuando en la
+                        columna del monto aparecia "Selecciona region". */}
+                    <div className="flex items-center justify-center gap-2 rounded-lg border border-dashed border-emerald-300 bg-emerald-50 px-3 py-2.5">
+                      <Truck className="h-4 w-4 text-emerald-700 shrink-0" aria-hidden="true" />
+                      <span className="text-sm font-bold uppercase tracking-wide text-emerald-700">
+                        Envío sin costo
                       </span>
                     </div>
                     <div className="border-t border-border pt-3">

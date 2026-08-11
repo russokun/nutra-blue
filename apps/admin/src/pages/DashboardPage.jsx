@@ -70,7 +70,7 @@ const DashboardPage = () => {
   // Form States
   const [quickAddForm, setQuickAddForm] = useState({ name: '', price: '', stock: '', category: 'Longevidad' });
   const [couponForm, setCouponForm] = useState({ code: '', discount: '15', expiry: '' });
-  const [trackingForm, setTrackingForm] = useState({ orderId: '', trackingCode: '' });
+  const [trackingForm, setTrackingForm] = useState({ orderId: '', trackingCode: '', shippingCompany: 'starken' });
   const isSyncStale = () => {
     if (!metrics.last_sync) return true;
     try {
@@ -186,13 +186,18 @@ const DashboardPage = () => {
   };
 
   // Quick Action: Scan Tracking
+  // Antes esto solo hacia PATCH del estado a 'shipped' y usaba el codigo de tracking
+  // en el texto del toast, o sea: lo tiraba. Ahora se guarda y se le avisa al cliente.
   const handleScanTracking = async (e) => {
     e.preventDefault();
     try {
-      await adminClient.updateOrderStatus(trackingForm.orderId, 'shipped');
-      toast.success(`Pedido ${trackingForm.orderId.slice(0, 8)} marcado como Enviado (Tracking: ${trackingForm.trackingCode})`);
+      await adminClient.shipOrder(trackingForm.orderId, {
+        tracking_code: trackingForm.trackingCode,
+        shipping_company: trackingForm.shippingCompany,
+      });
+      toast.success(`Pedido ${trackingForm.orderId.slice(0, 8)} despachado. Se le avisó al cliente por correo.`);
       setModalTracking(false);
-      setTrackingForm({ orderId: '', trackingCode: '' });
+      setTrackingForm({ orderId: '', trackingCode: '', shippingCompany: 'starken' });
       fetchData();
     } catch (err) {
       toast.error(err.message || 'ID de orden no encontrado o inválido');
@@ -607,6 +612,21 @@ const DashboardPage = () => {
                   />
                 </div>
               </div>
+              <div>
+                <Label>Empresa de Transporte</Label>
+                <select
+                  value={trackingForm.shippingCompany}
+                  onChange={(e) => setTrackingForm({ ...trackingForm, shippingCompany: e.target.value })}
+                  className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="blue_express">Blue Express</option>
+                  <option value="starken">Starken</option>
+                  <option value="pullman">Pullman</option>
+                </select>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Al registrar el envío se le manda al cliente un correo con el código de seguimiento.
+              </p>
               <div className="flex gap-3 pt-2">
                 <Button type="button" variant="outline" onClick={() => setModalTracking(false)} className="flex-1 rounded-xl">Cancelar</Button>
                 <Button type="submit" className="flex-1 rounded-xl">Registrar Envío</Button>
