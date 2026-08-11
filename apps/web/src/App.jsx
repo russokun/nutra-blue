@@ -4,6 +4,7 @@ import { CartProvider } from '@/contexts/CartContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Toaster } from '@/components/ui/sonner';
 import ScrollToTop from '@/components/ScrollToTop';
+import TestModeBanner from '@/components/TestModeBanner';
 
 import HomePage from '@/pages/HomePage';
 import ShopPage from '@/pages/ShopPage';
@@ -40,6 +41,7 @@ function App() {
     <Router>
       <AuthProvider>
         <CartProvider>
+          <TestModeBanner />
           <ScrollToTop />
           <Routes>
             <Route path="/" element={<HomePage />} />

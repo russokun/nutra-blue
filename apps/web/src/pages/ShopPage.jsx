@@ -14,6 +14,7 @@ import { useCart } from '@/hooks/useCart';
 import { toast } from 'sonner';
 import apiServerClient from '@/lib/apiServerClient';
 import ProductTags from '@/components/common/ProductTags';
+import { modoPruebaActivo } from '@/lib/testMode';
 
 const ShopPage = () => {
   const navigate = useNavigate();
@@ -73,7 +74,10 @@ const ShopPage = () => {
       setError(null);
       const records = await dataClient.collection('products').getFullList({
         sort: 'name',
-        $autoCancel: false
+        $autoCancel: false,
+        // En modo prueba el catálogo suma los productos ocultos, para poder recorrer la
+        // experiencia completa con precios bajos sin exponerlos a los clientes.
+        includeHidden: modoPruebaActivo(),
       });
       setProducts(records);
     } catch (err) {
@@ -361,6 +365,14 @@ const ShopPage = () => {
                               className="h-full w-auto object-contain group-hover:scale-103 transition-all duration-300 drop-shadow-md"
                             />
                             <ProductTags product={product} variant="overlay" />
+                            {/* Solo se ve en modo prueba, porque el catálogo normal no
+                                trae ocultos. Que nadie confunda un producto de prueba con
+                                uno real. */}
+                            {product.is_hidden && (
+                              <span className="absolute top-3 right-3 z-10 rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-950">
+                                Prueba
+                              </span>
+                            )}
                           </div>
                           <div className="p-4 pb-2">
                             <ProductTags product={product} variant="meta" className="mb-1" />

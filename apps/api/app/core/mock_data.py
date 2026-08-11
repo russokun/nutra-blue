@@ -114,5 +114,18 @@ MOCK_PRODUCTS = [
         "image_url": "https://horizons-cdn.hostinger.com/b35461a0-e424-4767-bd53-3b70fb21c1bf/3cb4a678b3b042b7aecd3e65c1b99551.jpg",
         "benefits": ["Antioxidantes potentes", "Polifenoles", "Superfruta"],
         "certifications": ["Orgánico", "Liofilizado"]
+    },
+    {
+        # Producto oculto de ejemplo, para poder probar el modo prueba en desarrollo sin
+        # tener que crear uno a mano. En produccion el de verdad se crea desde el panel.
+        "id": "producto-de-prueba",
+        "name": "Producto de Prueba",
+        "price": 1000,
+        "stock": 5,
+        "category": "Alimentación Diaria",
+        "is_hidden": True,
+        "image_url": "/logo.png",
+        "benefits": ["Solo para probar el flujo de compra"],
+        "certifications": []
     }
 ]
