@@ -26,13 +26,17 @@ class MockPayment(PaymentGateway):
             "token": params.get("token")
         }
 
+class UnknownGatewayError(ValueError):
+    """La pasarela pedida no existe, o no se puede usar en este entorno."""
+
+
 class PaymentGatewayFactory:
     @staticmethod
     def get_gateway(provider: str = None) -> PaymentGateway:
         if not provider:
             provider = settings.payment_provider
-        provider = provider.lower().strip()
-        
+        provider = (provider or "").lower().strip()
+
         if provider in ("flow", "flowpay"):
             from app.core.payments.flow import FlowPayment
             return FlowPayment()
@@ -42,5 +46,14 @@ class PaymentGatewayFactory:
         elif provider in ("transbank", "webpay", "tbk"):
             from app.core.payments.transbank import TransbankPayment
             return TransbankPayment()
-        else:
+        elif provider == "mock":
+            # La pasarela simulada redirige derecho a /order-confirmation sin cobrar
+            # nada. En produccion eso es una pantalla de "compra exitosa" gratis.
+            if settings.is_production:
+                raise UnknownGatewayError("La pasarela de prueba no se puede usar en producción")
             return MockPayment()
+
+        # Antes cualquier valor desconocido caia aca y devolvia MockPayment. Como el
+        # `gateway` viene en el cuerpo del request, un cliente que mandara
+        # {"gateway": "cualquier-cosa"} veia la pantalla de confirmacion sin pagar.
+        raise UnknownGatewayError(f"Pasarela de pago desconocida: {provider!r}")

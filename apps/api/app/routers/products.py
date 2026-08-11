@@ -7,6 +7,11 @@ from app.models.products import Product, ProductPublic
 from app.core.mock_data import MOCK_PRODUCTS
 from app.core.taxonomy import apply_taxonomy
 
+
+def _visible(p: dict) -> bool:
+    """Fuera del catálogo: la fila interna del sync y los productos ocultos."""
+    return p.get("name") != "__SYSTEM_SYNC_LOG__" and not p.get("is_hidden")
+
 class HeroProductResponse(BaseModel):
     id: str
     name: str
@@ -24,32 +29,34 @@ router = APIRouter(prefix="/products", tags=["Products"])
 @router.get("", response_model=List[ProductPublic])
 async def get_products():
     if supabase_client is None:
-        return [apply_taxonomy(dict(p)) for p in MOCK_PRODUCTS if p.get("name") != "__SYSTEM_SYNC_LOG__"]
+        return [apply_taxonomy(dict(p)) for p in MOCK_PRODUCTS if _visible(p)]
 
     try:
         response = supabase_client.from_("products").select("*").neq("name", "__SYSTEM_SYNC_LOG__").order("name").execute()
         products = []
         for p in response.data or []:
+            if not _visible(p):
+                continue
             p["image_url"] = p.get("image_url") or "/logo.png"
             products.append(apply_taxonomy(p))
         return products
     except Exception as e:
         # Fallback to mock data if supabase fails
         print(f"Supabase error: {str(e)}. Falling back to mock data.")
-        return [apply_taxonomy(dict(p)) for p in MOCK_PRODUCTS if p.get("name") != "__SYSTEM_SYNC_LOG__"]
+        return [apply_taxonomy(dict(p)) for p in MOCK_PRODUCTS if _visible(p)]
 
 @router.get("/hero-carousel", response_model=List[HeroProductResponse])
 async def get_hero_carousel():
     products_list = []
     if supabase_client is None:
-        products_list = [p for p in MOCK_PRODUCTS if p.get("name") != "__SYSTEM_SYNC_LOG__"]
+        products_list = [p for p in MOCK_PRODUCTS if _visible(p)]
     else:
         try:
             response = supabase_client.from_("products").select("*").neq("name", "__SYSTEM_SYNC_LOG__").execute()
-            products_list = response.data or []
+            products_list = [p for p in (response.data or []) if _visible(p)]
         except Exception as e:
             print(f"Supabase error fetching hero products: {str(e)}")
-            products_list = [p for p in MOCK_PRODUCTS if p.get("name") != "__SYSTEM_SYNC_LOG__"]
+            products_list = [p for p in MOCK_PRODUCTS if _visible(p)]
 
     curated_keys = ["melena", "cordyceps", "ajo negro", "matcha", "calm", "cacao", "spirulina"]
     featured = []
@@ -132,15 +139,17 @@ async def get_product(product_id: str):
 @router.get("/category/{category}", response_model=List[ProductPublic])
 async def get_products_by_category(category: str):
     if supabase_client is None:
-        return [apply_taxonomy(dict(p)) for p in MOCK_PRODUCTS if p["category"] == category]
+        return [apply_taxonomy(dict(p)) for p in MOCK_PRODUCTS if p["category"] == category and _visible(p)]
 
     try:
         response = supabase_client.from_("products").select("*").eq("category", category).neq("name", "__SYSTEM_SYNC_LOG__").order("name").execute()
         products = []
         for p in response.data or []:
+            if not _visible(p):
+                continue
             p["image_url"] = p.get("image_url") or "/logo.png"
             products.append(apply_taxonomy(p))
         return products
     except Exception as e:
         print(f"Supabase error: {str(e)}. Falling back to mock data.")
-        return [apply_taxonomy(dict(p)) for p in MOCK_PRODUCTS if p["category"] == category]
+        return [apply_taxonomy(dict(p)) for p in MOCK_PRODUCTS if p["category"] == category and _visible(p)]
