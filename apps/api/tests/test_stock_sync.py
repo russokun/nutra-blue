@@ -406,7 +406,11 @@ def test_el_borrado_no_toca_la_fila_interna_del_sync():
 # --------------------------------------------------------------- taxonomia
 
 
-def test_la_planilla_manda_en_beneficio_y_tipo():
+def test_la_columna_de_la_planilla_es_un_override_manual():
+    """
+    La taxonomia sale normalmente de la ficha de Google Docs, pero si alguien agrega
+    columnas Beneficio y Tipo a la planilla, esas mandan.
+    """
     MOCK_PRODUCTS.clear()
     run_sync(build_csv_con_taxonomia(beneficio="Foco y Calma", tipo="Gotas"))
 
@@ -430,17 +434,18 @@ def test_agregar_columnas_al_final_no_corre_precio_ni_stock():
     assert producto["category"] == "Estimulación Cerebral"
 
 
-def test_avisa_cuando_la_planilla_no_trae_las_columnas():
-    """Sin columnas no se adivina la posicion: se avisa y se deriva de la categoria."""
+def test_sin_columnas_ni_ficha_no_avisa_nada():
+    """
+    Que la planilla no traiga columnas de taxonomia es el estado normal: los datos vienen
+    de la ficha. No tiene que ensuciar el reporte con avisos en cada corrida.
+    """
     MOCK_PRODUCTS.clear()
     summary = run_sync(build_csv("10"))
 
-    assert any(
-        "Beneficio" in w["error"] and "Tipo" in w["error"] for w in summary["warnings"]
-    ), summary["warnings"]
+    assert not any("columna(s)" in w["error"] for w in summary["warnings"]), summary["warnings"]
 
 
-def test_sin_columnas_no_se_borra_lo_cargado_a_mano():
+def test_sin_valor_nuevo_no_se_borra_lo_cargado_a_mano():
     """
     Sin esta proteccion, cada sync dejaria en NULL la taxonomia que el cliente cargo
     desde el panel admin.
@@ -465,3 +470,84 @@ def test_una_columna_vacia_no_queda_como_string_vacio():
     producto = find_product("Melena de Leon Gotas")
     assert producto["benefit"] is None
     assert producto["product_type"] is None
+
+
+# ------------------------------------------------ taxonomia desde la ficha de Google Docs
+
+
+def build_csv_con_doc(doc_url: str = "https://docs.google.com/document/d/abc123/edit") -> str:
+    return (
+        "Lista de Suplementos y Alimentos,,,,,,,,\n"
+        "Categoría / Objetivo,Suplemento / Alimento,Productor,Contacto,$ Compra,$ Venta,,Inventario,Link Doc\n"
+        ",,,,,,Comentario,,\n"
+        f"Estimulación Cerebral,Melena de Leon Gotas,ONGO,ongo.cl,\"$11,700\",\"$19,990\",,10,{doc_url}\n"
+    )
+
+
+def run_sync_con_ficha(secciones: dict, csv_text: str = None):
+    """Corre el sync simulando la ficha de Google Docs que devolveria el parser."""
+    ficha = {
+        "description": "", "origin": "", "cross_selling": "", "product_profile": "",
+        "ingredients": "", "usage": "", "precautions": "", "extracted_benefits": [],
+        **secciones,
+    }
+    with patch("app.services.doc_parser.parse_google_doc", return_value=ficha):
+        return run_sync(csv_text or build_csv_con_doc())
+
+
+def test_el_beneficio_sale_de_la_ficha_normalizado():
+    """
+    La ficha escribe con sus palabras ("Reduce la niebla mental"). Se lleva al vocabulario
+    canonico para que sirva como etiqueta Y como filtro del catalogo.
+    """
+    MOCK_PRODUCTS.clear()
+    run_sync_con_ficha({
+        "extracted_benefits": ["Reduce la niebla mental", "Mejora la memoria"],
+    })
+
+    assert find_product("Melena de Leon Gotas")["benefit"] == "Foco y Calma"
+
+
+def test_el_tipo_sale_de_la_descripcion_de_la_ficha():
+    MOCK_PRODUCTS.clear()
+    run_sync_con_ficha({
+        "description": "Extracto liquido en gotas, de uso diario bajo la lengua.",
+    })
+
+    assert find_product("Melena de Leon Gotas")["product_type"] == "Gotas"
+
+
+def test_fichas_distintas_dan_beneficios_distintos():
+    """El bug original era que todas las tarjetas mostraban la misma etiqueta."""
+    resultados = []
+    for vinetas in (
+        ["Aporta energía sostenida durante el día"],
+        ["Ayuda a conciliar el sueño"],
+        ["Apoya tus defensas"],
+    ):
+        MOCK_PRODUCTS.clear()
+        run_sync_con_ficha({"extracted_benefits": vinetas})
+        resultados.append(find_product("Melena de Leon Gotas")["benefit"])
+
+    assert resultados == ["Energía Natural", "Descanso y Longevidad", "Nutrición Diaria"]
+
+
+def test_si_la_ficha_no_calza_avisa_y_deja_derivar():
+    """No se muestra una frase suelta como etiqueta: se avisa y cae a la derivacion."""
+    MOCK_PRODUCTS.clear()
+    summary = run_sync_con_ficha({"extracted_benefits": ["Producto de origen chileno"]})
+
+    assert find_product("Melena de Leon Gotas")["benefit"] is None
+    assert any("No se reconoció el beneficio" in w["error"] for w in summary["warnings"])
+
+
+def test_la_planilla_le_gana_a_la_ficha():
+    MOCK_PRODUCTS.clear()
+    run_sync_con_ficha(
+        {"extracted_benefits": ["Aporta energía sostenida"]},
+        csv_text=build_csv_con_taxonomia(beneficio="Manejo del Estrés", tipo="Cápsulas"),
+    )
+
+    producto = find_product("Melena de Leon Gotas")
+    assert producto["benefit"] == "Manejo del Estrés"
+    assert producto["product_type"] == "Cápsulas"

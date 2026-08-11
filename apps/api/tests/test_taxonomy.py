@@ -11,10 +11,14 @@ from fastapi.testclient import TestClient
 
 from main import app
 from app.core.taxonomy import (
+    CANONICAL_BENEFITS,
+    CANONICAL_PRODUCT_TYPES,
     DEFAULT_BENEFIT,
     apply_taxonomy,
     derive_benefit,
     derive_product_type,
+    normalize_benefit,
+    normalize_product_type,
 )
 
 client = TestClient(app)
@@ -83,6 +87,67 @@ def test_apply_taxonomy_rellena_lo_vacio():
                                     "benefit": vacio, "product_type": vacio})
         assert resultado["benefit"] == "Energía Natural"
         assert resultado["product_type"] == "Polvo"
+
+
+# --------------------------------- normalizacion del texto libre de la ficha de Google Docs
+
+
+@pytest.mark.parametrize(
+    "texto,esperado",
+    [
+        ("Reduce la niebla mental", "Foco y Calma"),
+        ("Mejora la concentración durante el día", "Foco y Calma"),
+        ("Aporta energía sostenida sin bajones", "Energía Natural"),
+        ("Ayuda a conciliar el sueño", "Descanso y Longevidad"),
+        ("Rico en antioxidantes y polifenoles", "Descanso y Longevidad"),
+        ("Adaptógeno que ayuda a regular el cortisol", "Manejo del Estrés"),
+        ("Apoya tus defensas naturales", "Nutrición Diaria"),
+        ("Fuente de proteína completa", "Nutrición Diaria"),
+    ],
+)
+def test_normaliza_el_beneficio_del_texto_de_la_ficha(texto, esperado):
+    assert normalize_benefit(texto) == esperado
+
+
+@pytest.mark.parametrize(
+    "texto,esperado",
+    [
+        ("Extracto líquido en gotas para uso sublingual", "Gotas"),
+        ("Presentación en polvo para batidos", "Polvo"),
+        ("Aceite de primera prensada en frío", "Aceite"),
+        ("Hierba para infusión caliente", "Infusión"),
+        ("Viene en cápsulas vegetales", "Cápsulas"),
+        ("Pack de tres productos complementarios", "Pack"),
+        ("Frutos secos listos para comer", "Alimento"),
+    ],
+)
+def test_normaliza_el_tipo_del_texto_de_la_ficha(texto, esperado):
+    assert normalize_product_type(texto) == esperado
+
+
+def test_lo_que_no_calza_devuelve_none():
+    """
+    None es la senal de "no lo reconoci": quien llama tiene que caer a la derivacion en
+    vez de mostrar una frase suelta como etiqueta.
+    """
+    assert normalize_benefit("Producto de origen chileno") is None
+    assert normalize_product_type("Elaborado por productores locales") is None
+    assert normalize_benefit("") is None
+    assert normalize_product_type("") is None
+
+
+def test_un_valor_ya_canonico_pasa_tal_cual():
+    for valor in CANONICAL_BENEFITS:
+        assert normalize_benefit(valor) == valor
+    for valor in CANONICAL_PRODUCT_TYPES:
+        assert normalize_product_type(valor) == valor
+
+
+def test_la_derivacion_por_categoria_solo_usa_valores_canonicos():
+    """Sin esto, los filtros del catalogo mezclarian dos vocabularios distintos."""
+    for categoria in CATEGORIAS_REALES:
+        assert derive_benefit(categoria) in CANONICAL_BENEFITS
+        assert derive_product_type("Producto Cualquiera", categoria) in CANONICAL_PRODUCT_TYPES
 
 
 def test_el_catalogo_expone_la_taxonomia():

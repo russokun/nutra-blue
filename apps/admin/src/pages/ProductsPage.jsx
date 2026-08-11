@@ -398,8 +398,8 @@ const ProductsPage = () => {
                 </div>
               </div>
               <p className="-mt-2 text-xs text-muted-foreground">
-                Si la planilla trae columnas «Beneficio» y «Tipo», el sync las sobrescribe.
-                En blanco, la tienda los deriva de la categoría.
+                Normalmente salen de la ficha de Google Docs del producto. Lo que cargues
+                acá se conserva mientras la ficha no aporte un valor reconocible.
               </p>
               <div className="rounded-lg border border-border bg-muted/30 p-3">
                 <label className="flex items-start gap-2.5 cursor-pointer">
