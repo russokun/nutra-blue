@@ -200,6 +200,101 @@ def test_una_vineta_secundaria_no_le_gana_a_la_principal():
     assert normalize_benefit_from_bullets(MELENA_VINETAS) == "Foco y Calma"
 
 
+# Las cuatro fichas reales que revisamos. Se guardan los titulos de las viñetas, que es
+# la señal que usa la normalizacion, en el orden en que aparecen en cada documento.
+TITULOS_POR_FICHA = {
+    "Melena de León": [
+        "Regeneración Neuronal y Neuroplasticidad",
+        "Nootrópico Natural de Alto Rendimiento",
+        "Apoyo al Eje Intestino-Cerebro",
+        "Manejo de Ansiedad y Depresión Leve",
+    ],
+    "Ajo Negro": [
+        "Escudo Cardiovascular Absoluto",
+        "Densidad Antioxidante Duplicada",
+        "Refuerzo Inmunológico Inmediato",
+        "Prebiótico de Alta Calidad sin Mal Aliento",
+    ],
+    "Maca": [
+        "Energía y Resistencia Sostenida (Sin Cafeína)",
+        "Maestría Hormonal y Menopausia",
+        "Salud Reproductiva y Libido",
+        "Densidad Ósea y Claridad Mental",
+    ],
+    "Superfrutos": [
+        "Máximo Poder Antioxidante y Antienvejecimiento",
+        "Salud Metabólica y Control de Peso",
+        "Escudo Ocular y Neuroprotección",
+        "Identidad Chilena y Vitalidad",
+    ],
+}
+
+
+@pytest.mark.parametrize(
+    "producto,esperado",
+    [
+        ("Melena de León", "Foco y Calma"),
+        ("Ajo Negro", "Nutrición Diaria"),
+        ("Maca", "Energía Natural"),
+        ("Superfrutos", "Descanso y Longevidad"),
+    ],
+)
+def test_las_cuatro_fichas_reales_dan_el_beneficio_correcto(producto, esperado):
+    assert normalize_benefit_from_bullets(TITULOS_POR_FICHA[producto]) == esperado
+
+
+def test_las_cuatro_fichas_reales_dan_beneficios_distintos():
+    """Lo que reportó el cliente era justamente que todas decían lo mismo."""
+    resultados = [normalize_benefit_from_bullets(v) for v in TITULOS_POR_FICHA.values()]
+    assert len(set(resultados)) == len(resultados), resultados
+
+
+@pytest.mark.parametrize(
+    "titulo,cuerpo,esperado",
+    [
+        # Maca: el cuerpo habla de adaptógeno y de fatiga suprarrenal.
+        (
+            "Energía y Resistencia Sostenida (Sin Cafeína)",
+            "Actúa como un tónico natural adaptógeno que combate la fatiga suprarrenal.",
+            "Energía Natural",
+        ),
+        # Ajo Negro: el cuerpo menciona estrés oxidativo, que es antioxidantes.
+        (
+            "Densidad Antioxidante Duplicada",
+            "El proceso de fermentación oscura duplica su capacidad de combatir el "
+            "estrés oxidativo de las células.",
+            "Descanso y Longevidad",
+        ),
+    ],
+)
+def test_el_titulo_de_la_vineta_le_gana_al_cuerpo(titulo, cuerpo, esperado):
+    """
+    El título es lo que quiso decir quien redactó la ficha; el cuerpo es prosa que toca
+    muchos temas. Mirar el cuerpo primero etiquetaba ambos casos como "Manejo del Estrés".
+    """
+    assert normalize_benefit_from_bullets([f"{titulo}: {cuerpo}"]) == esperado
+
+
+def test_el_nombre_del_producto_le_gana_a_la_ficha_para_el_tipo():
+    """
+    La ficha de Maca describe la materia prima ("Raíz tuberosa andina clasificada como
+    superalimento"), pero el SKU que se vende es "Maca en Polvo". Manda el nombre.
+    """
+    ficha_maca = "Raíz tuberosa andina clasificada como superalimento y adaptógeno."
+    assert normalize_product_type(ficha_maca) == "Alimento"
+    assert normalize_product_type("Maca en Polvo") == "Polvo"
+
+
+def test_la_ficha_resuelve_el_tipo_cuando_el_nombre_no_dice_nada():
+    """"Ajo Chilote Negro" no nombra un formato; su ficha habla del bulbo."""
+    assert normalize_product_type("Ajo Chilote Negro") is None
+    ficha_ajo = (
+        "Ajo elefante chilote en estado de maduración profunda. Se somete a un largo "
+        "proceso de fermentación natural que oscurece el bulbo."
+    )
+    assert normalize_product_type(ficha_ajo) == "Alimento"
+
+
 def test_las_vinetas_que_no_se_reconocen_se_saltan():
     """Se sigue buscando en las siguientes en vez de rendirse en la primera."""
     vinetas = ["Producto de origen chileno", "Certificado orgánico", "Aporta energía sostenida"]

@@ -463,13 +463,19 @@ def test_sin_valor_nuevo_no_se_borra_lo_cargado_a_mano():
 
 
 def test_una_columna_vacia_no_queda_como_string_vacio():
-    """Vacio tiene que ser None, para que el backend sepa que debe derivarlo."""
+    """
+    Vacio tiene que ser None, para que el backend sepa que debe derivarlo al leer, y
+    nunca "" (que seria un valor y se mostraria como etiqueta en blanco).
+
+    El tipo si queda resuelto: el producto se llama "Melena de Leon Gotas" y el nombre
+    es la primera fuente del formato, antes que la ficha.
+    """
     MOCK_PRODUCTS.clear()
     run_sync(build_csv_con_taxonomia(beneficio="", tipo=""))
 
     producto = find_product("Melena de Leon Gotas")
     assert producto["benefit"] is None
-    assert producto["product_type"] is None
+    assert producto["product_type"] == "Gotas"
 
 
 # ------------------------------------------------ taxonomia desde la ficha de Google Docs

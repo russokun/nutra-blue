@@ -93,6 +93,11 @@ _TYPE_BY_CATEGORY_KEYWORD = (
 # "reduce la niebla mental", "ayuda a conciliar el sueño", "apoya tus defensas".
 # El orden importa: gana la primera coincidencia, asi que lo mas especifico va primero.
 _BENEFIT_FROM_TEXT = (
+    # "estres oxidativo" va ANTES que "estres": es antioxidantes, no manejo del estres.
+    # La ficha de Ajo Negro lo dice en "Densidad Antioxidante Duplicada".
+    ("estres oxidativo", "Descanso y Longevidad"),
+    ("antioxid", "Descanso y Longevidad"),
+    ("antienvejec", "Descanso y Longevidad"),
     ("estres", "Manejo del Estrés"),
     ("cortisol", "Manejo del Estrés"),
     ("ansiedad", "Manejo del Estrés"),
@@ -118,7 +123,6 @@ _BENEFIT_FROM_TEXT = (
     ("sueno", "Descanso y Longevidad"),
     ("dormir", "Descanso y Longevidad"),
     ("longev", "Descanso y Longevidad"),
-    ("antioxid", "Descanso y Longevidad"),
     ("envejec", "Descanso y Longevidad"),
     ("polifenol", "Descanso y Longevidad"),
     ("energ", "Energía Natural"),
@@ -128,6 +132,8 @@ _BENEFIT_FROM_TEXT = (
     ("defensa", "Nutrición Diaria"),
     ("inmun", "Nutrición Diaria"),
     ("digest", "Nutrición Diaria"),
+    ("prebiotic", "Nutrición Diaria"),
+    ("probiotic", "Nutrición Diaria"),
     ("corazon", "Nutrición Diaria"),
     ("cardio", "Nutrición Diaria"),
     ("proteina", "Nutrición Diaria"),
@@ -149,6 +155,9 @@ _TYPE_FROM_TEXT = (
     ("capsul", "Cápsulas"),
     ("comprimido", "Cápsulas"),
     ("tableta", "Cápsulas"),
+    # Liofilizado: la ficha de Superfrutos describe el proceso, y en el catalogo esos
+    # productos se venden molidos.
+    ("liofiliz", "Polvo"),
     ("pack", "Pack"),
     ("combo", "Pack"),
     ("mix", "Pack"),
@@ -157,6 +166,8 @@ _TYPE_FROM_TEXT = (
     ("fruto seco", "Alimento"),
     ("frutos secos", "Alimento"),
     ("semilla", "Alimento"),
+    # El Ajo Negro se describe por su bulbo, sin nombrar un formato.
+    ("bulbo", "Alimento"),
     ("snack", "Alimento"),
     ("alimento", "Alimento"),
     ("suplemento", "Suplemento"),
@@ -185,24 +196,44 @@ def normalize_benefit(texto: str) -> Optional[str]:
     return _match(texto, _BENEFIT_FROM_TEXT)
 
 
+def _titulo_de_vineta(vineta: str) -> str:
+    """
+    Las fichas escriben cada beneficio como "Titulo en negrita: cuerpo explicativo".
+    El titulo es la etiqueta que quiso poner quien redacto; el cuerpo es prosa.
+    """
+    return vineta.split(":", 1)[0] if ":" in vineta else vineta
+
+
 def normalize_benefit_from_bullets(vinetas) -> Optional[str]:
     """
     Elige el beneficio principal de la lista de vinetas de la ficha.
 
-    Se evalua vineta por vineta EN ORDEN y gana la primera que se reconoce, en vez de
-    unir todo el texto y buscar. La diferencia no es cosmetica: en la ficha real de
-    Melena de Leon, uniendo todo gana "ansiedad" (que aparece en la cuarta vineta,
-    "Manejo de Ansiedad y Depresion Leve") y el producto quedaba etiquetado como "Manejo
-    del Estres", cuando es un nootropico. Vineta por vineta gana la segunda,
-    "Nootropico Natural de Alto Rendimiento", y queda como "Foco y Calma".
+    Dos pasadas, y en ambas gana la primera vineta reconocida, porque las fichas las
+    ordenan por importancia:
 
-    Las fichas ordenan las vinetas por importancia, asi que la primera reconocible es el
-    beneficio principal.
+      1. Solo los TITULOS. Son concisos y curados ("Energía y Resistencia Sostenida",
+         "Escudo Cardiovascular Absoluto"), asi que dan una senal limpia.
+      2. Si ningun titulo se reconoce, el texto completo de cada vineta.
+
+    Mirar el cuerpo primero da resultados equivocados, verificado contra las fichas
+    reales: el cuerpo de "Energía y Resistencia Sostenida" (Maca) menciona *adaptogeno*
+    y el producto quedaba como "Manejo del Estres" en vez de "Energía Natural"; el de
+    "Densidad Antioxidante Duplicada" (Ajo Negro) menciona *estres oxidativo* y pasaba
+    lo mismo. Y unir todas las vinetas en un solo texto era peor todavia: en Melena de
+    Leon ganaba "ansiedad", que aparece recien en la cuarta.
     """
-    for vineta in vinetas or []:
+    vinetas = list(vinetas or [])
+
+    for vineta in vinetas:
+        encontrado = normalize_benefit(_titulo_de_vineta(vineta))
+        if encontrado:
+            return encontrado
+
+    for vineta in vinetas:
         encontrado = normalize_benefit(vineta)
         if encontrado:
             return encontrado
+
     return None
 
 
