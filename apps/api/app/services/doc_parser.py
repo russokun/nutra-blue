@@ -40,6 +40,11 @@ def parse_google_doc(url: str) -> dict:
     # Mapeo de secciones
     sections = {
         "description": "",
+        # Solo lo que va bajo "Descripción del Tipo de Producto", separado de la
+        # introducción y del resto de la descripción. Es lo que se usa para deducir el
+        # tipo (Polvo, Gotas, Aceite...): mezclarlo con la intro haría que una frase
+        # suelta de marketing decidiera el tipo del producto.
+        "type_description": "",
         "origin": "",
         "cross_selling": "",
         "product_profile": "",
@@ -48,11 +53,12 @@ def parse_google_doc(url: str) -> dict:
         "precautions": "",
         "extracted_benefits": []
     }
-    
+
     # Recorrer párrafos y clasificar el texto por palabras clave
     current_key = None
     intro_captured = False
-    
+    in_type_section = False
+
     for paragraph in doc.paragraphs:
         text = paragraph.text.strip()
         if not text:
@@ -64,8 +70,13 @@ def parse_google_doc(url: str) -> dict:
         # Detectar cabeceras o secciones y cambiar el foco (solo en líneas cortas/títulos)
         if is_short_line and any(h in lower_text for h in ["descripción del tipo de producto", "descripcion del tipo de producto", "descripción del producto", "descripcion del producto"]):
             current_key = "description"
+            # Solo la variante "del tipo de producto" alimenta type_description.
+            in_type_section = any(h in lower_text for h in ["tipo de producto"])
             if ":" in text:
-                sections[current_key] += text.split(":", 1)[1].strip() + "\n"
+                resto = text.split(":", 1)[1].strip()
+                sections[current_key] += resto + "\n"
+                if in_type_section:
+                    sections["type_description"] += resto + "\n"
             continue
         elif is_short_line and any(h in lower_text for h in ["recomendaciones con otros productos", "cross-selling", "cross selling", "venta cruzada"]):
             current_key = "cross_selling"
@@ -130,6 +141,10 @@ def parse_google_doc(url: str) -> dict:
         # Acumular texto en la sección actual (excluyendo metadatos ignorados y beneficios individuales en viñetas)
         if current_key and current_key != "ignored_metadata" and current_key != "benefits":
             sections[current_key] += text + "\n"
+            # Cualquier otro encabezado cambia current_key, así que sólo se llega acá con
+            # in_type_section activo estando realmente dentro de esa sección.
+            if current_key == "description" and in_type_section:
+                sections["type_description"] += text + "\n"
         
     # Limpiar espacios en blanco al inicio/final de cada sección
     cleaned_sections = {k: v.strip() if isinstance(v, str) else v for k, v in sections.items()}

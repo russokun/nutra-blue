@@ -10,7 +10,7 @@ from app.core.mock_data import MOCK_PRODUCTS
 from app.models.products import Product, ProductCreate, ProductUpdate
 from app.models.orders import OrderUpdateStatus, OrderShippingUpdate
 from app.core.pricing import COURIERS
-from app.core.taxonomy import normalize_benefit, normalize_product_type
+from app.core.taxonomy import normalize_benefit_from_bullets, normalize_product_type
 from app.services.email_service import send_shipping_notification
 from app.core.config import settings
 from app.services.storage_service import upload_image
@@ -864,11 +864,13 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
             benefit_final = row.get("benefit", "").strip() or None
             type_final = row.get("product_type", "").strip() or None
 
-            texto_beneficios = " ".join(doc_details.get("extracted_benefits") or [])
-            texto_tipo = doc_details.get("description") or ""
+            vinetas_beneficios = doc_details.get("extracted_benefits") or []
+            # Solo la sección "Descripción del Tipo de Producto": si se usara la
+            # descripción completa, la introducción de marketing podría decidir el tipo.
+            texto_tipo = doc_details.get("type_description") or doc_details.get("description") or ""
 
-            if not benefit_final and texto_beneficios:
-                benefit_final = normalize_benefit(texto_beneficios)
+            if not benefit_final and vinetas_beneficios:
+                benefit_final = normalize_benefit_from_bullets(vinetas_beneficios)
                 if not benefit_final:
                     report["warnings"].append({
                         "row": index + 1,

@@ -18,6 +18,7 @@ from app.core.taxonomy import (
     derive_benefit,
     derive_product_type,
     normalize_benefit,
+    normalize_benefit_from_bullets,
     normalize_product_type,
 )
 
@@ -148,6 +149,67 @@ def test_la_derivacion_por_categoria_solo_usa_valores_canonicos():
     for categoria in CATEGORIAS_REALES:
         assert derive_benefit(categoria) in CANONICAL_BENEFITS
         assert derive_product_type("Producto Cualquiera", categoria) in CANONICAL_PRODUCT_TYPES
+
+
+# ------------------------------------------------- ficha real: Melena de Leon
+#
+# Texto copiado tal cual de la ficha de Google Docs que usa NutraBlue, para que los
+# cambios en el vocabulario se validen contra como escriben de verdad y no contra
+# ejemplos inventados.
+
+MELENA_VINETAS = [
+    "Regeneración Neuronal y Neuroplasticidad: Sus compuestos únicos (erinacinas y "
+    "hericenonas) cruzan la barrera hematoencefálica y estimulan directamente la síntesis "
+    "del Factor de Crecimiento Nervioso (NGF). Esto repara neuronas dañadas, forma nuevas "
+    "sinapsis y protege activamente contra enfermedades como Alzheimer y demencia.",
+    "Nootrópico Natural de Alto Rendimiento: Elimina la famosa 'niebla mental' (brain fog), "
+    "optimizando la velocidad de procesamiento, mejorando dramáticamente la memoria a corto "
+    "plazo y permitiendo períodos de trabajo profundo (Deep Work) sin el uso de "
+    "estimulantes sintéticos.",
+    "Apoyo al Eje Intestino-Cerebro: Es un poderoso aliado gastrointestinal. Protege y "
+    "regenera la mucosa del estómago y el intestino, combatiendo úlceras, inflamación e "
+    "infecciones por H. pylori, lo que indirectamente mejora el estado de ánimo.",
+    "Manejo de Ansiedad y Depresión Leve: Estudios demuestran que el consumo sostenido de "
+    "Melena de León reduce la inflamación sistémica, lo cual está directamente ligado a la "
+    "reducción de síntomas de ansiedad y estados depresivos.",
+]
+
+MELENA_TIPO = (
+    "Extracto en polvo nootrópico de hongo funcional. Elaborado mediante doble extracción "
+    "a partir del 'cuerpo fructífero' maduro, con el objetivo de retener al máximo los "
+    "compuestos neurogénicos (erinacinas y hericenonas) de forma completamente biodisponible."
+)
+
+
+def test_ficha_real_melena_de_leon_da_foco_y_calma():
+    """Es un nootrópico: la etiqueta correcta es Foco y Calma."""
+    assert normalize_benefit_from_bullets(MELENA_VINETAS) == "Foco y Calma"
+
+
+def test_ficha_real_melena_de_leon_da_polvo():
+    assert normalize_product_type(MELENA_TIPO) == "Polvo"
+
+
+def test_una_vineta_secundaria_no_le_gana_a_la_principal():
+    """
+    Regresion concreta: uniendo todas las viñetas en un solo texto ganaba "ansiedad", que
+    aparece recién en la cuarta ("Manejo de Ansiedad y Depresión Leve"), y el producto
+    quedaba como "Manejo del Estrés". Las fichas ordenan por importancia.
+    """
+    assert normalize_benefit(" ".join(MELENA_VINETAS)) == "Manejo del Estrés"
+    assert normalize_benefit_from_bullets(MELENA_VINETAS) == "Foco y Calma"
+
+
+def test_las_vinetas_que_no_se_reconocen_se_saltan():
+    """Se sigue buscando en las siguientes en vez de rendirse en la primera."""
+    vinetas = ["Producto de origen chileno", "Certificado orgánico", "Aporta energía sostenida"]
+    assert normalize_benefit_from_bullets(vinetas) == "Energía Natural"
+
+
+def test_sin_ninguna_vineta_reconocible_devuelve_none():
+    assert normalize_benefit_from_bullets(["Producto de origen chileno"]) is None
+    assert normalize_benefit_from_bullets([]) is None
+    assert normalize_benefit_from_bullets(None) is None
 
 
 def test_el_catalogo_expone_la_taxonomia():

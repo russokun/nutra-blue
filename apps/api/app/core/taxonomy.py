@@ -105,6 +105,15 @@ _BENEFIT_FROM_TEXT = (
     ("cognit", "Foco y Calma"),
     ("claridad", "Foco y Calma"),
     ("calma", "Foco y Calma"),
+    # Las fichas reales hablan de neurociencia, no de "concentracion": la de Melena de
+    # Leon abre con "Regeneracion Neuronal y Neuroplasticidad".
+    ("nootrop", "Foco y Calma"),
+    ("neuron", "Foco y Calma"),
+    ("neuroplast", "Foco y Calma"),
+    ("neurogen", "Foco y Calma"),
+    ("cerebr", "Foco y Calma"),
+    ("sinapsis", "Foco y Calma"),
+    ("brain", "Foco y Calma"),
     ("descans", "Descanso y Longevidad"),
     ("sueno", "Descanso y Longevidad"),
     ("dormir", "Descanso y Longevidad"),
@@ -174,6 +183,27 @@ def normalize_benefit(texto: str) -> Optional[str]:
     if texto in CANONICAL_BENEFITS:
         return texto
     return _match(texto, _BENEFIT_FROM_TEXT)
+
+
+def normalize_benefit_from_bullets(vinetas) -> Optional[str]:
+    """
+    Elige el beneficio principal de la lista de vinetas de la ficha.
+
+    Se evalua vineta por vineta EN ORDEN y gana la primera que se reconoce, en vez de
+    unir todo el texto y buscar. La diferencia no es cosmetica: en la ficha real de
+    Melena de Leon, uniendo todo gana "ansiedad" (que aparece en la cuarta vineta,
+    "Manejo de Ansiedad y Depresion Leve") y el producto quedaba etiquetado como "Manejo
+    del Estres", cuando es un nootropico. Vineta por vineta gana la segunda,
+    "Nootropico Natural de Alto Rendimiento", y queda como "Foco y Calma".
+
+    Las fichas ordenan las vinetas por importancia, asi que la primera reconocible es el
+    beneficio principal.
+    """
+    for vineta in vinetas or []:
+        encontrado = normalize_benefit(vineta)
+        if encontrado:
+            return encontrado
+    return None
 
 
 def normalize_product_type(texto: str) -> Optional[str]:
