@@ -13,6 +13,9 @@ class ProductBase(BaseModel):
     # que es la lista de vinetas sacada de la ficha de Google Docs.
     benefit: Optional[str] = None
     product_type: Optional[str] = None
+    # Producto comprable por URL directa pero fuera del catálogo. Se usa para el producto
+    # de prueba con el que se valida el cobro real en producción.
+    is_hidden: bool = False
     image_url: Optional[str] = None
     images: List[str] = []
     benefits: List[str] = []
@@ -54,6 +57,7 @@ class ProductUpdate(BaseModel):
     category: Optional[str] = None
     benefit: Optional[str] = None
     product_type: Optional[str] = None
+    is_hidden: Optional[bool] = None
     image_url: Optional[str] = None
     images: Optional[List[str]] = None
     benefits: Optional[List[str]] = None

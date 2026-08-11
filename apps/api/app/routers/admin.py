@@ -1002,7 +1002,13 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
     # detecta), sino que se lea a medias: por eso tambien se exige que traiga al menos
     # la mitad del catalogo actual antes de borrar nada.
     def eliminar_los_que_sobran(nombres_actuales: set, catalogo: list) -> None:
-        vigentes = [p for p in catalogo if p.get("name") != "__SYSTEM_SYNC_LOG__"]
+        # Los productos ocultos se crean a mano desde el panel (el de prueba con el que
+        # se valida el cobro real, por ejemplo) y nunca estan en la planilla: sin esta
+        # exencion el sync los borraria en la siguiente corrida.
+        vigentes = [
+            p for p in catalogo
+            if p.get("name") != "__SYSTEM_SYNC_LOG__" and not p.get("is_hidden")
+        ]
         sobran = [p for p in vigentes if p.get("name") not in nombres_actuales]
         if not sobran:
             return
@@ -1036,7 +1042,7 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
             ]
     else:
         try:
-            catalogo = supabase_client.from_("products").select("name").execute().data or []
+            catalogo = supabase_client.from_("products").select("name, is_hidden").execute().data or []
             eliminar_los_que_sobran(nombres_en_planilla, catalogo)
             if report["deleted"]:
                 supabase_client.from_("products").delete().in_(

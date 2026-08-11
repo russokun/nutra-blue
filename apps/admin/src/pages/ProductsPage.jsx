@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Tag, RefreshCw, Upload, Loader2, ChevronLeft, ChevronRight, X, CloudDownload } from 'lucide-react';
 
 const emptyProduct = {
-  name: '', price: '', stock: '', category: '', benefit: '', product_type: '', images: [],
+  name: '', price: '', stock: '', category: '', benefit: '', product_type: '', is_hidden: false, images: [],
 };
 
 // Categorías de respaldo: solo se usan si el catálogo aún está vacío. La lista real
@@ -116,6 +116,7 @@ const ProductsPage = () => {
       category: product.category,
       benefit: product.benefit || '',
       product_type: product.product_type || '',
+      is_hidden: Boolean(product.is_hidden),
       images: product.images?.length ? product.images : (product.image_url ? [product.image_url] : []),
       google_doc_url: product.google_doc_url || '',
       // Los trae el sync desde la ficha de Google Docs: se conservan tal cual al guardar.
@@ -182,6 +183,7 @@ const ProductsPage = () => {
       // actualizar, asi que con null nunca se podria vaciar un beneficio ya cargado.
       benefit: form.benefit || '',
       product_type: form.product_type || '',
+      is_hidden: Boolean(form.is_hidden),
       images: form.images,
       image_url: form.images[0] || null,
       // No vaciar lo que trajo el sync desde la ficha de Google Docs: editar el precio
@@ -399,6 +401,24 @@ const ProductsPage = () => {
                 Si la planilla trae columnas «Beneficio» y «Tipo», el sync las sobrescribe.
                 En blanco, la tienda los deriva de la categoría.
               </p>
+              <div className="rounded-lg border border-border bg-muted/30 p-3">
+                <label className="flex items-start gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(form.is_hidden)}
+                    onChange={(e) => setForm({ ...form, is_hidden: e.target.checked })}
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+                  />
+                  <span>
+                    <span className="block text-sm font-medium text-foreground">Ocultar del catálogo</span>
+                    <span className="block text-xs text-muted-foreground">
+                      No aparece en la tienda ni en los carruseles, pero sigue siendo
+                      comprable por su URL directa. Se usa para el producto de prueba con
+                      el que se valida el cobro real.
+                    </span>
+                  </span>
+                </label>
+              </div>
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <Label>Imágenes del Producto</Label>
