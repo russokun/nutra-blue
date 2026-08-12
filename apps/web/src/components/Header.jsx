@@ -57,16 +57,12 @@ const Header = ({ minimal = false }) => {
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between py-3 min-h-[88px]">
-          <div className="flex items-center space-x-4">
-            <Link to="/" className="flex items-center space-x-3">
-              <img src="/logo.png" alt="NutraBlue Logo" style={{ height: '108px', width: 'auto' }} />
-            </Link>
-            {location.pathname !== '/' && location.pathname !== '/shop' && (
-              <Link to="/shop" className="hidden md:inline-flex items-center text-xs font-semibold text-muted-foreground hover:text-primary transition-all duration-200 bg-muted/40 px-2.5 py-1 rounded-md border border-border/30">
-                ← Catálogo
-              </Link>
-            )}
-          </div>
+          {/* Acá había un botón "← Catálogo" al lado del logo. Se quitó por redundante:
+              la barra de navegación ya tiene "Catálogo" a dos centímetros de distancia.
+              El de la cabecera minimal (checkout) se conserva, porque ahí no hay menú. */}
+          <Link to="/" className="flex items-center space-x-3">
+            <img src="/logo.png" alt="NutraBlue Logo" style={{ height: '108px', width: 'auto' }} />
+          </Link>
 
           <nav className="hidden md:flex items-center space-x-8">
             {allLinks.map((link) => (

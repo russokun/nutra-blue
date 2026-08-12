@@ -253,7 +253,7 @@ const HomePage = () => {
                 <span className="text-white/20">|</span>
                 <div className="flex items-center gap-2">
                   <span className="text-lg">📦</span>
-                  <span>Envío Gratis a todo Chile</span>
+                  <span>Envío Gratis sobre $50.000</span>
                 </div>
                 <span className="text-white/20">|</span>
               </div>
@@ -277,7 +277,7 @@ const HomePage = () => {
                 <span className="text-white/20">|</span>
                 <div className="flex items-center gap-2">
                   <span className="text-lg">📦</span>
-                  <span>Envío Gratis a todo Chile</span>
+                  <span>Envío Gratis sobre $50.000</span>
                 </div>
                 <span className="text-white/20">|</span>
               </div>
@@ -517,7 +517,7 @@ const HomePage = () => {
               <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                 Encuentra lo que tu cuerpo necesita
               </h2>
-              <p className="text-sm text-muted-foreground mt-2">
+              <p className="text-sm text-muted-foreground mt-2 mx-auto">
                 Explora nuestros alimentos funcionales según el beneficio que buscas.
               </p>
             </div>
@@ -717,7 +717,7 @@ const HomePage = () => {
                   </Button>
                 </form>
 
-                <p className="text-[10px] text-slate-500">
+                <p className="text-[10px] text-slate-500 mx-auto">
                   Respetamos tu privacidad. Puedes darte de baja cuando quieras.
                 </p>
               </div>

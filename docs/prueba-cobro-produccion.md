@@ -25,24 +25,48 @@ En el panel de Mercado Pago, la URL de notificaciones tiene que ser
 > Ojo: la API aplica un límite de 120 solicitudes por minuto por IP, y ese límite también
 > cubre el webhook. En un pico de ventas alto habría que revisarlo.
 
-## 2. Crear el producto de prueba
+## 2. Crear los productos de prueba
 
-Desde el panel de administración, crear un producto con:
+Desde el panel de administración, crear uno o varios productos con:
 
-- Precio: **$1.000**
+- Precio: **$1.000** (o lo que quieran, mientras no sea $0)
 - Stock: **5**
-- Marcado como **oculto**
+- Marcada la casilla **«Ocultar del catálogo»**
 
-Un producto oculto no aparece en el catálogo, ni en el carrusel del inicio, ni en los
-filtros: solo se llega por la URL directa `https://nutrablue.cl/product/<id>`. Y queda
-exento del barrido que borra los productos que no están en la planilla, así que la
-sincronización no lo elimina.
+Un producto oculto no le aparece a ningún cliente: no está en el catálogo, ni en el
+carrusel del inicio, ni en los filtros. Además queda exento del barrido que borra los
+productos que no están en la planilla, así que la sincronización no lo elimina.
 
-## 3. Hacer la compra
+Conviene crear dos o tres, de distintas categorías, para poder probar el carrito con
+varios productos.
 
-1. Abrir la URL directa del producto de prueba.
+## 3. Entrar en modo prueba
+
+Abrir una vez:
+
+```
+https://nutrablue.cl/shop?prueba=1
+```
+
+Aparece una barra naranja arriba que dice **«Modo prueba activo»** y el catálogo pasa a
+mostrar también los productos ocultos, marcados con una píldora **«Prueba»**.
+
+Queda guardado en el navegador: se puede seguir navegando normalmente sin arrastrar el
+parámetro. Para salir, el botón **«Salir del modo prueba»** de esa misma barra.
+
+Así se recorre la experiencia real completa —catálogo, filtros, carrusel, carrito con
+varios productos, cupón, checkout— pero pagando montos bajos.
+
+> El modo prueba solo cambia **qué productos se ven**. Los pagos son reales.
+
+## 4. Hacer la compra
+
+1. Con el modo prueba activo, agregar al carrito uno o más productos de prueba.
 2. Completar el checkout con datos reales y pagar con una tarjeta propia.
 3. Confirmar que la redirección vuelve a la página de confirmación del pedido.
+
+Si prefieren no activar el modo prueba, un producto oculto también se compra entrando
+directo a `https://nutrablue.cl/product/<id>`.
 
 ## 4. Qué verificar después
 

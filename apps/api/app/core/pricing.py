@@ -8,19 +8,26 @@ CHILEAN_REGIONS = [
 
 IVA_RATE = 0.19
 
-# Metodo de entrega elegido en el checkout. No afecta el precio: el despacho se sigue
-# cobrando por region y la entrega concreta se coordina por correo/telefono.
+# Metodo de entrega elegido en el checkout. No afecta el precio: el flete se resuelve
+# fuera de la app y la entrega concreta se coordina por correo/telefono.
 DELIVERY_METHODS = ["domicilio", "retiro_courier"]
 COURIERS = ["blue_express", "starken", "pullman"]
 
 
-# NutraBlue asume el costo del despacho ("envios por pagar"): la tienda nunca lo cobra,
-# en ninguna region. La region, la direccion y el courier se siguen pidiendo porque son
-# los datos con los que se coordina la entrega, no un insumo del precio.
-#
-# El mensaje comercial de envio gratis es marketing y vive en el front. A proposito ya no
-# hay un umbral aca, para que nadie lo confunda con un calculo.
+# La tienda NUNCA cobra flete: el total que se paga por la pasarela es solo el de los
+# productos. La region, la direccion y el courier se piden porque son los datos con los
+# que se coordina la entrega, no un insumo del precio.
 SHIPPING_COST_CLP = 0
+
+# Politica comercial, no un cobro: sobre este monto NutraBlue asume el flete y para el
+# cliente es envio gratis; bajo ese monto el pedido viaja "por pagar" y el cliente le
+# paga al courier al recibirlo. Se usa solo para decidir que MENSAJE mostrar, nunca para
+# sumar al total. El equivalente en el front vive en apps/web/src/lib/shipping.js.
+FREE_SHIPPING_THRESHOLD = 50000
+
+
+def has_free_shipping(cart_total: int) -> bool:
+    return int(cart_total or 0) >= FREE_SHIPPING_THRESHOLD
 
 
 def calculate_shipping(region: str) -> int:

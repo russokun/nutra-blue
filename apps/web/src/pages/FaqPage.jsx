@@ -27,7 +27,7 @@ const FaqPage = () => {
     },
     {
       q: '¿Cuánto cuesta el envío?',
-      a: 'El envío es gratis en todos nuestros pedidos, a cualquier comuna de Chile. No se cobra despacho en el checkout.'
+      a: 'En pedidos sobre $50.000 el envío es gratis a todo Chile: el despacho corre por nuestra cuenta. Bajo ese monto el pedido viaja «por pagar», es decir que le pagas el flete directamente al courier al recibirlo o retirarlo. En ningún caso te cobramos despacho al momento de pagar: el total que ves en el checkout es solo el de los productos.'
     },
     {
       q: '¿Qué medios de pago aceptan?',

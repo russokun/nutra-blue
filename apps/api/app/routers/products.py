@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from typing import List, Optional
 import re
@@ -27,15 +27,26 @@ class HeroProductResponse(BaseModel):
 router = APIRouter(prefix="/products", tags=["Products"])
 
 @router.get("", response_model=List[ProductPublic])
-async def get_products():
+async def get_products(
+    include_hidden: bool = Query(
+        False,
+        description=(
+            "Incluye los productos ocultos. Lo usa el modo prueba de la tienda para "
+            "recorrer el catalogo con productos baratos sin exponerlos a los clientes."
+        ),
+    ),
+):
+    def incluir(p: dict) -> bool:
+        return _visible(p) or (include_hidden and p.get("name") != "__SYSTEM_SYNC_LOG__")
+
     if supabase_client is None:
-        return [apply_taxonomy(dict(p)) for p in MOCK_PRODUCTS if _visible(p)]
+        return [apply_taxonomy(dict(p)) for p in MOCK_PRODUCTS if incluir(p)]
 
     try:
         response = supabase_client.from_("products").select("*").neq("name", "__SYSTEM_SYNC_LOG__").order("name").execute()
         products = []
         for p in response.data or []:
-            if not _visible(p):
+            if not incluir(p):
                 continue
             p["image_url"] = p.get("image_url") or "/logo.png"
             products.append(apply_taxonomy(p))
@@ -43,7 +54,7 @@ async def get_products():
     except Exception as e:
         # Fallback to mock data if supabase fails
         print(f"Supabase error: {str(e)}. Falling back to mock data.")
-        return [apply_taxonomy(dict(p)) for p in MOCK_PRODUCTS if _visible(p)]
+        return [apply_taxonomy(dict(p)) for p in MOCK_PRODUCTS if incluir(p)]
 
 @router.get("/hero-carousel", response_model=List[HeroProductResponse])
 async def get_hero_carousel():

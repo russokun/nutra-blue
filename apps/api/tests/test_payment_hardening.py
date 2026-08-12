@@ -145,31 +145,72 @@ def test_un_pago_por_el_total_exacto_si_marca_la_orden_como_pagada(monkeypatch):
 # --------------------------------------------------------------- producto oculto de prueba
 
 
+# El producto oculto de ejemplo ya vive en app/core/mock_data.py, para poder probar el
+# modo prueba en desarrollo sin crear uno a mano. Los tests usan ese, no uno inventado.
+PRODUCTO_OCULTO = "producto-de-prueba"
+
+
 def test_un_producto_oculto_no_aparece_en_el_catalogo():
-    from app.core.mock_data import MOCK_PRODUCTS
+    catalogo = client.get("/products").json()
+    assert PRODUCTO_OCULTO not in {p["id"] for p in catalogo}
 
-    original = [dict(p) for p in MOCK_PRODUCTS]
-    try:
-        MOCK_PRODUCTS.append({
-            "id": "producto-de-prueba",
-            "name": "Producto de Prueba",
-            "price": 1000,
-            "stock": 5,
-            "category": "System",
-            "is_hidden": True,
-            "benefits": [],
-            "certifications": [],
-        })
+    carrusel = client.get("/products/hero-carousel").json()
+    assert PRODUCTO_OCULTO not in {p["id"] for p in carrusel}
 
-        catalogo = client.get("/products").json()
-        assert "producto-de-prueba" not in {p["id"] for p in catalogo}
+    # Pero sigue siendo alcanzable por URL directa: asi se hace la compra de prueba.
+    detalle = client.get(f"/products/{PRODUCTO_OCULTO}")
+    assert detalle.status_code == 200
+    assert detalle.json()["is_hidden"] is True
 
-        carrusel = client.get("/products/hero-carousel").json()
-        assert "producto-de-prueba" not in {p["id"] for p in carrusel}
 
-        # Pero sigue siendo comprable por URL directa: asi se hace la compra de prueba.
-        detalle = client.get("/products/producto-de-prueba")
-        assert detalle.status_code == 200
-        assert detalle.json()["name"] == "Producto de Prueba"
-    finally:
-        MOCK_PRODUCTS[:] = original
+def test_el_modo_prueba_pide_los_ocultos_explicitamente():
+    """
+    El catalogo normal nunca trae ocultos; solo los suma cuando se piden a proposito.
+    Asi NutraBlue puede recorrer la tienda completa con productos baratos.
+    """
+    normal = client.get("/products").json()
+    prueba = client.get("/products?include_hidden=true").json()
+
+    assert PRODUCTO_OCULTO not in {p["id"] for p in normal}
+    assert PRODUCTO_OCULTO in {p["id"] for p in prueba}
+
+    # Es el catalogo completo, no solo los de prueba: los reales siguen estando.
+    assert set(p["id"] for p in normal).issubset(p["id"] for p in prueba)
+    assert len(prueba) == len(normal) + 1
+
+    # El front lo usa para marcarlos con la pildora "Prueba".
+    assert next(p for p in prueba if p["id"] == PRODUCTO_OCULTO)["is_hidden"] is True
+
+    # La fila interna del sync no se cuela ni siquiera pidiendo los ocultos.
+    assert "__SYSTEM_SYNC_LOG__" not in {p["name"] for p in prueba}
+
+
+def test_un_producto_oculto_se_puede_comprar():
+    """
+    Lo que hace util al producto oculto es que se pueda pagar de verdad. Si alguien
+    agregara el filtro de visibilidad a get_product_by_id "por consistencia", la orden
+    fallaria con "Product not found" y la compra de prueba quedaria imposible.
+    """
+    respuesta = client.post("/orders", json={
+        "customer_name": "QA",
+        "email": "qa@example.com",
+        "phone": "+56911112222",
+        "address": "Calle 1",
+        "city": "Santiago",
+        "region": "Metropolitana",
+        "items": [{"product_id": PRODUCTO_OCULTO, "quantity": 1}],
+        "subtotal": 1, "tax": 1, "shipping_cost": 0, "total": 1,
+    })
+
+    assert respuesta.status_code == 200, respuesta.text
+    orden = respuesta.json()
+    assert orden["total"] == 1000
+    assert orden["shipping_cost"] == 0
+
+    # Y la pasarela tiene que aceptar iniciar el pago por ese monto.
+    pago = client.post("/payment/init", json={
+        "order_id": orden["id"],
+        "amount": orden["total"],
+        "email": orden["email"],
+    })
+    assert pago.status_code == 200, pago.text
