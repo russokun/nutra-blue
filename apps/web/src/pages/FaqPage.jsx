@@ -1,8 +1,9 @@
 import React from 'react';
-import { Helmet } from 'react-helmet';
+import { Helmet } from '@/components/Meta';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { HelpCircle } from 'lucide-react';
+import { OG_IMAGE, absoluteUrl, faqSchema } from '@/lib/seo';
 
 const FaqPage = () => {
   const faqsProductos = [
@@ -41,9 +42,20 @@ const FaqPage = () => {
 
   return (
     <>
-      <Helmet>
+      <Helmet
+        script={[
+          {
+            type: 'application/ld+json',
+            innerHTML: JSON.stringify(faqSchema([...faqsProductos, ...faqsCompras])),
+          },
+        ]}
+      >
         <title>Preguntas Frecuentes - NutraBlue</title>
-        <meta name="description" content="Encuentra respuestas a las dudas más comunes sobre los productos y envíos de NutraBlue." />
+        <meta name="description" content="Respuestas sobre despachos, medios de pago, devoluciones y cómo elegir entre los alimentos funcionales de NutraBlue." />
+        <meta property="og:title" content="Preguntas Frecuentes - NutraBlue" />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta property="og:url" content={absoluteUrl('/faqs')} />
+        <link rel="canonical" href={absoluteUrl('/faqs')} />
       </Helmet>
 
       <Header />

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Helmet } from 'react-helmet';
+import { Helmet } from '@/components/Meta';
+import { OG_IMAGE, absoluteUrl } from '@/lib/seo';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,6 +12,9 @@ const TermsOfServicePage = () => {
       <Helmet>
         <title>Términos de Servicio - NutraBlue</title>
         <meta name="description" content="Términos y condiciones de uso de NutraBlue. Conoce los términos de compra, envíos, políticas de devolución y garantías en Chile." />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta property="og:url" content={absoluteUrl('/terms-of-service')} />
+        <link rel="canonical" href={absoluteUrl('/terms-of-service')} />
       </Helmet>
 
       <Header />

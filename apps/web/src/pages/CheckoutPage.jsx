@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet';
+import { Helmet } from '@/components/Meta';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/hooks/useCart';
 import apiServerClient from '@/lib/apiServerClient';

@@ -131,8 +131,22 @@ function generateFallbackUrl(fileName) {
 	return cleanName === 'app' ? '/' : `/${cleanName}`;
 }
 
+// Paginas privadas o sin valor para un asistente. Antes el llms.txt listaba tambien
+// checkout, carrito, cuenta, login y registro: no aportan nada a quien pregunta por los
+// productos, y coinciden con lo que bloquea robots.txt.
+const RUTAS_EXCLUIDAS = new Set([
+	'/checkout',
+	'/cart',
+	'/account',
+	'/login',
+	'/register',
+	'/admin',
+	'/order-confirmation/:orderId',
+]);
+
 function generateLlmsTxt(pages) {
-	const sortedPages = pages.sort((a, b) => a.title.localeCompare(b.title));
+	const publicPages = pages.filter((p) => !RUTAS_EXCLUIDAS.has(p.url));
+	const sortedPages = publicPages.sort((a, b) => a.title.localeCompare(b.title));
 	const pageEntries = sortedPages.map(page =>
 		`- [${page.title}](${page.url}): ${page.description}`
 	).join('\n');

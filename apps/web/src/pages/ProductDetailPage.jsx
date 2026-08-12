@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet';
+import { Helmet } from '@/components/Meta';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Minus, Plus, ShoppingCart, CheckCircle2 } from 'lucide-react';
 import dataClient from '@/lib/dataClient';
@@ -12,6 +12,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import ProductTags from '@/components/common/ProductTags';
+import { absoluteUrl, breadcrumbSchema, productSchema } from '@/lib/seo';
 import { toast } from 'sonner';
 import { getProductExtraDetails } from '@/lib/productExtraDetails';
 
@@ -188,9 +189,16 @@ const ProductDetailPage = () => {
         <meta property="og:description" content={product.description || `Fórmula con adaptógenos de alta biodisponibilidad. Compra ${product.name} en NutraBlue.`} />
         <meta property="og:image" content={product.image_url} />
         <meta property="og:type" content="product" />
-        <meta property="og:url" content={`https://nutrablue-test.vercel.app/product/${product.id}`} />
-        <link rel="canonical" href={`https://nutrablue-test.vercel.app/product/${product.id}`} />
+        <meta property="og:url" content={absoluteUrl(`/product/${product.id}`)} />
+        <link rel="canonical" href={absoluteUrl(`/product/${product.id}`)} />
       </Helmet>
+      {/* react-helmet ignora los <script> pasados como hijos: hay que usar la prop. */}
+      <Helmet
+        script={[
+          { type: 'application/ld+json', innerHTML: JSON.stringify(productSchema(product)) },
+          { type: 'application/ld+json', innerHTML: JSON.stringify(breadcrumbSchema(product)) },
+        ]}
+      />
 
       <Header />
 

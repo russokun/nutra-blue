@@ -1,5 +1,6 @@
 import React from 'react';
-import { Helmet } from 'react-helmet';
+import { Helmet } from '@/components/Meta';
+import { OG_IMAGE, absoluteUrl } from '@/lib/seo';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,6 +12,9 @@ const PrivacyPolicyPage = () => {
       <Helmet>
         <title>Política de Privacidad - NutraBlue</title>
         <meta name="description" content="Política de privacidad de NutraBlue. Conoce cómo protegemos y gestionamos tus datos personales en conformidad con las leyes chilenas." />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta property="og:url" content={absoluteUrl('/privacy-policy')} />
+        <link rel="canonical" href={absoluteUrl('/privacy-policy')} />
       </Helmet>
 
       <Header />

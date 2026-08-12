@@ -17,7 +17,7 @@ const Header = ({ minimal = false }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-2 min-h-[80px]">
             <Link to="/" className="flex items-center space-x-3">
-              <img src="/logo.png" alt="NutraBlue Logo" style={{ height: '70px', width: 'auto' }} />
+              <img src="/logo.webp" alt="NutraBlue" style={{ height: '70px', width: 'auto' }} />
             </Link>
 
             <div className="flex items-center gap-6">
@@ -61,7 +61,7 @@ const Header = ({ minimal = false }) => {
               la barra de navegación ya tiene "Catálogo" a dos centímetros de distancia.
               El de la cabecera minimal (checkout) se conserva, porque ahí no hay menú. */}
           <Link to="/" className="flex items-center space-x-3">
-            <img src="/logo.png" alt="NutraBlue Logo" style={{ height: '108px', width: 'auto' }} />
+            <img src="/logo.webp" alt="NutraBlue" style={{ height: '108px', width: 'auto' }} />
           </Link>
 
           <nav className="hidden md:flex items-center space-x-8">

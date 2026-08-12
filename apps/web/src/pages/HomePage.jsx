@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet';
+import { Helmet } from '@/components/Meta';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, Heart, Sparkles, BookOpen, ArrowRight, X, Check, ShoppingBag } from 'lucide-react';
@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import SectionCarousel from '@/components/common/SectionCarousel';
 import ProductTags from '@/components/common/ProductTags';
+import { OG_IMAGE, absoluteUrl } from '@/lib/seo';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 
@@ -221,9 +222,10 @@ const HomePage = () => {
         <meta name="keywords" content="alimentos naturales, alimentos funcionales, longevidad, salud, energía, concentración, Chile" />
         <meta property="og:title" content="NutraBlue — Alimentos naturales y funcionales para tu salud" />
         <meta property="og:description" content="Alimentos naturales y funcionales seleccionados para mejorar tu salud: energía, concentración, descanso y longevidad. Empresa familiar chilena, despacho a todo Chile." />
-        <meta property="og:image" content="/og-image.jpg" />
+        <meta property="og:image" content={OG_IMAGE} />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://nutrablue-test.vercel.app" />
+        <meta property="og:url" content={absoluteUrl('/')} />
+        <link rel="canonical" href={absoluteUrl('/')} />
       </Helmet>
 
       <Header />
@@ -553,9 +555,20 @@ const HomePage = () => {
                   onClick={() => navigate(`/shop?category=${encodeURIComponent(cat.name)}`)}
                   className="relative rounded-2xl overflow-hidden aspect-[4/3] cursor-pointer group shadow-sm border border-border"
                 >
+                  {/* Son fotos de stock alojadas en un tercero: si alguna desaparece
+                      —hoy ya hay una caída— no puede quedar el ícono de imagen rota en
+                      la portada. Degrada al logo y se marca para no reintentar en bucle. */}
                   <img
                     src={cat.image}
                     alt={cat.name}
+                    loading="lazy"
+                    onError={(e) => {
+                      if (e.currentTarget.dataset.fallback) return;
+                      e.currentTarget.dataset.fallback = '1';
+                      e.currentTarget.src = '/logo.webp';
+                      e.currentTarget.className =
+                        'absolute inset-0 w-full h-full object-contain bg-muted p-10';
+                    }}
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />

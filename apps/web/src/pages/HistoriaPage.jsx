@@ -1,5 +1,6 @@
 import React from 'react';
-import { Helmet } from 'react-helmet';
+import { Helmet } from '@/components/Meta';
+import { OG_IMAGE, absoluteUrl } from '@/lib/seo';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -11,6 +12,9 @@ const HistoriaPage = () => {
       <Helmet>
         <title>Nuestra Historia - NutraBlue</title>
         <meta name="description" content="Conoce la historia detrás de NutraBlue, una empresa familiar chilena dedicada a mejorar la calidad de vida mediante alimentación funcional." />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta property="og:url" content={absoluteUrl('/historia')} />
+        <link rel="canonical" href={absoluteUrl('/historia')} />
       </Helmet>
 
       <Header />
