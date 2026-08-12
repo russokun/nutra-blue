@@ -53,17 +53,20 @@ def _slug(value: str) -> str:
     return "".join(c for c in unicodedata.normalize("NFD", v) if unicodedata.category(c) != "Mn")
 
 
-# Coincidencia por substring porque la categoria se escribe a mano en la planilla y
-# varia ("Energia", "Energía Natural", "Energia y vitalidad").
+# Terminos que aparecen en las categorias reales de la planilla y no en el texto de las
+# fichas. La categoria es el OBJETIVO que persigue el cliente, escrito a mano y con sus
+# palabras: "Aumento Testosterona", "Estimulación Cerebral", "Mejorar Sueño".
+#
+# Se consulta DESPUES del vocabulario de las fichas, que ya cubre cerebr, digest,
+# proteina, inmun y compania. Tenerlos separados fue el error original: el mapa de
+# categorias era mucho mas pobre que el de las fichas, y 15 de los 27 productos de
+# produccion caian al valor por defecto aunque su categoria fuera perfectamente clara.
 _BENEFIT_BY_CATEGORY_KEYWORD = (
-    ("energ", "Energía Natural"),
-    ("concentr", "Foco y Calma"),
-    ("calma", "Foco y Calma"),
-    ("cognit", "Foco y Calma"),
-    ("descans", "Descanso y Longevidad"),
-    ("longev", "Descanso y Longevidad"),
-    ("sueno", "Descanso y Longevidad"),
-    ("estres", "Manejo del Estrés"),
+    # Testosterona y libido van a "Energía Natural" por cercania: es lo mas parecido en
+    # el vocabulario actual. Si NutraBlue quiere una etiqueta propia para esta linea
+    # (son 5 productos), hay que agregarla a CANONICAL_BENEFITS.
+    ("testosteron", "Energía Natural"),
+    ("libido", "Energía Natural"),
     ("aliment", "Nutrición Diaria"),
 )
 
@@ -245,11 +248,20 @@ def normalize_product_type(texto: str) -> Optional[str]:
 
 
 def derive_benefit(category: str) -> str:
-    slug = _slug(category)
-    for needle, benefit in _BENEFIT_BY_CATEGORY_KEYWORD:
-        if needle in slug:
-            return benefit
-    return DEFAULT_BENEFIT
+    """
+    Beneficio a partir de la categoria. Es el respaldo para cuando la ficha del producto
+    no dice nada reconocible; lo normal es que el valor venga de la ficha.
+
+    Usa el mismo vocabulario rico que el texto de las fichas y recien despues los
+    terminos propios de las categorias. Al reves —o con dos vocabularios separados—
+    categorias tan claras como "Estimulación Cerebral", "Digestión" o "Proteína" caian
+    al valor por defecto.
+    """
+    return (
+        _match(category, _BENEFIT_FROM_TEXT)
+        or _match(category, _BENEFIT_BY_CATEGORY_KEYWORD)
+        or DEFAULT_BENEFIT
+    )
 
 
 def derive_product_type(name: str, category: str) -> str:
