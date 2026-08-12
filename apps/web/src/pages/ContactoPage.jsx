@@ -1,5 +1,6 @@
 import React from 'react';
-import { Helmet } from 'react-helmet';
+import { Helmet } from '@/components/Meta';
+import { OG_IMAGE, absoluteUrl } from '@/lib/seo';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,9 @@ const ContactoPage = () => {
       <Helmet>
         <title>Contacto y Soporte - NutraBlue</title>
         <meta name="description" content="Comunícate con NutraBlue. Estamos aquí para ayudarte con tus dudas sobre nuestros alimentos funcionales y despachos." />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta property="og:url" content={absoluteUrl('/contacto')} />
+        <link rel="canonical" href={absoluteUrl('/contacto')} />
       </Helmet>
 
       <Header />

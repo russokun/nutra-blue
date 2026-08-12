@@ -1,14 +1,11 @@
 ## Pages
 - [— NutraBlue | Chile`}](/product/:id): No description available
-- [Carrito - NutraBlue](/cart): Tu carrito de compras en NutraBlue
 - [Catálogo de Suplementos Premium y Biohacking — NutraBlue](/shop): Explora nuestro catálogo de adaptógenos, nootrópicos y suplementos de longevidad celular en Chile. Calm Focus, Matcha Ritual, Dark Cacao y más.
-- [Confirmación de Orden - NutraBlue](/order-confirmation/:orderId): Tu orden ha sido confirmada exitosamente
 - [Contacto y Soporte - NutraBlue](/contacto): Comunícate con NutraBlue. Estamos aquí para ayudarte con tus dudas sobre nuestros alimentos funcionales y despachos.
-- [Iniciar Sesión - NutraBlue](/login): No description available
-- [Mi Cuenta - NutraBlue](/account): No description available
 - [Nuestra Historia - NutraBlue](/historia): Conoce la historia detrás de NutraBlue, una empresa familiar chilena dedicada a mejorar la calidad de vida mediante alimentación funcional.
 - [Nuestro Impacto - NutraBlue](/impacto): Descubre el impacto y la propuesta de valor de NutraBlue. Impulsamos la longevidad celular, la claridad mental y la salud sustentable en Chile.
+- [NutraBlue — Alimentos naturales y funcionales para tu salud](/): Alimentos naturales y funcionales seleccionados para mejorar tu salud: energía, concentración, descanso y longevidad. Empresa familiar chilena, despacho a todo Chile.
+- [Página no encontrada — NutraBlue](/*): La página que buscas no existe o cambió de dirección. Te ayudamos a encontrar lo que necesitas en NutraBlue.
 - [Política de Privacidad - NutraBlue](/privacy-policy): Política de privacidad de NutraBlue. Conoce cómo protegemos y gestionamos tus datos personales en conformidad con las leyes chilenas.
-- [Preguntas Frecuentes - NutraBlue](/faqs): Encuentra respuestas a las dudas más comunes sobre los productos y envíos de NutraBlue.
-- [Registro - NutraBlue](/register): No description available
+- [Preguntas Frecuentes - NutraBlue](/faqs): Respuestas sobre despachos, medios de pago, devoluciones y cómo elegir entre los alimentos funcionales de NutraBlue.
 - [Términos de Servicio - NutraBlue](/terms-of-service): Términos y condiciones de uso de NutraBlue. Conoce los términos de compra, envíos, políticas de devolución y garantías en Chile.

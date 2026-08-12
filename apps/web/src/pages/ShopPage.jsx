@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Helmet } from 'react-helmet';
+import { Helmet } from '@/components/Meta';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, X, Leaf, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import apiServerClient from '@/lib/apiServerClient';
 import ProductTags from '@/components/common/ProductTags';
 import { modoPruebaActivo } from '@/lib/testMode';
+import { OG_IMAGE, absoluteUrl } from '@/lib/seo';
 
 const ShopPage = () => {
   const navigate = useNavigate();
@@ -179,8 +180,9 @@ const ShopPage = () => {
         <meta property="og:title" content="Catálogo de Suplementos Premium — NutraBlue" />
         <meta property="og:description" content="Encuentra fórmulas científicas con adaptógenos de alta biodisponibilidad. Envíos a todo Chile." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://nutrablue-test.vercel.app/shop" />
-        <link rel="canonical" href="https://nutrablue-test.vercel.app/shop" />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta property="og:url" content={absoluteUrl('/shop')} />
+        <link rel="canonical" href={absoluteUrl('/shop')} />
       </Helmet>
 
       <Header />

@@ -8,6 +8,12 @@
       "port": 3000
     },
     {
+      "name": "web-prod",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite", "preview", "--port", "4173", "--outDir", "apps/web/dist"],
+      "port": 4173
+    },
+    {
       "name": "api",
       "runtimeExecutable": "apps/api/.venv/Scripts/python.exe",
       "runtimeArgs": ["apps/api/main.py"],

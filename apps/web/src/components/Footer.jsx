@@ -42,7 +42,7 @@ const Footer = ({ minimal = false }) => {
       <div 
         className="absolute inset-0 z-0 opacity-45 mix-blend-multiply pointer-events-none" 
         style={{
-          backgroundImage: 'url("/footer_bg.png")',
+          backgroundImage: 'url("/footer_bg.webp")',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'
@@ -55,7 +55,7 @@ const Footer = ({ minimal = false }) => {
             {/* Brand */}
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
-                <img src="/logo.png" alt="NutraBlue Logo" className="h-12 w-auto brightness-0 invert" />
+                <img src="/logo.webp" alt="NutraBlue" className="h-12 w-auto brightness-0 invert" />
               </div>
               <p className="text-sm text-slate-300 leading-relaxed">
                 Alimentos naturales y funcionales, seleccionados para mejorar tu salud y tu vida. Empresa familiar chilena — despacho a todo el país.

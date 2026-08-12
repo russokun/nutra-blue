@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet';
+import { Helmet } from '@/components/Meta';
 import { useParams, useLocation, Link } from 'react-router-dom';
 import { CheckCircle2, Package } from 'lucide-react';
 import dataClient from '@/lib/dataClient';
