@@ -24,8 +24,19 @@ from app.core.taxonomy import (
 
 client = TestClient(app)
 
-# Las cuatro categorias reales de la planilla.
-CATEGORIAS_REALES = ["Energía", "Concentración y Calma", "Descanso y Longevidad", "Alimentación Diaria"]
+# Categorias tal cual estan escritas en la planilla de produccion, con la cantidad de
+# productos de cada una. Los acentos raros ("inmunològico", "energìa") son los de verdad.
+CATEGORIAS_DE_PRODUCCION = {
+    "Proteína": 6,
+    "Fortalecer sistema inmunològico y energìa": 5,
+    "Aumento Testosterona": 5,
+    "Digestión": 4,
+    "Energía": 3,
+    "Estimulación Cerebral": 3,
+    "Mejorar Sueño": 1,
+}
+
+CATEGORIAS_REALES = list(CATEGORIAS_DE_PRODUCCION)
 
 
 @pytest.mark.parametrize("categoria", CATEGORIAS_REALES)
@@ -34,9 +45,40 @@ def test_ninguna_categoria_real_cae_al_default(categoria):
     assert derive_benefit(categoria) != DEFAULT_BENEFIT
 
 
+def test_ningun_producto_de_produccion_cae_al_default():
+    """
+    Fijado contra el catalogo real. El mapa de categorias vivia separado del vocabulario
+    de las fichas y era mucho mas pobre: categorias tan claras como "Estimulación
+    Cerebral", "Digestión" o "Proteína" caian al valor por defecto, y con ellas 15 de los
+    27 productos de produccion.
+    """
+    al_default = {
+        categoria: n
+        for categoria, n in CATEGORIAS_DE_PRODUCCION.items()
+        if derive_benefit(categoria) == DEFAULT_BENEFIT
+    }
+    assert not al_default, f"categorias sin beneficio reconocido: {al_default}"
+
+
+@pytest.mark.parametrize(
+    "categoria,esperado",
+    [
+        ("Proteína", "Nutrición Diaria"),
+        ("Digestión", "Nutrición Diaria"),
+        ("Estimulación Cerebral", "Foco y Calma"),
+        ("Mejorar Sueño", "Descanso y Longevidad"),
+        ("Energía", "Energía Natural"),
+        ("Aumento Testosterona", "Energía Natural"),
+    ],
+)
+def test_las_categorias_de_produccion_dan_el_beneficio_esperado(categoria, esperado):
+    assert derive_benefit(categoria) == esperado
+
+
 def test_categorias_distintas_dan_beneficios_distintos():
+    """No todas distintas —son 7 categorias para 5 beneficios— pero si mas de una."""
     beneficios = {derive_benefit(c) for c in CATEGORIAS_REALES}
-    assert len(beneficios) == len(CATEGORIAS_REALES)
+    assert len(beneficios) >= 4
 
 
 @pytest.mark.parametrize("escrito", ["Energía", "energia", "ENERGIA", " Energía Natural "])
