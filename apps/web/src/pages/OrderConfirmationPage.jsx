@@ -49,7 +49,15 @@ const OrderConfirmationPage = () => {
       finalizeCheckout();
     } catch (err) {
       console.error('Error fetching order:', err);
-      setError('No se pudo cargar la orden. Por favor, verifica el número de orden.');
+      // El 403 no es un número de orden mal escrito: es que este navegador no puede
+      // acreditar que la compra es suya. Decir "verifica el número de orden" mandaba a
+      // la gente a revisar algo que estaba bien.
+      const esFaltaDeAcceso = String(err?.message || '').toLowerCase().includes('email');
+      setError(
+        esFaltaDeAcceso
+          ? 'Tu pago se registró correctamente. Para ver el detalle acá necesitamos verificar que la compra es tuya: abre el enlace desde el correo de confirmación que te enviamos, o revisa tus pedidos en Mi Cuenta.'
+          : 'No se pudo cargar la orden. Puede ser un problema momentáneo de conexión: vuelve a intentarlo en unos segundos.'
+      );
     } finally {
       setLoading(false);
     }

@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Truck } from 'lucide-react';
 import { isFreeShipping, shippingHint } from '@/lib/shipping';
+import { recordarPedido } from '@/lib/orderAccess';
 import { toast } from 'sonner';
 
 const CheckoutPage = () => {
@@ -237,10 +238,15 @@ const CheckoutPage = () => {
         throw new Error('La pasarela de pago no devolvio un link de pago. Intenta de nuevo.');
       }
 
+      // Marca de sesión: sirve una sola vez, para vaciar el carrito al volver del pago.
       sessionStorage.setItem('nutra_blue_pending_order', JSON.stringify({
         orderId: order.id,
         email: formData.email,
       }));
+      // Registro duradero: permite volver a ver la confirmación de ESTE pedido más
+      // adelante. La marca de sesión se borra apenas se vacía el carrito, así que por sí
+      // sola dejaba la página de confirmación inaccesible al recargar.
+      recordarPedido(order.id, formData.email);
 
       toast.success('Redirigiendo a la pasarela de pago segura...');
       setTimeout(() => {
