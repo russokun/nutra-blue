@@ -100,6 +100,13 @@ const AccountContent = () => {
     return COURIER_LABELS[clave] || 'Despacho NutraBlue';
   };
 
+  const getDeliveryLabel = (order) => {
+    if (order.delivery_method === 'retiro_courier') {
+      return `Retiro en sucursal · ${COURIER_LABELS[order.courier] || 'transporte por definir'}`;
+    }
+    return 'Envío a domicilio';
+  };
+
   const formatPrice = (price) => {
     return new Intl.NumberFormat('es-CL', {
       style: 'currency',
@@ -219,12 +226,49 @@ const AccountContent = () => {
                           {/* Items */}
                           <div className="space-y-2">
                             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Detalle del Pedido</p>
-                            {(order.items || []).map((item, i) => (
-                              <div key={i} className="flex justify-between items-center text-sm">
-                                <span className="text-foreground">{item.name} <span className="text-xs text-muted-foreground font-semibold">x{item.quantity || item.qty}</span></span>
-                                <span className="font-semibold text-foreground">{formatPrice((item.unit_price || item.price) * (item.quantity || item.qty))}</span>
+                            {(order.items || []).map((item, i) => {
+                              // La API ya devuelve nombre y subtotal por línea. El respaldo
+                              // existe porque antes se multiplicaba un precio inexistente y
+                              // el cliente veía "NaN" donde iba el monto.
+                              const cantidad = item.quantity ?? item.qty ?? 0;
+                              const unitario = item.unit_price ?? item.price;
+                              const subtotal = item.line_total ?? (Number.isFinite(unitario) ? unitario * cantidad : null);
+                              return (
+                                <div key={i} className="flex justify-between items-start gap-3 text-sm">
+                                  <span className="text-foreground">
+                                    {item.name || 'Producto'}{' '}
+                                    <span className="text-xs text-muted-foreground font-semibold">x{cantidad}</span>
+                                  </span>
+                                  <span className="font-semibold text-foreground whitespace-nowrap">
+                                    {subtotal != null ? formatPrice(subtotal) : '—'}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* Dónde y cómo llega. Antes el pedido no decía nada de esto:
+                              el cliente veía el total y el estado, pero no a qué dirección
+                              iba ni si era despacho o retiro. */}
+                          <div className="rounded-xl bg-muted/40 p-3 space-y-1.5 text-xs">
+                            <div className="flex justify-between gap-3">
+                              <span className="text-muted-foreground">Entrega</span>
+                              <span className="font-semibold text-foreground text-right">{getDeliveryLabel(order)}</span>
+                            </div>
+                            {order.address && (
+                              <div className="flex justify-between gap-3">
+                                <span className="text-muted-foreground shrink-0">Dirección</span>
+                                <span className="text-foreground text-right">
+                                  {[order.address, order.city, order.region].filter(Boolean).join(', ')}
+                                </span>
                               </div>
-                            ))}
+                            )}
+                            <div className="flex justify-between gap-3">
+                              <span className="text-muted-foreground">Despacho</span>
+                              <span className={`font-semibold ${order.shipping_cost ? 'text-foreground' : 'text-success'}`}>
+                                {order.shipping_cost ? formatPrice(order.shipping_cost) : 'Sin costo'}
+                              </span>
+                            </div>
                           </div>
 
                           {/* Tracking Progress Visualizer */}

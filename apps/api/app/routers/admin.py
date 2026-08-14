@@ -12,6 +12,7 @@ from app.models.orders import OrderUpdateStatus, OrderShippingUpdate
 from app.core.pricing import COURIERS
 from app.core.taxonomy import normalize_benefit_from_bullets, normalize_product_type
 from app.services.email_service import send_shipping_notification
+from app.services.orders_service import enrich_order_items
 from app.core.config import settings
 from app.services.storage_service import upload_image
 import uuid
@@ -301,49 +302,6 @@ async def get_recent_orders(limit: int = 10, _: dict = Depends(verify_admin_user
         raise HTTPException(status_code=500, detail=f"Failed to fetch recent orders: {str(e)}")
 
 
-def _enrich_order_items(order: dict) -> dict:
-    """
-    Completa cada linea del pedido con el nombre, precio e imagen del producto.
-
-    En la base los items se guardan solo como [{product_id, quantity}]: el RPC
-    create_order_with_stock_check descarta el nombre y el precio unitario que arma
-    validate_and_build_order. Sin esto el detalle mostraria UUIDs pelados.
-    """
-    items = order.get("items") or []
-    if not items:
-        return order
-
-    ids = [i.get("product_id") for i in items if i.get("product_id")]
-    catalogo = {}
-    if ids:
-        if supabase_client is None:
-            catalogo = {p["id"]: p for p in MOCK_PRODUCTS if p.get("id") in ids}
-        else:
-            try:
-                res = supabase_client.from_("products").select(
-                    "id, name, price, image_url"
-                ).in_("id", ids).execute()
-                catalogo = {p["id"]: p for p in (res.data or [])}
-            except Exception:
-                # Un producto borrado del catalogo no puede romper la vista del pedido.
-                catalogo = {}
-
-    enriquecidos = []
-    for item in items:
-        producto = catalogo.get(item.get("product_id")) or {}
-        cantidad = int(item.get("quantity", 0) or 0)
-        precio = int(producto.get("price", 0) or 0)
-        enriquecidos.append({
-            **item,
-            "name": producto.get("name") or "Producto ya no disponible",
-            "price": precio,
-            "image_url": producto.get("image_url"),
-            "line_total": precio * cantidad,
-        })
-
-    return {**order, "items": enriquecidos}
-
-
 @router.patch("/orders/{order_id}/shipping")
 async def admin_ship_order(
     order_id: str,
@@ -411,7 +369,7 @@ async def get_order_detail(order_id: str, _: dict = Depends(verify_admin_user)):
         order = MOCK_ORDERS.get(order_id)
         if not order:
             raise HTTPException(status_code=404, detail="Order not found")
-        return _enrich_order_items(order)
+        return enrich_order_items(order)
 
     try:
         response = supabase_client.from_("orders").select("*").eq("id", order_id).limit(1).execute()
@@ -420,7 +378,7 @@ async def get_order_detail(order_id: str, _: dict = Depends(verify_admin_user)):
 
     if not response.data:
         raise HTTPException(status_code=404, detail="Order not found")
-    return _enrich_order_items(response.data[0])
+    return enrich_order_items(response.data[0])
 
 
 @router.get("/inventory/alerts")

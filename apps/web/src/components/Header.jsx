@@ -89,11 +89,11 @@ const Header = ({ minimal = false }) => {
             <Link to="/cart" className="text-foreground/80 hover:text-primary transition-all duration-200">
               <CartIcon />
             </Link>
-            {isAuthenticated && (
-              <Button variant="ghost" size="icon" onClick={logout} title="Cerrar sesión">
-                <LogOut className="h-4 w-4" />
-              </Button>
-            )}
+            {/* Acá había un botón de cerrar sesión, solo con ícono y sin texto. Sobraba:
+                al entrar a Mi Cuenta quedaban dos a la vista, y un ícono de apagado sin
+                etiqueta pegado al carrito es fácil de apretar por error en medio de una
+                compra. La barra ya lleva a "Mi Cuenta", que es donde está el botón
+                rotulado. En el menú móvil se conserva, porque ahí no hay otro. */}
           </nav>
 
           <div className="md:hidden flex items-center gap-2">
