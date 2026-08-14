@@ -125,6 +125,7 @@ const AccountContent = () => {
     <>
       <Helmet>
         <title>Mi Cuenta - NutraBlue</title>
+        <meta name="robots" content="noindex, nofollow" />
       </Helmet>
       
       <Header />

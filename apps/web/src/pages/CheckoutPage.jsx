@@ -272,6 +272,7 @@ const CheckoutPage = () => {
       <Helmet>
         <title>Checkout - NutraBlue</title>
         <meta name="description" content="Completa tu compra en NutraBlue" />
+        <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
       <Header minimal />

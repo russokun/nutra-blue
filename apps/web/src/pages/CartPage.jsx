@@ -65,6 +65,7 @@ const CartPage = () => {
         <Helmet>
           <title>Carrito - NutraBlue</title>
           <meta name="description" content="Tu carrito de compras en NutraBlue" />
+          <meta name="robots" content="noindex, nofollow" />
         </Helmet>
 
         <Header minimal />
@@ -92,6 +93,7 @@ const CartPage = () => {
       <Helmet>
         <title>Carrito - NutraBlue</title>
         <meta name="description" content="Revisa tu carrito de compras en NutraBlue" />
+        <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
       <Header minimal />

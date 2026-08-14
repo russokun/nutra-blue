@@ -43,6 +43,7 @@ const RegisterPage = () => {
     <>
       <Helmet>
         <title>Registro - NutraBlue</title>
+        <meta name="robots" content="noindex, nofollow" />
       </Helmet>
       <Header />
       <main className="min-h-screen bg-background py-12">

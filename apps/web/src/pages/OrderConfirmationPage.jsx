@@ -125,6 +125,7 @@ const OrderConfirmationPage = () => {
       <Helmet>
         <title>Confirmación de Orden - NutraBlue</title>
         <meta name="description" content="Tu orden ha sido confirmada exitosamente" />
+        <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
       <Header />
