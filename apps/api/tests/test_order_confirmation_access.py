@@ -97,6 +97,49 @@ def test_el_correo_de_otro_pedido_no_sirve(monkeypatch):
     assert "match" in respuesta.json()["detail"].lower()
 
 
+def test_mis_pedidos_traen_nombre_y_subtotal_de_cada_producto():
+    """
+    En la base los items se guardan solo como {product_id, quantity}. Sin completarlos,
+    "Mis pedidos" mostraba el nombre vacio y el monto de cada linea como NaN, porque
+    multiplicaba un precio que no existia.
+    """
+    crear_pedido()
+
+    pedidos = client.get("/orders", params={"email": EMAIL}).json()
+    assert pedidos
+
+    for item in pedidos[0]["items"]:
+        assert item["name"], "la linea no puede quedar sin nombre"
+        assert isinstance(item["unit_price"], int) and item["unit_price"] > 0
+        assert item["line_total"] == item["unit_price"] * item["quantity"]
+
+
+def test_el_detalle_de_un_pedido_tambien_los_trae(monkeypatch):
+    """Es la pagina de confirmacion: tiene que mostrar lo mismo que el historial."""
+    pedido = crear_pedido()
+    monkeypatch.setattr(settings, "environment", "production")
+
+    detalle = client.get(f"/orders/{pedido['id']}", params={"email": EMAIL}).json()
+    assert detalle["items"]
+    for item in detalle["items"]:
+        assert item["name"]
+        assert item["line_total"] == item["unit_price"] * item["quantity"]
+
+    # Y el desglose tiene que cuadrar con lo que se le cobro.
+    assert sum(i["line_total"] for i in detalle["items"]) == detalle["total"]
+
+
+def test_un_producto_borrado_no_rompe_el_historial():
+    """El pedido sigue siendo legible aunque el producto ya no este en el catalogo."""
+    pedido = crear_pedido()
+    MOCK_ORDERS[pedido["id"]]["items"] = [{"product_id": "ya-no-existe", "quantity": 2}]
+
+    pedidos = client.get("/orders", params={"email": EMAIL}).json()
+    item = pedidos[0]["items"][0]
+    assert item["name"] == "Producto ya no disponible"
+    assert item["line_total"] == 0
+
+
 def test_un_pedido_inexistente_da_404_no_403(monkeypatch):
     """
     Importa para el mensaje de error: 404 es "revisa el numero", 403 es "no podemos

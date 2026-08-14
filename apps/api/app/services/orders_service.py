@@ -2,6 +2,7 @@ from typing import Optional
 from fastapi import HTTPException
 from app.models.orders import OrderCreate
 from app.core.pricing import calculate_order_totals, CHILEAN_REGIONS, DELIVERY_METHODS, COURIERS
+from app.core.mock_data import MOCK_PRODUCTS
 from app.core.mock_store import MOCK_ORDERS
 from app.database.supabase import supabase_client
 from app.services.products_service import get_product_by_id
@@ -126,6 +127,53 @@ def get_order_by_id(order_id: str) -> Optional[dict]:
     except Exception:
         pass
     return None
+
+
+def enrich_order_items(order: dict) -> dict:
+    """
+    Completa cada linea del pedido con el nombre, precio e imagen del producto.
+
+    En la base los items se guardan solo como [{product_id, quantity}]: el RPC
+    create_order_with_stock_check descarta el nombre y el precio unitario que arma
+    validate_and_build_order. Sin esto quien mire el pedido ve identificadores pelados y
+    los totales por linea salen NaN, porque no hay precio con el que multiplicar.
+
+    Lo usan tanto el panel admin como "Mis pedidos" del cliente.
+    """
+    items = order.get("items") or []
+    if not items:
+        return order
+
+    ids = [i.get("product_id") for i in items if i.get("product_id")]
+    catalogo = {}
+    if ids:
+        if supabase_client is None:
+            catalogo = {p["id"]: p for p in MOCK_PRODUCTS if p.get("id") in ids}
+        else:
+            try:
+                res = supabase_client.from_("products").select(
+                    "id, name, price, image_url"
+                ).in_("id", ids).execute()
+                catalogo = {p["id"]: p for p in (res.data or [])}
+            except Exception:
+                # Un producto borrado del catalogo no puede romper la vista del pedido.
+                catalogo = {}
+
+    enriquecidos = []
+    for item in items:
+        producto = catalogo.get(item.get("product_id")) or {}
+        cantidad = int(item.get("quantity", 0) or 0)
+        precio = int(producto.get("price", 0) or 0)
+        enriquecidos.append({
+            **item,
+            "name": producto.get("name") or "Producto ya no disponible",
+            "price": precio,
+            "unit_price": precio,
+            "image_url": producto.get("image_url"),
+            "line_total": precio * cantidad,
+        })
+
+    return {**order, "items": enriquecidos}
 
 
 def verify_order_access(order: dict, email: Optional[str], require_email: bool) -> None:
