@@ -1,0 +1,25 @@
+# NutraBlue — https://nutrablue.cl
+#
+# Los rastreadores de IA (GPTBot, ClaudeBot, PerplexityBot y compañía) quedan permitidos
+# a propósito: hoy buena parte de las recomendaciones de producto salen de asistentes, y
+# bloquearlos deja a NutraBlue fuera de esas respuestas. Si en algún momento se decide lo
+# contrario, se bloquean por User-agent acá.
+
+User-agent: *
+Allow: /
+
+# Páginas privadas o sin valor para búsqueda. No son secretas: solo no aportan nada en
+# los resultados y gastan presupuesto de rastreo.
+Disallow: /checkout
+Disallow: /cart
+Disallow: /account
+Disallow: /login
+Disallow: /register
+Disallow: /order-confirmation/
+Disallow: /pago-pendiente/
+Disallow: /admin
+
+# El modo prueba muestra productos que no son del catálogo público.
+Disallow: /*?prueba=
+
+Sitemap: https://nutrablue.cl/sitemap.xml

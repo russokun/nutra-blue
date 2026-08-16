@@ -202,6 +202,11 @@ def test_mercadopago_preference_uses_public_urls(monkeypatch):
     preference = preferences[0]
     assert preference["notification_url"] == "https://tunnel.example/payment/mercadopago-callback"
     assert preference["back_urls"]["success"] == f"https://nutrablue.test/order-confirmation/{order['id']}"
+    # El rechazo y el pendiente tienen destino propio. Antes los dos volvian a /checkout
+    # sin explicar nada: el cliente veia el formulario vacio sin saber si habia pagado, y
+    # con el pendiente el pedido si quedaba creado, asi que podia pagar dos veces.
+    assert preference["back_urls"]["failure"] == "https://nutrablue.test/checkout?error=rejected"
+    assert preference["back_urls"]["pending"] == f"https://nutrablue.test/pago-pendiente/{order['id']}"
     assert preference["external_reference"] == order["id"]
     # El monto cobrado es la suma de los items: tiene que ser exactamente el total.
     assert sum(i["unit_price"] * i["quantity"] for i in preference["items"]) == order["total"]

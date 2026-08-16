@@ -1,4 +1,5 @@
 import { MOCK_PRODUCTS } from './mockData';
+import { emailDePedido } from './orderAccess';
 import { createSupabaseClient } from '@nutrablue/shared';
 
 const { supabase, isSupabaseConfigured } = createSupabaseClient();
@@ -150,9 +151,10 @@ const dataClient = {
 
       getOne: async (id, options = {}) => {
         if (tableName === 'orders') {
-          const pendingRaw = sessionStorage.getItem('nutra_blue_pending_order');
-          const pending = pendingRaw ? JSON.parse(pendingRaw) : null;
-          const email = options.email || pending?.email || '';
+          // El correo se busca POR PEDIDO. Antes se tomaba el del último checkout de la
+          // sesión sin comprobar de qué pedido era: al abrir la confirmación de una
+          // compra anterior se mandaba el correo de otra y la API devolvía 403.
+          const email = options.email || emailDePedido(id);
           const query = email ? `?email=${encodeURIComponent(email)}` : '';
           const data = await fetchFromApi(`/orders/${id}${query}`);
           return mapCreatedTimestamp(data);

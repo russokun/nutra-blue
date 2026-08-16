@@ -5,7 +5,10 @@ import path from 'node:path';
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3002,
+    // Mismo criterio que la tienda: 3002 por defecto, y si está ocupado toma el
+    // siguiente libre en vez de fallar.
+    port: Number(process.env.PORT) || 3002,
+    strictPort: false,
     cors: true,
     proxy: {
       '/hcgi/api': {

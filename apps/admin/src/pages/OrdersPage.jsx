@@ -6,6 +6,9 @@ import { toast } from 'sonner';
 import { RefreshCw, Filter, Calendar, DollarSign, User, Eye } from 'lucide-react';
 import OrderDetailModal from '@/components/OrderDetailModal';
 
+// Se usan solo para filtrar la lista. El estado de un pedido no se edita a mano: lo
+// mueve el flujo (el webhook de pago lo pasa a 'paid', y registrar el despacho a
+// 'shipped').
 const STATUS_OPTIONS = ['pending', 'paid', 'shipped', 'cancelled', 'expired'];
 
 const formatPrice = (price) =>
@@ -47,16 +50,6 @@ const OrdersPage = () => {
   useEffect(() => {
     fetchOrders();
   }, [filter]);
-
-  const handleStatusChange = async (orderId, newStatus) => {
-    try {
-      await adminClient.updateOrderStatus(orderId, newStatus);
-      toast.success('Estado del pedido actualizado');
-      fetchOrders();
-    } catch (err) {
-      toast.error(err.message || 'Error al actualizar estado');
-    }
-  };
 
   return (
     <div className="space-y-8">
@@ -110,8 +103,7 @@ const OrdersPage = () => {
                   <th className="p-4">Fecha</th>
                   <th className="p-4">Entrega</th>
                   <th className="p-4">Total</th>
-                  <th className="p-4">Estado Actual</th>
-                  <th className="p-4 text-right">Modificar Estado</th>
+                  <th className="p-4">Estado</th>
                   <th className="p-4 text-right">Detalle</th>
                 </tr>
               </thead>
@@ -148,17 +140,12 @@ const OrdersPage = () => {
                         {order.status}
                       </span>
                     </td>
-                    <td className="p-4 text-right">
-                      <select
-                        value={order.status}
-                        onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                        className="rounded-lg border border-input bg-background px-2.5 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary inline-block text-left"
-                      >
-                        {STATUS_OPTIONS.map((s) => (
-                          <option key={s} value={s}>{s.toUpperCase()}</option>
-                        ))}
-                      </select>
-                    </td>
+                    {/* Acá había un selector para cambiar el estado a mano. El estado lo
+                        maneja el propio flujo: 'paid' lo pone el webhook de Mercado Pago
+                        cuando el cobro se confirma, y 'shipped' queda al registrar el
+                        despacho con su código de seguimiento. Cambiarlo a dedo desde una
+                        lista desplegable —a un clic de distancia, sin confirmación— podía
+                        dar por pagado un pedido que nadie pagó. */}
                     <td className="p-4 text-right">
                       <Button
                         onClick={() => setDetalleId(order.id)}

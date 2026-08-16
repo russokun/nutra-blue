@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Helmet } from 'react-helmet';
+import { Helmet } from '@/components/Meta';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import Header from '@/components/Header';
@@ -43,6 +43,7 @@ const RegisterPage = () => {
     <>
       <Helmet>
         <title>Registro - NutraBlue</title>
+        <meta name="robots" content="noindex, nofollow" />
       </Helmet>
       <Header />
       <main className="min-h-screen bg-background py-12">

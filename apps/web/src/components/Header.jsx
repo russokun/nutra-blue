@@ -17,7 +17,7 @@ const Header = ({ minimal = false }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-2 min-h-[80px]">
             <Link to="/" className="flex items-center space-x-3">
-              <img src="/logo.png" alt="NutraBlue Logo" style={{ height: '70px', width: 'auto' }} />
+              <img src="/logo.webp" alt="NutraBlue" style={{ height: '70px', width: 'auto' }} />
             </Link>
 
             <div className="flex items-center gap-6">
@@ -61,7 +61,7 @@ const Header = ({ minimal = false }) => {
               la barra de navegación ya tiene "Catálogo" a dos centímetros de distancia.
               El de la cabecera minimal (checkout) se conserva, porque ahí no hay menú. */}
           <Link to="/" className="flex items-center space-x-3">
-            <img src="/logo.png" alt="NutraBlue Logo" style={{ height: '108px', width: 'auto' }} />
+            <img src="/logo.webp" alt="NutraBlue" style={{ height: '108px', width: 'auto' }} />
           </Link>
 
           <nav className="hidden md:flex items-center space-x-8">
@@ -89,11 +89,11 @@ const Header = ({ minimal = false }) => {
             <Link to="/cart" className="text-foreground/80 hover:text-primary transition-all duration-200">
               <CartIcon />
             </Link>
-            {isAuthenticated && (
-              <Button variant="ghost" size="icon" onClick={logout} title="Cerrar sesión">
-                <LogOut className="h-4 w-4" />
-              </Button>
-            )}
+            {/* Acá había un botón de cerrar sesión, solo con ícono y sin texto. Sobraba:
+                al entrar a Mi Cuenta quedaban dos a la vista, y un ícono de apagado sin
+                etiqueta pegado al carrito es fácil de apretar por error en medio de una
+                compra. La barra ya lleva a "Mi Cuenta", que es donde está el botón
+                rotulado. En el menú móvil se conserva, porque ahí no hay otro. */}
           </nav>
 
           <div className="md:hidden flex items-center gap-2">

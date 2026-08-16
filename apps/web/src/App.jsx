@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Route, Routes, BrowserRouter as Router, Navigate } from 'react-router-dom';
+import { Route, Routes, BrowserRouter as Router } from 'react-router-dom';
 import { CartProvider } from '@/contexts/CartContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Toaster } from '@/components/ui/sonner';
@@ -21,6 +21,8 @@ import AccountPage from '@/pages/AccountPage';
 import HistoriaPage from '@/pages/HistoriaPage';
 import ContactoPage from '@/pages/ContactoPage';
 import FaqPage from '@/pages/FaqPage';
+import NotFoundPage from '@/pages/NotFoundPage';
+import PaymentPendingPage from '@/pages/PaymentPendingPage';
 
 const RedirectToAdmin = () => {
   useEffect(() => {
@@ -50,6 +52,7 @@ function App() {
             <Route path="/cart" element={<CartPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
+            <Route path="/pago-pendiente/:orderId" element={<PaymentPendingPage />} />
             <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
             <Route path="/terms-of-service" element={<TermsOfServicePage />} />
             <Route path="/impacto" element={<ImpactPage />} />
@@ -60,7 +63,9 @@ function App() {
             <Route path="/historia" element={<HistoriaPage />} />
             <Route path="/contacto" element={<ContactoPage />} />
             <Route path="/faqs" element={<FaqPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            {/* Antes esto era un <Navigate to="/">: una URL rota mandaba al inicio sin
+                explicar nada, y Google la seguia tratando como valida. */}
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
 
           <Toaster />

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="es-CL">
 	<head>
 		<meta charset="UTF-8" />
 		<link rel="icon" type="image/x-icon" href="/favicon.ico" />
@@ -7,13 +7,71 @@
 		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 		<meta name="description" content="Alimentos naturales y funcionales seleccionados para mejorar tu salud: energía, concentración, descanso y longevidad. Empresa familiar chilena, despacho a todo Chile." />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="theme-color" content="#0c1e35" />
 		<title>NutraBlue — Alimentos naturales y funcionales para tu salud</title>
+
+		<link rel="canonical" href="https://nutrablue.cl/" />
 
 		<!-- Open Graph / WhatsApp / Facebook -->
 		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="NutraBlue" />
+		<meta property="og:locale" content="es_CL" />
+		<meta property="og:url" content="https://nutrablue.cl/" />
 		<meta property="og:title" content="NutraBlue — Alimentos naturales y funcionales para tu salud" />
 		<meta property="og:description" content="Alimentos naturales y funcionales seleccionados para mejorar tu salud: energía, concentración, descanso y longevidad. Empresa familiar chilena, despacho a todo Chile." />
-		<meta property="og:image" content="/og-image.jpg" />
+		<meta property="og:image" content="https://nutrablue.cl/og-image.png" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta property="og:image:alt" content="NutraBlue — Alimentos naturales y funcionales" />
+
+		<!-- Twitter / X -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content="NutraBlue — Alimentos naturales y funcionales para tu salud" />
+		<meta name="twitter:description" content="Alimentos naturales y funcionales seleccionados para mejorar tu salud. Empresa familiar chilena, despacho a todo Chile." />
+		<meta name="twitter:image" content="https://nutrablue.cl/og-image.png" />
+
+		<!--
+			Datos estructurados del sitio. Van acá y no en un componente de React a
+			propósito: así los rastreadores los leen en el HTML inicial, sin depender de
+			que la aplicación se ejecute. Los de producto sí son dinámicos y se inyectan
+			desde la ficha.
+
+			No se declara `aggregateRating`: no hay reseñas reales, e inventarlas es motivo
+			de sanción manual de Google además de publicidad engañosa.
+		-->
+		<script type="application/ld+json">
+		{
+			"@context": "https://schema.org",
+			"@type": "Organization",
+			"name": "NutraBlue",
+			"url": "https://nutrablue.cl",
+			"logo": "https://nutrablue.cl/logo.png",
+			"image": "https://nutrablue.cl/og-image.png",
+			"description": "Empresa familiar chilena que selecciona alimentos naturales y funcionales para la energía, la concentración, el descanso y la longevidad.",
+			"email": "contacto@nutrablue.cl",
+			"areaServed": { "@type": "Country", "name": "Chile" },
+			"contactPoint": {
+				"@type": "ContactPoint",
+				"contactType": "customer support",
+				"email": "contacto@nutrablue.cl",
+				"availableLanguage": ["Spanish"]
+			}
+		}
+		</script>
+		<script type="application/ld+json">
+		{
+			"@context": "https://schema.org",
+			"@type": "WebSite",
+			"name": "NutraBlue",
+			"url": "https://nutrablue.cl",
+			"inLanguage": "es-CL",
+			"potentialAction": {
+				"@type": "SearchAction",
+				"target": "https://nutrablue.cl/shop?search={search_term_string}",
+				"query-input": "required name=search_term_string"
+			}
+		}
+		</script>
 	</head>
 	<body>
 		<div id="root"></div>

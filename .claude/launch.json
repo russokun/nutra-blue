@@ -5,7 +5,15 @@
       "name": "web",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--prefix", "apps/web"],
-      "port": 3000
+      "port": 3000,
+      "autoPort": true
+    },
+    {
+      "name": "web-prod",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite", "preview", "--outDir", "apps/web/dist"],
+      "port": 4173,
+      "autoPort": true
     },
     {
       "name": "api",
@@ -17,7 +25,8 @@
       "name": "admin",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--prefix", "apps/admin"],
-      "port": 3002
+      "port": 3002,
+      "autoPort": true
     }
   ]
 }

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Helmet } from 'react-helmet';
+import { Helmet } from '@/components/Meta';
+import { OG_IMAGE, absoluteUrl } from '@/lib/seo';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Header from '@/components/Header';
@@ -15,6 +16,9 @@ const ImpactPage = () => {
       <Helmet>
         <title>Nuestro Impacto - NutraBlue</title>
         <meta name="description" content="Descubre el impacto y la propuesta de valor de NutraBlue. Impulsamos la longevidad celular, la claridad mental y la salud sustentable en Chile." />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta property="og:url" content={absoluteUrl('/impacto')} />
+        <link rel="canonical" href={absoluteUrl('/impacto')} />
       </Helmet>
 
       <Header />
@@ -24,7 +28,7 @@ const ImpactPage = () => {
         <section className="relative py-28 md:py-40 flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 z-0">
             <img
-              src="/impact_bg.png"
+              src="/impact_bg.webp"
               alt="Pristine valley and glacial lake background"
               className="w-full h-full object-cover"
             />

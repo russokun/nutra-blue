@@ -9,6 +9,7 @@ from app.core.mock_store import MOCK_ORDERS
 from app.core.security import verify_internal_api_key
 from app.services.orders_service import (
     OrderValidationError,
+    enrich_order_items,
     validate_and_build_order,
     get_order_by_id,
     verify_order_access,
@@ -21,19 +22,21 @@ router = APIRouter(prefix="/orders", tags=["Orders"])
 async def list_orders(
     email: str = Query(..., description="Customer email to filter orders"),
 ):
-    if supabase_client is None:
+    def mios():
         return [
             order for order in MOCK_ORDERS.values()
             if order.get("email", "").lower() == email.lower()
         ]
+
+    # Se enriquecen los items: en la base solo hay product_id y quantity, asi que sin
+    # esto "Mis pedidos" mostraba el nombre vacio y el subtotal de cada linea como NaN.
+    if supabase_client is None:
+        return [enrich_order_items(o) for o in mios()]
     try:
         response = supabase_client.from_("orders").select("*").eq("email", email.lower()).order("created_at", desc=True).execute()
-        return response.data
+        return [enrich_order_items(o) for o in (response.data or [])]
     except Exception:
-        return [
-            order for order in MOCK_ORDERS.values()
-            if order.get("email", "").lower() == email.lower()
-        ]
+        return [enrich_order_items(o) for o in mios()]
 
 
 @router.post("")
@@ -118,7 +121,7 @@ async def get_order(
         raise HTTPException(status_code=404, detail="Order not found")
 
     verify_order_access(order, email, require_email)
-    return order
+    return enrich_order_items(order)
 
 
 @router.patch("/{order_id}")
