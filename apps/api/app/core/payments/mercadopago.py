@@ -107,10 +107,14 @@ class MercadoPagoPayment(PaymentGateway):
                 },
                 "name": customer_name
             },
+            # Los tres casos tienen destino propio. Antes el rechazo y el pendiente
+            # devolvian a /checkout sin explicar nada: el cliente veia el formulario
+            # vacio y no sabia si habia pagado. Con el pendiente era peor, porque el
+            # pedido si quedaba creado y podia terminar pagando dos veces.
             "back_urls": {
                 "success": f"{web_url}/order-confirmation/{order_id}",
-                "failure": f"{web_url}/checkout",
-                "pending": f"{web_url}/checkout"
+                "failure": f"{web_url}/checkout?error=rejected",
+                "pending": f"{web_url}/pago-pendiente/{order_id}",
             },
             "external_reference": order_id,
             "metadata": {"order_id": order_id},

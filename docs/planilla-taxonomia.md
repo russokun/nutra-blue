@@ -73,6 +73,20 @@ En el formulario de cada producto del panel de administración hay campos **Bene
 **Tipo**. Lo que se cargue ahí se conserva en cada sincronización, mientras la ficha no
 aporte un valor reconocible.
 
+## Estado de la planilla hoy
+
+Revisada la planilla de producción, sus columnas son:
+
+```
+[0] Categoría / Objetivo   [3] Contacto     [6] (Comentario)   
+[1] Suplemento / Alimento  [4] $ Compra     [7] Inventario
+[2] Productor              [5] $ Venta      [8] Link Doc
+```
+
+**Todavía no tiene las columnas `Beneficio` ni `Tipo`**, y no hace falta que las tenga:
+esas dos salen de la ficha de Google Docs enlazada en `Link Doc`. El resto de las
+columnas se detecta correctamente.
+
 ## Override desde la planilla (opcional)
 
 El sync también acepta columnas `Beneficio` y `Tipo` en la planilla, y esas le ganan a la

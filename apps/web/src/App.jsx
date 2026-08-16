@@ -22,6 +22,7 @@ import HistoriaPage from '@/pages/HistoriaPage';
 import ContactoPage from '@/pages/ContactoPage';
 import FaqPage from '@/pages/FaqPage';
 import NotFoundPage from '@/pages/NotFoundPage';
+import PaymentPendingPage from '@/pages/PaymentPendingPage';
 
 const RedirectToAdmin = () => {
   useEffect(() => {
@@ -51,6 +52,7 @@ function App() {
             <Route path="/cart" element={<CartPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
+            <Route path="/pago-pendiente/:orderId" element={<PaymentPendingPage />} />
             <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
             <Route path="/terms-of-service" element={<TermsOfServicePage />} />
             <Route path="/impacto" element={<ImpactPage />} />
