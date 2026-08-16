@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Truck } from 'lucide-react';
+import { Truck, AlertCircle, X } from 'lucide-react';
 import { isFreeShipping, shippingHint } from '@/lib/shipping';
 import { recordarPedido } from '@/lib/orderAccess';
 import { toast } from 'sonner';
@@ -18,26 +18,35 @@ const CheckoutPage = () => {
   const navigate = useNavigate();
   const { cart, getCartTotal } = useCart();
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const errorParam = params.get('error');
-    if (errorParam) {
-      let message = 'Ocurrió un inconveniente al procesar el pago. Por favor intenta nuevamente.';
-      if (errorParam === 'user_rejected' || errorParam === 'aborted') {
-        message = 'El pago fue cancelado por el usuario.';
-      } else if (errorParam === 'failed' || errorParam === 'rejected') {
-        message = 'La transacción fue rechazada por el banco emisor.';
-      } else if (errorParam === 'payment_validation') {
-        message = 'Error de validación: el monto total de pago no coincide.';
-      }
-      toast.error(message, { duration: 6000 });
-      // Limpiar parámetro error de la URL de forma limpia
-      window.history.replaceState({}, document.title, window.location.pathname);
+  // Aviso de vuelta de la pasarela cuando el pago no salió.
+  //
+  // Antes esto mostraba un toast, y no se veía nunca: se dispara al montar la página,
+  // antes de que monte el contenedor de notificaciones, así que sonner lo descartaba. Y
+  // el retorno de Mercado Pago siempre es una carga nueva, o sea justo el caso que
+  // fallaba. Además un aviso que se va solo en seis segundos es poca cosa para explicar
+  // que no se pudo cobrar: ahora queda fijo arriba del formulario hasta que lo cierre.
+  const [avisoPago, setAvisoPago] = useState(() => {
+    const motivo = new URLSearchParams(window.location.search).get('error');
+    if (!motivo) return null;
+    if (motivo === 'user_rejected' || motivo === 'aborted') {
+      return 'Cancelaste el pago antes de terminar. Tus datos siguen acá: puedes intentarlo de nuevo cuando quieras.';
     }
-  }, []);
+    if (motivo === 'failed' || motivo === 'rejected') {
+      return 'Tu banco rechazó la transacción y no se te cobró nada. Puedes reintentar con otro medio de pago.';
+    }
+    if (motivo === 'payment_validation') {
+      return 'No pudimos validar el monto del pago y no se te cobró nada. Vuelve a intentarlo; si se repite, escríbenos.';
+    }
+    return 'No se pudo completar el pago y no se te cobró nada. Puedes intentarlo nuevamente.';
+  });
 
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  useEffect(() => {
+    if (!avisoPago) return;
+    // Se saca el parámetro de la URL para que recargar no repita el aviso.
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }, [avisoPago]);
+
+  const FORMULARIO_VACIO = {
     name: '',
     email: '',
     phone: '',
@@ -46,12 +55,32 @@ const CheckoutPage = () => {
     city: '',
     region: '',
     postalCode: ''
-  });
+  };
+
+  // Si el pago se rechaza, Mercado Pago devuelve al cliente acá con una carga de página
+  // nueva: sin esto tendría que volver a escribir sus datos completos para reintentar,
+  // que es donde se pierden las ventas. Se guarda en sessionStorage (no localStorage):
+  // son datos personales y se van al cerrar la pestaña.
+  const CLAVE_BORRADOR = 'nutra_blue_checkout_borrador';
+
+  const leerBorrador = () => {
+    try {
+      const crudo = sessionStorage.getItem(CLAVE_BORRADOR);
+      return crudo ? JSON.parse(crudo) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const borrador = leerBorrador();
+
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({ ...FORMULARIO_VACIO, ...(borrador?.formData || {}) });
 
   const [errors, setErrors] = useState({});
   const [paymentMethod, setPaymentMethod] = useState('mercadopago');
-  const [deliveryMethod, setDeliveryMethod] = useState('domicilio');
-  const [courier, setCourier] = useState('');
+  const [deliveryMethod, setDeliveryMethod] = useState(borrador?.deliveryMethod || 'domicilio');
+  const [courier, setCourier] = useState(borrador?.courier || '');
 
   // Coupon States
   const [couponCode, setCouponCode] = useState('');
@@ -243,6 +272,12 @@ const CheckoutPage = () => {
         orderId: order.id,
         email: formData.email,
       }));
+      // Borrador para el caso de rechazo: si vuelve a intentar, no reescribe todo.
+      sessionStorage.setItem(CLAVE_BORRADOR, JSON.stringify({
+        formData,
+        deliveryMethod,
+        courier,
+      }));
       // Registro duradero: permite volver a ver la confirmación de ESTE pedido más
       // adelante. La marca de sesión se borra apenas se vacía el carrito, así que por sí
       // sola dejaba la página de confirmación inaccesible al recargar.
@@ -284,6 +319,24 @@ const CheckoutPage = () => {
           >
             Checkout
           </h1>
+
+          {avisoPago && (
+            <div
+              role="alert"
+              className="mb-8 flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4"
+            >
+              <AlertCircle className="h-5 w-5 shrink-0 text-destructive mt-0.5" aria-hidden="true" />
+              <p className="flex-1 text-sm text-foreground">{avisoPago}</p>
+              <button
+                type="button"
+                onClick={() => setAvisoPago(null)}
+                className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Cerrar aviso"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

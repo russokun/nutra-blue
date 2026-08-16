@@ -6,6 +6,7 @@
 - [Nuestro Impacto - NutraBlue](/impacto): Descubre el impacto y la propuesta de valor de NutraBlue. Impulsamos la longevidad celular, la claridad mental y la salud sustentable en Chile.
 - [NutraBlue — Alimentos naturales y funcionales para tu salud](/): Alimentos naturales y funcionales seleccionados para mejorar tu salud: energía, concentración, descanso y longevidad. Empresa familiar chilena, despacho a todo Chile.
 - [Página no encontrada — NutraBlue](/*): La página que buscas no existe o cambió de dirección. Te ayudamos a encontrar lo que necesitas en NutraBlue.
+- [Pago en proceso — NutraBlue](/pago-pendiente/:orderId): Tu pago está siendo confirmado por Mercado Pago.
 - [Política de Privacidad - NutraBlue](/privacy-policy): Política de privacidad de NutraBlue. Conoce cómo protegemos y gestionamos tus datos personales en conformidad con las leyes chilenas.
 - [Preguntas Frecuentes - NutraBlue](/faqs): Respuestas sobre despachos, medios de pago, devoluciones y cómo elegir entre los alimentos funcionales de NutraBlue.
 - [Términos de Servicio - NutraBlue](/terms-of-service): Términos y condiciones de uso de NutraBlue. Conoce los términos de compra, envíos, políticas de devolución y garantías en Chile.

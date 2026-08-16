@@ -16,6 +16,7 @@ Disallow: /account
 Disallow: /login
 Disallow: /register
 Disallow: /order-confirmation/
+Disallow: /pago-pendiente/
 Disallow: /admin
 
 # El modo prueba muestra productos que no son del catálogo público.

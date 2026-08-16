@@ -39,6 +39,10 @@ export function createBaseAdminClient(adminFetch) {
         method: 'PATCH',
         body: JSON.stringify(data),
       }),
+    // Sin uso desde que se quitó el selector de estado de la lista de pedidos. Se
+    // conserva porque el endpoint sigue siendo la única forma de CANCELAR un pedido, y
+    // cancelar es lo que devuelve el stock al inventario. Si se agrega esa acción al
+    // panel, es por acá.
     updateOrderStatus: (orderId, status) =>
       adminFetch(`/orders/${orderId}/status`, {
         method: 'PATCH',

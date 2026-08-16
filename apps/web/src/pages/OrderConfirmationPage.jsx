@@ -34,6 +34,9 @@ const OrderConfirmationPage = () => {
       if (pending.orderId === orderId) {
         clearCart();
         sessionStorage.removeItem('nutra_blue_pending_order');
+        // La compra se concretó: el borrador del checkout ya no hace falta y son datos
+        // personales, así que no tiene por qué seguir en el navegador.
+        sessionStorage.removeItem('nutra_blue_checkout_borrador');
       }
     } catch {
       sessionStorage.removeItem('nutra_blue_pending_order');
