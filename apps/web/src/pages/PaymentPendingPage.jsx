@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import dataClient from '@/lib/dataClient';
 import { useCart } from '@/hooks/useCart';
+import { shippingLabel, shippingHint, isFreeShipping } from '@/lib/shipping';
+import { emailDePedido } from '@/lib/orderAccess';
 
 /**
  * Pago pendiente de confirmación.
@@ -55,11 +57,19 @@ const PaymentPendingPage = () => {
     }
   }, [orderId, clearCart]);
 
+  // Se lee de una vez, en el primer render: el efecto que vacia el carrito borra
+  // `nutra_blue_pending_order`, que es el respaldo del que sale este correo cuando
+  // localStorage esta bloqueado (navegacion privada). Leerlo despues devolveria vacio y
+  // la API rechazaria el pedido con 403.
+  const [emailAcreditado] = useState(() => emailDePedido(orderId));
+
   useEffect(() => {
     let cancelado = false;
     (async () => {
       try {
-        const registro = await dataClient.collection('orders').getOne(orderId);
+        const registro = await dataClient
+          .collection('orders')
+          .getOne(orderId, emailAcreditado ? { email: emailAcreditado } : {});
         if (!cancelado) setOrder(registro);
       } catch (err) {
         // Si este navegador no puede acreditar el pedido, la página igual sirve: el
@@ -72,7 +82,7 @@ const PaymentPendingPage = () => {
     return () => {
       cancelado = true;
     };
-  }, [orderId]);
+  }, [orderId, emailAcreditado]);
 
   const formatPrice = (precio) =>
     new Intl.NumberFormat('es-CL', {
@@ -121,7 +131,7 @@ const PaymentPendingPage = () => {
                       i === 0
                         ? 'bg-success text-white'
                         : i === 1
-                        ? 'bg-amber-500 text-white'
+                        ? 'bg-amber-500 text-amber-950'
                         : 'bg-muted text-muted-foreground'
                     }`}
                   >
@@ -178,14 +188,23 @@ const PaymentPendingPage = () => {
                 </div>
 
                 <div className="mt-4 space-y-1.5 border-t border-border pt-4 text-sm">
+                  {/* `shipping_cost` siempre viaja en 0 porque la tienda no cobra flete,
+                      asi que NO sirve para decidir este texto: bajo el umbral el pedido
+                      va "por pagar" y el cliente le paga al courier al recibirlo. Decirle
+                      "sin costo" ahi seria afirmarle algo que despues le cobran. */}
                   <div className="flex justify-between text-muted-foreground">
                     <span className="flex items-center gap-1.5">
                       <Truck className="h-3.5 w-3.5" aria-hidden="true" /> {entrega}
                     </span>
-                    <span className={order.shipping_cost ? '' : 'font-semibold text-success'}>
-                      {order.shipping_cost ? formatPrice(order.shipping_cost) : 'Sin costo'}
+                    <span
+                      className={`font-semibold ${
+                        isFreeShipping(order.total) ? 'text-success' : 'text-amber-700'
+                      }`}
+                    >
+                      {shippingLabel(order.total)}
                     </span>
                   </div>
+                  <p className="text-xs text-muted-foreground">{shippingHint(order.total)}</p>
                   {order.address && (
                     <p className="text-xs text-muted-foreground">
                       {[order.address, order.city, order.region].filter(Boolean).join(', ')}
