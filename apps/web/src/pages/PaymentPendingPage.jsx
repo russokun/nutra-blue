@@ -1,26 +1,45 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from '@/components/Meta';
 import { useParams, Link } from 'react-router-dom';
-import { Clock, Mail, Package } from 'lucide-react';
+import { Clock, Mail, Package, Truck, ArrowRight } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import dataClient from '@/lib/dataClient';
 import { useCart } from '@/hooks/useCart';
+import { shippingLabel, shippingHint, isFreeShipping } from '@/lib/shipping';
+import { emailDePedido } from '@/lib/orderAccess';
 
 /**
  * Pago pendiente de confirmación.
  *
- * Mercado Pago manda acá cuando el pago no se resuelve al instante: efectivo, transferencia
- * o una tarjeta que queda en revisión. Antes estos casos volvían a `/checkout` sin ningún
- * aviso, así que el cliente veía el formulario vacío, creía que no se había hecho nada y
- * podía terminar pagando dos veces.
+ * Mercado Pago manda acá cuando el pago no se resuelve al instante: efectivo,
+ * transferencia o una tarjeta que queda en revisión. Antes estos casos volvían a
+ * `/checkout` sin ningún aviso, así que el cliente veía el formulario vacío, creía que no
+ * se había hecho nada y podía terminar pagando dos veces.
  *
- * El pedido ya existe y tiene el stock reservado; solo falta que Mercado Pago confirme.
- * Cuando lo haga, el webhook lo pasa a pagado y sale el correo de confirmación.
+ * Muestra el pedido completo, no solo el número: quien queda esperando una confirmación
+ * quiere ver qué compró y cuánto, igual que en la página de pago confirmado.
  */
+
+const COURIER_LABELS = {
+  blue_express: 'Blue Express',
+  starken: 'Starken',
+  pullman: 'Pullman',
+};
+
+const PASOS = [
+  { titulo: 'Pedido recibido', detalle: 'Guardamos los productos a tu nombre' },
+  { titulo: 'Confirmación del pago', detalle: 'Esperando a Mercado Pago' },
+  { titulo: 'Preparación y despacho', detalle: 'Te enviamos el código de seguimiento' },
+];
+
 const PaymentPendingPage = () => {
   const { orderId } = useParams();
   const { clearCart } = useCart();
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // El pedido está creado: dejarle el carrito lleno lo invitaría a comprar de nuevo.
@@ -38,6 +57,45 @@ const PaymentPendingPage = () => {
     }
   }, [orderId, clearCart]);
 
+  // Se lee de una vez, en el primer render: el efecto que vacia el carrito borra
+  // `nutra_blue_pending_order`, que es el respaldo del que sale este correo cuando
+  // localStorage esta bloqueado (navegacion privada). Leerlo despues devolveria vacio y
+  // la API rechazaria el pedido con 403.
+  const [emailAcreditado] = useState(() => emailDePedido(orderId));
+
+  useEffect(() => {
+    let cancelado = false;
+    (async () => {
+      try {
+        const registro = await dataClient
+          .collection('orders')
+          .getOne(orderId, emailAcreditado ? { email: emailAcreditado } : {});
+        if (!cancelado) setOrder(registro);
+      } catch (err) {
+        // Si este navegador no puede acreditar el pedido, la página igual sirve: el
+        // mensaje y el número son lo importante. No se muestra ningún error.
+        console.warn('No se pudo cargar el resumen del pedido:', err);
+      } finally {
+        if (!cancelado) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelado = true;
+    };
+  }, [orderId, emailAcreditado]);
+
+  const formatPrice = (precio) =>
+    new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP',
+      minimumFractionDigits: 0,
+    }).format(precio || 0);
+
+  const entrega =
+    order?.delivery_method === 'retiro_courier'
+      ? `Retiro en sucursal · ${COURIER_LABELS[order.courier] || 'transporte por definir'}`
+      : 'Envío a domicilio';
+
   return (
     <>
       <Helmet>
@@ -48,55 +106,143 @@ const PaymentPendingPage = () => {
 
       <Header />
 
-      <main className="min-h-[70vh] bg-background py-16">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-100 text-amber-700 mb-6">
-            <Clock className="h-8 w-8" aria-hidden="true" />
+      <main className="min-h-screen bg-background py-12">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-8 mb-8 text-center">
+            <Clock className="h-14 w-14 text-amber-600 mx-auto mb-4" aria-hidden="true" />
+            <h1 className="text-3xl md:text-4xl font-display text-foreground mb-2">
+              Tu pago se está confirmando
+            </h1>
+            <p className="text-base text-muted-foreground mx-auto">
+              Mercado Pago todavía no nos confirma el pago. Es normal con transferencia,
+              efectivo o cuando el banco necesita revisar la operación.
+            </p>
           </div>
 
-          <h1 className="text-3xl md:text-4xl font-display text-foreground mb-3">
-            Tu pago se está confirmando
-          </h1>
-          <p className="text-base text-muted-foreground mx-auto mb-8">
-            Mercado Pago todavía no nos confirma el pago. Esto es normal con transferencia,
-            efectivo o cuando el banco necesita revisar la operación.
-          </p>
+          {/* Qué falta y qué sigue */}
+          <div className="bg-card rounded-xl p-6 border border-border shadow-sm mb-6">
+            <h2 className="text-lg font-semibold text-card-foreground mb-5">Qué pasa ahora</h2>
+            <ol className="space-y-4">
+              {PASOS.map((paso, i) => (
+                <li key={paso.titulo} className="flex items-start gap-3">
+                  <span
+                    className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
+                      i === 0
+                        ? 'bg-success text-white'
+                        : i === 1
+                        ? 'bg-amber-500 text-amber-950'
+                        : 'bg-muted text-muted-foreground'
+                    }`}
+                  >
+                    {i === 0 ? '✓' : i + 1}
+                  </span>
+                  <span>
+                    <span className="block text-sm font-semibold text-card-foreground">{paso.titulo}</span>
+                    <span className="block text-xs text-muted-foreground">{paso.detalle}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
 
-          {orderId && (
-            <div className="rounded-2xl border border-border bg-card p-5 mb-8 text-left">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                Número de pedido
-              </p>
-              <p className="font-mono text-sm font-bold text-primary break-all mt-1">{orderId}</p>
-            </div>
-          )}
-
-          <div className="space-y-3 text-left mb-10">
-            <div className="flex items-start gap-3 rounded-xl bg-muted/40 p-4">
-              <Package className="h-5 w-5 shrink-0 text-primary mt-0.5" aria-hidden="true" />
-              <p className="text-sm text-muted-foreground">
-                <strong className="text-foreground">Tu pedido ya está reservado.</strong>{' '}
-                Guardamos los productos a tu nombre mientras se confirma el pago.
-                No hace falta que vuelvas a comprarlos.
-              </p>
-            </div>
-            <div className="flex items-start gap-3 rounded-xl bg-muted/40 p-4">
+            <div className="mt-6 flex items-start gap-3 rounded-xl bg-muted/40 p-4">
               <Mail className="h-5 w-5 shrink-0 text-primary mt-0.5" aria-hidden="true" />
               <p className="text-sm text-muted-foreground">
-                <strong className="text-foreground">Te avisamos por correo</strong> apenas
-                Mercado Pago confirme el pago, junto con los detalles del envío.
+                <strong className="text-foreground">No tienes que hacer nada más.</strong>{' '}
+                Te escribimos apenas se confirme el pago, junto con los detalles del envío.
+                Si Mercado Pago te dejó instrucciones para completar el pago, sigue esas.
               </p>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button asChild variant="outline" className="rounded-xl">
-              <Link to="/account">Ver mis pedidos</Link>
-            </Button>
-            <Button asChild className="rounded-xl">
-              <Link to="/shop">Seguir viendo el catálogo</Link>
-            </Button>
+          {/* Resumen del pedido */}
+          <div className="bg-card rounded-xl p-6 border border-border shadow-sm mb-6">
+            <h2 className="text-lg font-semibold text-card-foreground mb-5">Tu pedido</h2>
+
+            <div className="mb-5">
+              <span className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Número de pedido
+              </span>
+              <span className="font-mono text-sm font-bold text-primary break-all">{orderId}</span>
+            </div>
+
+            {loading ? (
+              <div className="space-y-3 border-t border-border pt-4">
+                <Skeleton className="h-5 w-full rounded" />
+                <Skeleton className="h-5 w-2/3 rounded" />
+              </div>
+            ) : order ? (
+              <>
+                <div className="space-y-2 border-t border-border pt-4">
+                  {(order.items || []).map((item, i) => (
+                    <div key={i} className="flex items-start justify-between gap-3 text-sm">
+                      <span className="text-card-foreground">
+                        {item.name || 'Producto'}{' '}
+                        <span className="text-xs font-semibold text-muted-foreground">x{item.quantity}</span>
+                      </span>
+                      <span className="whitespace-nowrap font-semibold text-card-foreground">
+                        {item.line_total != null ? formatPrice(item.line_total) : '—'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-4 space-y-1.5 border-t border-border pt-4 text-sm">
+                  {/* `shipping_cost` siempre viaja en 0 porque la tienda no cobra flete,
+                      asi que NO sirve para decidir este texto: bajo el umbral el pedido
+                      va "por pagar" y el cliente le paga al courier al recibirlo. Decirle
+                      "sin costo" ahi seria afirmarle algo que despues le cobran. */}
+                  <div className="flex justify-between text-muted-foreground">
+                    <span className="flex items-center gap-1.5">
+                      <Truck className="h-3.5 w-3.5" aria-hidden="true" /> {entrega}
+                    </span>
+                    <span
+                      className={`font-semibold ${
+                        isFreeShipping(order.total) ? 'text-success' : 'text-amber-700'
+                      }`}
+                    >
+                      {shippingLabel(order.total)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{shippingHint(order.total)}</p>
+                  {order.address && (
+                    <p className="text-xs text-muted-foreground">
+                      {[order.address, order.city, order.region].filter(Boolean).join(', ')}
+                    </p>
+                  )}
+                  <div className="mt-2 flex justify-between border-t border-border pt-2 text-base font-bold text-card-foreground">
+                    <span>Total</span>
+                    <span>{formatPrice(order.total)}</span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <p className="border-t border-border pt-4 text-sm text-muted-foreground">
+                Guarda este número. El detalle completo te llega por correo y queda en{' '}
+                <Link to="/account" className="text-primary hover:underline">Mi Cuenta</Link>.
+              </p>
+            )}
           </div>
+
+          {/* Invitación a seguir en la tienda */}
+          <div className="rounded-2xl border border-border bg-muted/30 p-6 text-center">
+            <Package className="mx-auto mb-3 h-7 w-7 text-primary" aria-hidden="true" />
+            <p className="mx-auto mb-5 text-sm text-muted-foreground">
+              Mientras tanto puedes seguir mirando el catálogo. Si agregas algo antes de que
+              despachemos, lo enviamos todo junto y te ahorras un segundo despacho.
+            </p>
+            <div className="flex flex-col justify-center gap-3 sm:flex-row">
+              <Button asChild className="gap-2 rounded-xl">
+                <Link to="/shop">
+                  Seguir viendo productos <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="rounded-xl">
+                <Link to="/account">Ver mis pedidos</Link>
+              </Button>
+            </div>
+          </div>
+
         </div>
       </main>
 
