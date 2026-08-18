@@ -44,6 +44,14 @@ module.exports = {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
+        // `--success` estaba en index.css desde el principio pero nunca se registro aca,
+        // asi que las 18 clases `text-success` del sitio no generaban ninguna regla: el
+        // verde de "envio gratis", "en stock", los tildes del carrito y el panel de pago
+        // confirmado heredaban el color del padre.
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
