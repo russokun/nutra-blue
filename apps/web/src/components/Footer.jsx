@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Twitter, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
+import Logo from '@/components/Logo';
 
 const Footer = ({ minimal = false }) => {
   const [email, setEmail] = useState('');
@@ -54,8 +55,8 @@ const Footer = ({ minimal = false }) => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Brand */}
             <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <img src="/logo.webp" alt="NutraBlue" className="h-12 w-auto brightness-0 invert" />
+              <div className="flex items-center">
+                <Logo className="h-10" enFondoOscuro />
               </div>
               <p className="text-sm text-slate-300 leading-relaxed">
                 Alimentos naturales y funcionales, seleccionados para mejorar tu salud y tu vida. Empresa familiar chilena — despacho a todo el país.
