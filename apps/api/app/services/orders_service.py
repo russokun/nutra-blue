@@ -3,6 +3,7 @@ from fastapi import HTTPException
 from app.models.orders import OrderCreate
 from app.core.pricing import calculate_order_totals, CHILEAN_REGIONS, DELIVERY_METHODS, COURIERS
 from app.core.mock_data import MOCK_PRODUCTS
+from app.core.rut import normalizar_rut, rut_es_valido
 from app.core.mock_store import MOCK_ORDERS
 from app.database.supabase import supabase_client
 from app.services.products_service import get_product_by_id
@@ -13,6 +14,52 @@ class OrderValidationError(Exception):
         self.message = message
         self.status_code = status_code
         super().__init__(message)
+
+
+def _validar_facturacion(order_data: OrderCreate) -> dict:
+    """
+    Devuelve los campos de facturacion listos para guardar.
+
+    Si el pedido no es de empresa, todo queda en None: un RUT colgado en un pedido que
+    nadie va a facturar solo es un dato personal de mas guardado sin motivo.
+    """
+    if not order_data.is_company:
+        return {
+            "is_company": False,
+            "tax_id": None,
+            "business_name": None,
+            "business_activity": None,
+            "billing_email": None,
+            "billing_address": None,
+        }
+
+    if not rut_es_valido(order_data.tax_id or ""):
+        raise OrderValidationError(
+            "El RUT de la empresa no es valido. Revisa el numero y el digito verificador."
+        )
+
+    razon_social = (order_data.business_name or "").strip()
+    if not razon_social:
+        raise OrderValidationError("La razon social es obligatoria para facturar")
+
+    giro = (order_data.business_activity or "").strip()
+    if not giro:
+        raise OrderValidationError("El giro comercial es obligatorio para facturar")
+
+    domicilio = (order_data.billing_address or "").strip()
+    if not domicilio:
+        raise OrderValidationError("El domicilio comercial es obligatorio para facturar")
+
+    return {
+        "is_company": True,
+        "tax_id": normalizar_rut(order_data.tax_id),
+        "business_name": razon_social,
+        "business_activity": giro,
+        # Si no dan un correo de facturacion se usa el del pedido: es el que tienen, y
+        # dejarlo vacio obliga a perseguir al cliente despues para poder emitir.
+        "billing_email": (order_data.billing_email or order_data.email),
+        "billing_address": domicilio,
+    }
 
 
 def validate_and_build_order(order_data: OrderCreate) -> dict:
@@ -38,6 +85,10 @@ def validate_and_build_order(order_data: OrderCreate) -> dict:
         # El courier solo tiene sentido con retiro en sucursal: si viene de otro modo,
         # se descarta para que la orden no quede con datos contradictorios.
         courier = None
+
+    # Facturacion. Se valida ACA y no solo en el navegador: el checkout es una llamada
+    # HTTP como cualquier otra y nada impide mandarla a mano con un RUT invalido.
+    billing = _validar_facturacion(order_data)
 
     cart_total = 0
     validated_items = []
@@ -112,6 +163,7 @@ def validate_and_build_order(order_data: OrderCreate) -> dict:
         "items": validated_items,
         "delivery_method": delivery_method,
         "courier": courier,
+        **billing,
         **totals,
     }
 

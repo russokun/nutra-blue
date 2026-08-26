@@ -85,6 +85,16 @@ async def create_order(order_data: OrderCreate):
         "p_total": validated_order["total"],
         "p_delivery_method": validated_order["delivery_method"],
         "p_courier": validated_order["courier"],
+        # Los campos de facturacion viajan en un objeto y no sueltos: la firma del RPC ya
+        # tenia trece parametros y cada campo nuevo obligaba a otra sobrecarga.
+        "p_billing": {
+            "is_company": validated_order["is_company"],
+            "tax_id": validated_order["tax_id"],
+            "business_name": validated_order["business_name"],
+            "business_activity": validated_order["business_activity"],
+            "billing_email": validated_order["billing_email"],
+            "billing_address": validated_order["billing_address"],
+        },
     }
 
     try:

@@ -21,6 +21,16 @@ class OrderCreate(BaseModel):
     delivery_method: str = "domicilio"
     courier: Optional[str] = None
 
+    # Facturacion. Solo se piden cuando el cliente marca "Soy empresa" en el checkout.
+    # `billing_address` es el DOMICILIO COMERCIAL de la empresa, el que va impreso en la
+    # factura: no reemplaza la direccion de entrega, que sigue siendo `address`.
+    is_company: bool = False
+    tax_id: Optional[str] = None
+    business_name: Optional[str] = None
+    business_activity: Optional[str] = None
+    billing_email: Optional[EmailStr] = None
+    billing_address: Optional[str] = None
+
 class OrderUpdateStatus(BaseModel):
     status: str
 
