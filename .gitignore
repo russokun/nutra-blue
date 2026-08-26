@@ -55,3 +55,8 @@ apps/api/uploads/
 graphify-out/cost.json
 graphify-out/.graphify_python
 graphify-out/.graphify_root
+
+# Herramientas locales de Claude Code: configuracion y skills de cada quien,
+# no del proyecto.
+.claude/settings.local.json
+.claude/skills/
