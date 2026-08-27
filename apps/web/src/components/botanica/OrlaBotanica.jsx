@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Helecho, Hoja, Ramita, Flor, Semilla } from './Botanica';
+import { Helecho, Ramita } from './Botanica';
 
 /**
  * Orla botánica: la capa vegetal que enmarca la página y se mece al scrollear.
@@ -19,15 +19,43 @@ import { Helecho, Hoja, Ramita, Flor, Semilla } from './Botanica';
  * deriva de fondo que lo provoca.
  */
 
-// Posición, forma, tamaño y cuánto responde al scroll. Las de `factor` alto se mueven
-// más, que es lo que da la sensación de profundidad.
+// Tres masas grandes, no una lluvia de dibujitos.
+//
+// La primera version tenia seis piezas chicas repartidas por los margenes al 35-45% de
+// opacidad, y se leia como stickers pegados: la pagina quedaba espolvoreada en vez de
+// enmarcada. La correccion no fue subir la opacidad ni sumar piezas --eso deja lo mismo,
+// mas fuerte-- sino cambiar la escala.
+//
+// Ahora son tres frondas de hasta 40rem que entran A SANGRE por los bordes, cortadas: se
+// ve un tercio de cada una, como una planta que asoma dentro del encuadre. A este tamano
+// la presencia la da la escala y la opacidad puede bajar todavia mas, que es lo que las
+// mantiene como atmosfera y no como contenido peleandole al catalogo.
+//
+// Una sola familia de forma, repetida y espejada, en vez de cinco formas distintas: la
+// decision es el tamano, y mezclar vocabulario la diluiria.
 const PIEZAS = [
-  { Forma: Helecho, clase: 'left-[-3%] top-[6%] w-28 sm:w-40 lg:w-56', giro: -18, factor: 0.10, opacidad: 'text-natural-300/45' },
-  { Forma: Ramita,  clase: 'right-[-2%] top-[18%] w-20 sm:w-28 lg:w-36', giro: 24, factor: -0.16, opacidad: 'text-natural-400/40' },
-  { Forma: Hoja,    clase: 'left-[4%] top-[46%] w-14 sm:w-20 lg:w-24', giro: 40, factor: -0.09, opacidad: 'text-natural-300/40' },
-  { Forma: Flor,    clase: 'right-[6%] top-[58%] w-16 sm:w-20 lg:w-28', giro: -12, factor: 0.13, opacidad: 'text-natural-400/35' },
-  { Forma: Semilla, clase: 'left-[-1%] top-[74%] w-16 sm:w-24 lg:w-32', giro: 8, factor: 0.07, opacidad: 'text-natural-300/35' },
-  { Forma: Helecho, clase: 'right-[-4%] top-[86%] w-24 sm:w-32 lg:w-44', giro: 165, factor: -0.11, opacidad: 'text-natural-300/40' },
+  {
+    Forma: Helecho,
+    clase: 'left-[-16%] top-[-10%] w-[22rem] sm:w-[30rem] lg:w-[40rem]',
+    giro: -14,
+    factor: 0.06,
+    opacidad: 'text-natural-400/25',
+  },
+  {
+    Forma: Helecho,
+    // Girada 168° entra desde arriba a la derecha, colgando hacia adentro.
+    clase: 'right-[-18%] top-[26%] w-[20rem] sm:w-[28rem] lg:w-[38rem]',
+    giro: 168,
+    factor: -0.09,
+    opacidad: 'text-natural-400/20',
+  },
+  {
+    Forma: Ramita,
+    clase: 'left-[-6%] bottom-[-14%] w-[13rem] sm:w-[18rem] lg:w-[24rem]',
+    giro: 18,
+    factor: 0.045,
+    opacidad: 'text-natural-400/25',
+  },
 ];
 
 const OrlaBotanica = () => {

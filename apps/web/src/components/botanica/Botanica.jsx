@@ -25,25 +25,70 @@ const base = {
   focusable: 'false',
 };
 
-/** Fronda de helecho: tallo curvo con pinnas que se acortan hacia la punta. */
+/**
+ * Fronda de helecho.
+ *
+ * La primera version tenia las pinnas rectas, todas al mismo angulo y a intervalos
+ * parejos: se veia como un peine, no como una planta. Una fronda real hace tres cosas que
+ * ahora estan puestas:
+ *
+ *   1. Las pinnas se van inclinando hacia la punta. En la base salen casi perpendiculares
+ *      al raquis y arriba apuntan casi en su misma direccion. Este es el gesto que mas
+ *      delata a un helecho dibujado de memoria.
+ *   2. Son curvas, no segmentos. Cada una se arquea hacia el apice.
+ *   3. La fronda es mas ancha cerca del primer tercio, no en el arranque: crece rapido,
+ *      llega a su maximo y despues se afina hasta la punta.
+ *
+ * El raquis es una Bezier cuadratica y las pinnas salen de su tangente, asi que si se
+ * cambia la curva del tallo las pinnas la siguen solas.
+ */
+const RAQUIS = { p0: [48, 97], p1: [57, 54], p2: [63, 7] };
+
+const puntoYTangente = (t) => {
+  const { p0, p1, p2 } = RAQUIS;
+  const u = 1 - t;
+  const x = u * u * p0[0] + 2 * u * t * p1[0] + t * t * p2[0];
+  const y = u * u * p0[1] + 2 * u * t * p1[1] + t * t * p2[1];
+  const tx = 2 * u * (p1[0] - p0[0]) + 2 * t * (p2[0] - p1[0]);
+  const ty = 2 * u * (p1[1] - p0[1]) + 2 * t * (p2[1] - p1[1]);
+  const norma = Math.hypot(tx, ty) || 1;
+  return { x, y, tx: tx / norma, ty: ty / norma };
+};
+
+const PINNAS = 15;
+
 export const Helecho = ({ className = '', ...props }) => {
-  // Las pinnas se generan con una ley simple en vez de escribir cuarenta paths a mano:
-  // así el ritmo es parejo y cambiar el largo o la inclinación es un solo número.
   const pinnas = [];
-  for (let i = 0; i < 11; i += 1) {
-    const t = i / 10;
-    const y = 92 - t * 78;
-    const x = 50 + Math.sin(t * 1.5) * 9;
-    const largo = 30 * (1 - t) ** 0.85 + 3;
-    const caida = 7 * (1 - t);
-    pinnas.push(
-      <path key={`i${i}`} d={`M${x} ${y} Q ${x - largo * 0.55} ${y - caida * 0.3} ${x - largo} ${y - caida}`} />,
-      <path key={`d${i}`} d={`M${x} ${y} Q ${x + largo * 0.55} ${y - caida * 0.3} ${x + largo} ${y - caida}`} />
-    );
+  for (let i = 0; i < PINNAS; i += 1) {
+    const t = 0.04 + (i / (PINNAS - 1)) * 0.92;
+    const { x, y, tx, ty } = puntoYTangente(t);
+
+    // De 78° en la base a 26° en la punta.
+    const angulo = ((78 - t * 52) * Math.PI) / 180;
+    // Ancho maximo alrededor del primer tercio, despues se afina.
+    const largo = 34 * Math.sin(Math.PI * Math.min(1, t * 0.82 + 0.13)) ** 1.35;
+
+    for (const lado of [-1, 1]) {
+      const cos = Math.cos(angulo * lado);
+      const sin = Math.sin(angulo * lado);
+      // Direccion de la pinna: la tangente del raquis, rotada.
+      const dx = tx * cos - ty * sin;
+      const dy = tx * sin + ty * cos;
+      const fx = x + dx * largo;
+      const fy = y + dy * largo;
+      // El control se corre hacia el apice, que es lo que arquea la pinna.
+      const cx = x + dx * largo * 0.6 + tx * largo * 0.22;
+      const cy = y + dy * largo * 0.6 + ty * largo * 0.22;
+      pinnas.push(
+        <path key={`${i}-${lado}`} d={`M${x.toFixed(1)} ${y.toFixed(1)} Q ${cx.toFixed(1)} ${cy.toFixed(1)} ${fx.toFixed(1)} ${fy.toFixed(1)}`} />
+      );
+    }
   }
+
+  const { p0, p1, p2 } = RAQUIS;
   return (
     <svg {...base} className={className} {...props}>
-      <path d="M50 96 Q 52 60 56 32 Q 58 20 59 12" />
+      <path d={`M${p0[0]} ${p0[1]} Q ${p1[0]} ${p1[1]} ${p2[0]} ${p2[1]}`} />
       {pinnas}
     </svg>
   );
