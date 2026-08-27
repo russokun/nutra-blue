@@ -8,6 +8,60 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Las superficies que pone el navegador y no dibuja nadie: la seleccion, el cursor de
+   texto, la barra de scroll y el anillo de foco. Vienen con los grises de fabrica, que no
+   pertenecen a ningun sistema de diseno, y se notan justo cuando la persona esta
+   interactuando. Salen de la paleta como cualquier otra cosa. */
+::selection {
+  background-color: hsl(var(--natural-200));
+  color: hsl(var(--natural-900));
+}
+
+:root {
+  caret-color: hsl(var(--primary));
+  scrollbar-color: hsl(var(--natural-400)) hsl(var(--muted));
+  scrollbar-width: thin;
+}
+
+/* WebKit no lee `scrollbar-color`, asi que va tambien por su propia via. */
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+::-webkit-scrollbar-track {
+  background-color: hsl(var(--muted));
+}
+::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--natural-400));
+  border: 3px solid hsl(var(--muted));
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--natural-500));
+}
+
+/* Un solo anillo de foco para todo el sitio, visible sobre crema y sobre verde. Se usa
+   `:focus-visible` y no `:focus` para que no aparezca al hacer clic con el mouse. */
+:where(a, button, [role="button"], input, select, textarea, summary):focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Quien pidio menos movimiento lo pide para todo el sitio, no solo para la orla. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 body {
   font-family: "Inter", sans-serif;
   overflow-x: clip;
@@ -37,6 +91,38 @@ body {
     --input: 200 13% 85%;
     --ring: 200 55% 25%;
     --radius: 0.75rem;
+
+    /* --- Familia "natural" ------------------------------------------------
+       La foto de la Patagonia que mandaron los de NutraBlue es literalmente la
+       marca: verde la tierra, azul el agua. De ahi sale el reparto de papeles.
+
+       El VERDE toma las regiones y la atmosfera --el footer, los fondos de
+       seccion, la decoracion botanica--. El AZUL se queda con las acciones:
+       botones, enlaces, foco. No se reparte el verde entre los botones tambien,
+       porque ahi la marca desaparece y queda una tienda eco generica; el azul
+       es escaso a proposito, y por escaso pesa.
+
+       El tono se corre de verde amarillento en los claros a verde azulado en
+       los oscuros, que es como se comporta la luz sobre el follaje y ademas
+       hace que el extremo oscuro se de la mano con el azul de marca (tono 200).
+
+       Contrastes verificados contra crema y contra natural-800:
+         natural-700 sobre crema .......... 7.84:1
+         natural-600 sobre crema .......... 5.73:1
+         natural-500 sobre crema .......... 4.01:1  (solo texto grande / iconos)
+         blanco sobre natural-800 ........ 12.21:1
+         natural-200 sobre natural-800 .... 8.49:1
+         natural-300 sobre natural-800 .... 6.15:1  */
+    --natural-50: 135 30% 96%;
+    --natural-100: 138 28% 91%;
+    --natural-200: 140 26% 82%;
+    --natural-300: 143 24% 68%;
+    --natural-400: 146 27% 52%;
+    --natural-500: 150 34% 39%;
+    --natural-600: 153 40% 30%;
+    --natural-700: 156 45% 23%;
+    --natural-800: 160 48% 16%;
+    --natural-900: 164 50% 11%;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;

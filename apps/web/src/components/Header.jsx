@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu, User, LogOut, Lock } from 'lucide-react';
 import CartIcon from '@/components/CartIcon';
 import Logo from '@/components/Logo';
+import { Helecho, Ramita } from '@/components/botanica/Botanica';
 import { useAuth } from '@/hooks/useAuth';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -57,7 +58,19 @@ const Header = ({ minimal = false }) => {
   return (
     <header className="sticky top-0 z-50 bg-background border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-3 py-2 min-h-[64px]">
+        <div className="relative flex items-center justify-between gap-3 py-2 min-h-[64px]">
+          {/* Follaje asomando por las esquinas. Queda detrás del contenido y cortado por
+              el borde de la barra: la idea es que la barra parezca apoyada sobre algo que
+              crece, no que lleve un adorno pegado. Muy tenue a propósito — compite con el
+              logo y con la navegación, y tiene que perder. */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-0 left-0 right-0 -z-10 overflow-clip"
+          >
+            <Helecho className="absolute -left-4 -top-6 w-20 rotate-[14deg] text-natural-400/25 sm:w-24" />
+            <Ramita className="absolute -right-3 -top-8 w-16 -rotate-[18deg] text-natural-400/25 sm:w-20" />
+          </div>
+
           {/* Acá había un botón "← Catálogo" al lado del logo. Se quitó por redundante:
               la barra de navegación ya tiene "Catálogo" a dos centímetros de distancia.
               El de la cabecera minimal (checkout) se conserva, porque ahí no hay menú. */}

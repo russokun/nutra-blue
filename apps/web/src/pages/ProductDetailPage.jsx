@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import ProductTags from '@/components/common/ProductTags';
 import VisorImagen from '@/components/VisorImagen';
+import { Ramita } from '@/components/botanica/Botanica';
 import { absoluteUrl, breadcrumbSchema, productSchema } from '@/lib/seo';
 import { toast } from 'sonner';
 import { getProductExtraDetails } from '@/lib/productExtraDetails';
@@ -333,7 +334,7 @@ const ProductDetailPage = () => {
               <span className="text-2xl font-display text-white">
                 NutraBlue
               </span>
-              <span className="text-lg text-emerald-500 font-bold">🌿</span>
+              <Ramita className="h-6 w-6 shrink-0 text-natural-300" />
             </div>
 
             {/* Center Brand Statement */}
@@ -348,7 +349,7 @@ const ProductDetailPage = () => {
 
             {/* Right Logo */}
             <div className="flex items-center space-x-2 shrink-0 z-10 select-none">
-              <span className="text-lg text-emerald-500 font-bold">🌿</span>
+              <Ramita className="h-6 w-6 shrink-0 text-natural-300" />
               <span className="text-2xl font-display text-white">
                 NutraBlue
               </span>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Leaf } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 /**
  * Banner de cierre del inicio, con temática de pasto y naturaleza.
@@ -24,31 +24,26 @@ const CAPAS = [
 ];
 
 const BannerNaturaleza = () => (
-  <section className="relative isolate overflow-hidden bg-gradient-to-br from-emerald-900 via-green-800 to-emerald-950">
+  <section className="relative isolate overflow-hidden bg-gradient-to-br from-natural-700 via-natural-800 to-natural-900">
     {/* Claro difuso arriba a la izquierda, como luz entrando en el campo. */}
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-lime-300/20 blur-3xl"
+      className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-natural-400/25 blur-3xl"
     />
 
     <div className="relative z-10 mx-auto max-w-5xl px-6 pb-32 pt-16 text-center sm:px-8 sm:pb-40 sm:pt-20">
-      <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-lime-200/30 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-lime-100 backdrop-blur">
-        <Leaf className="h-3.5 w-3.5" aria-hidden="true" />
-        De la tierra a tu mesa
-      </span>
-
       <h2 className="font-display text-3xl leading-tight text-white sm:text-4xl md:text-5xl">
         Alimentos que crecen como corresponde
       </h2>
 
-      <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-emerald-50/90 sm:text-base">
+      <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-natural-100 sm:text-base">
         Trabajamos con productores chilenos que cultivan sin apuro y cosechan a mano.
         Nada de atajos: solo alimento real, del suelo a tu cocina.
       </p>
 
       <Link
         to="/shop"
-        className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-emerald-900 shadow-lg transition hover:bg-lime-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-natural-800 shadow-lg transition hover:bg-natural-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
       >
         Conocer el catálogo
         <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -68,7 +63,7 @@ const BannerNaturaleza = () => (
           key={i}
           d={capa.d}
           transform={`translate(0, ${capa.y})`}
-          className="fill-lime-300"
+          className="fill-natural-400"
           opacity={capa.opacidad}
         />
       ))}

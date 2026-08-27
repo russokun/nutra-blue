@@ -6,6 +6,7 @@ import { Brain, Heart, Sparkles, BookOpen, ArrowRight, X, Check, ShoppingBag } f
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import BannerNaturaleza from '@/components/BannerNaturaleza';
+import OrlaBotanica from '@/components/botanica/OrlaBotanica';
 import { Button } from '@/components/ui/button';
 import dataClient from '@/lib/dataClient';
 import { useCart } from '@/hooks/useCart';
@@ -230,6 +231,8 @@ const HomePage = () => {
       </Helmet>
 
       <Header />
+
+      <OrlaBotanica />
 
       <main className="overflow-x-hidden bg-background">
         {/* Carrusel de Confianza (Trust Bar) - Ahora arriba del Hero */}
