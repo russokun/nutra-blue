@@ -40,23 +40,16 @@ const Footer = ({ minimal = false }) => {
 
   return (
     <footer className="relative overflow-hidden border-t border-natural-700 bg-gradient-to-b from-natural-800 via-natural-800 to-natural-900 text-white">
-      {/* Background Image Container */}
-      <div 
-        className="absolute inset-0 z-0 opacity-25 mix-blend-soft-light pointer-events-none" 
-        style={{
-          backgroundImage: 'url("/footer_bg.webp")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
-      />
+      {/* Acá había una foto de fondo al 25%. Servía cuando el suelo era casi negro y
+          hacía falta textura; sobre un verde compuesto se leía como un borrón y le
+          peleaba al color. La sensación de naturaleza la lleva la franja vegetal. */}
 
       {/* Franja vegetal en el borde de arriba: marca que acá empieza la tierra. Van
           asomando desde el borde, cortadas, en vez de alineadas como una guarda: un
           matorral no está ordenado. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 z-0 flex h-24 items-start justify-between px-[4%] text-natural-600/60 sm:h-28"
+        className="pointer-events-none absolute inset-x-0 top-0 z-0 flex h-24 items-start justify-between px-[4%] text-natural-500/70 sm:h-28"
       >
         <Helecho className="-mt-10 w-16 rotate-[8deg] sm:w-20" />
         <Ramita className="-mt-14 hidden w-10 -rotate-6 sm:block sm:w-12" />
