@@ -22,6 +22,7 @@ const VisorImagen = ({ imagenes = [], indiceInicial = 0, abierto, onCerrar, nomb
   const [desplazamiento, setDesplazamiento] = useState({ x: 0, y: 0 });
   const arrastre = useRef(null);
   const contenedor = useRef(null);
+  const imagen = useRef(null);
 
   // Cada vez que se abre se vuelve al estado inicial: si no, la segunda apertura hereda el
   // zoom y el encuadre de la anterior y se ve un pedazo de foto sin contexto.
@@ -60,12 +61,22 @@ const VisorImagen = ({ imagenes = [], indiceInicial = 0, abierto, onCerrar, nomb
   // la foto entera fuera de la pantalla y queda un recuadro negro.
   const limitar = (valor, maximo) => Math.max(-maximo, Math.min(maximo, valor));
 
+  // El tope sale del tamano DIBUJADO de la foto, no del contenedor. Con `object-contain`
+  // una foto vertical se dibuja angosta y deja bandas negras al costado: midiendo el
+  // contenedor, el tope quedaria mucho mas grande que la foto y se la podria arrastrar
+  // entera fuera de la vista.
   const topes = () => {
+    const img = imagen.current;
     const caja = contenedor.current?.getBoundingClientRect();
-    if (!caja) return { x: 0, y: 0 };
+    if (!img || !caja || !img.naturalWidth) return { x: 0, y: 0 };
+
+    const escalaAjuste = Math.min(caja.width / img.naturalWidth, caja.height / img.naturalHeight);
+    const anchoDibujado = img.naturalWidth * escalaAjuste;
+    const altoDibujado = img.naturalHeight * escalaAjuste;
+
     return {
-      x: (caja.width * (ESCALA_ZOOM - 1)) / 2,
-      y: (caja.height * (ESCALA_ZOOM - 1)) / 2,
+      x: (anchoDibujado * (ESCALA_ZOOM - 1)) / 2,
+      y: (altoDibujado * (ESCALA_ZOOM - 1)) / 2,
     };
   };
 
@@ -94,13 +105,20 @@ const VisorImagen = ({ imagenes = [], indiceInicial = 0, abierto, onCerrar, nomb
 
   const alSoltar = (e) => {
     const hubo = arrastre.current?.movido;
+    const gestoIniciado = arrastre.current !== null;
     arrastre.current = null;
     if (e.currentTarget.hasPointerCapture?.(e.pointerId)) {
       e.currentTarget.releasePointerCapture(e.pointerId);
     }
     if (hubo) return; // fue un arrastre, no un toque: no cambiar el zoom
+    // Un `pointercancel` no es un toque: lo dispara el sistema al quedarse con el gesto
+    // (un gesto de borde, una notificacion). Sin esto la foto se acercaba sola sin que
+    // nadie la hubiera llegado a tocar.
+    if (e.type === 'pointercancel') return;
     if (acercado) {
-      reencuadrar();
+      // Estando acercado, `alPresionar` siempre registra el gesto; si no lo hizo, el
+      // evento no empezo en la foto y no deberia alejarla.
+      if (gestoIniciado) reencuadrar();
     } else {
       setAcercado(true);
     }
@@ -123,6 +141,7 @@ const VisorImagen = ({ imagenes = [], indiceInicial = 0, abierto, onCerrar, nomb
           className="relative h-full w-full touch-none select-none overflow-hidden"
         >
           <img
+            ref={imagen}
             src={imagenes[indice]}
             alt={`${nombre || 'Producto'}${imagenes.length > 1 ? ` — foto ${indice + 1} de ${imagenes.length}` : ''}`}
             draggable={false}

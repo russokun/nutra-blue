@@ -36,8 +36,11 @@ const Logo = ({
   enFondoOscuro = false,
   prioridad = false,
 }) => {
+  // `fetchpriority` en minuscula: React 18 no reconoce la forma camelCase y avisa por
+  // consola en cada render, o sea en todas las paginas. En minuscula lo deja pasar tal
+  // cual al DOM, que es lo que el navegador lee.
   const carga = prioridad
-    ? { loading: 'eager', fetchPriority: 'high' }
+    ? { loading: 'eager', fetchpriority: 'high' }
     : { loading: 'lazy' };
 
   const siempreSoloMarca = soloMarca === true;
