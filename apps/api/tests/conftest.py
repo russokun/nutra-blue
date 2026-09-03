@@ -16,6 +16,7 @@ _SUPABASE_CLIENT_MODULES = [
     "app.routers.payments",
     "app.routers.products",
     "app.routers.public",
+    "app.routers.subscribers",
     "app.services.orders_service",
     "app.services.products_service",
     "app.services.storage_service",

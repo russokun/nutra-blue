@@ -112,7 +112,14 @@ const OrdersPage = () => {
                   <tr key={order.id} className="border-t border-border/60 hover:bg-muted/5 transition-colors">
                     <td className="p-4 font-mono text-xs text-primary font-bold">{order.id}</td>
                     <td className="p-4">
-                      <div className="font-semibold text-foreground">{order.customer_name || 'Sin nombre'}</div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-foreground">{order.customer_name || 'Sin nombre'}</span>
+                        {order.is_company && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-100 text-sky-800 border border-sky-200">
+                            Factura
+                          </span>
+                        )}
+                      </div>
                       <div className="text-xs text-muted-foreground">{order.email}</div>
                     </td>
                     <td className="p-4 text-muted-foreground">

@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Truck, AlertCircle, X, Info } from 'lucide-react';
+import { Truck, AlertCircle, X, Info, Building2 } from 'lucide-react';
 import { isFreeShipping, shippingHint } from '@/lib/shipping';
 import { recordarPedido } from '@/lib/orderAccess';
 import { rutEsValido, formatearRut, normalizarRut } from '@/lib/rut';
@@ -553,14 +553,17 @@ const CheckoutPage = () => {
                       type="checkbox"
                       checked={esEmpresa}
                       onChange={(e) => setEsEmpresa(e.target.checked)}
-                      className="mt-1 h-4 w-4 shrink-0 rounded border-border text-primary focus:ring-2 focus:ring-primary"
+                      className="mt-1 h-5 w-5 shrink-0 rounded border-border text-primary focus:ring-2 focus:ring-primary"
                     />
-                    <span>
-                      <span className="block text-xl font-semibold text-card-foreground">Soy empresa</span>
-                      <span className="block text-sm text-muted-foreground">
-                        Necesito factura en vez de boleta
+                    <div className="flex-grow">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="h-5 w-5 text-primary" />
+                        <span className="text-xl font-semibold text-card-foreground">Comprar con Factura (Empresa)</span>
+                      </div>
+                      <span className="block text-sm text-muted-foreground mt-0.5">
+                        Marca esta casilla si necesitas factura electrónica con RUT de tu empresa en vez de boleta
                       </span>
-                    </span>
+                    </div>
                   </label>
 
                   {esEmpresa && (

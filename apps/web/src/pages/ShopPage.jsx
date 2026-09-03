@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Helmet } from '@/components/Meta';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, X, Leaf, Check } from 'lucide-react';
+import { Search, X, Leaf, Check, SlidersHorizontal, ChevronDown, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import dataClient from '@/lib/dataClient';
 import Header from '@/components/Header';
@@ -35,6 +35,19 @@ const ShopPage = () => {
   const [selectedBenefit, setSelectedBenefit] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
   const [activeProductIngredients, setActiveProductIngredients] = useState(null);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
+  const activeFilterCount =
+    (selectedCategory !== 'all' ? 1 : 0) +
+    (selectedBenefit !== 'all' ? 1 : 0) +
+    (selectedType !== 'all' ? 1 : 0);
+
+  const clearAllFilters = () => {
+    setSelectedCategory('all');
+    setSelectedBenefit('all');
+    setSelectedType('all');
+    setSearchQuery('');
+  };
 
   // Las tres etiquetas salen del catálogo, que a su vez viene de la planilla.
   // Hardcodearlas dejaba invisible en el filtro cualquier producto cuya etiqueta no
@@ -229,11 +242,218 @@ const ShopPage = () => {
             </div>
           </div>
 
+          {/* Barra de Filtros Desplegables en Móvil (arriba del catálogo, compacta) */}
+          <div className="lg:hidden mb-6 space-y-3">
+            <div className="bg-card rounded-2xl p-3 border border-border shadow-sm">
+              <div className="flex items-center justify-between gap-2 mb-2.5">
+                <button
+                  type="button"
+                  onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
+                  className="flex items-center gap-2 text-sm font-bold text-foreground py-1 px-2 rounded-xl hover:bg-muted transition-colors"
+                >
+                  <SlidersHorizontal className="h-4 w-4 text-primary" />
+                  <span>Filtros</span>
+                  {activeFilterCount > 0 && (
+                    <span className="bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                  <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${mobileFiltersOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {activeFilterCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearAllFilters}
+                    className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 font-medium px-2 py-1 rounded-lg hover:bg-muted"
+                  >
+                    <RotateCcw className="h-3 w-3" /> Limpiar todo
+                  </button>
+                )}
+              </div>
+
+              {/* Selectores desplegables directos (se abren al apretarlos) */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div>
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="text-xs rounded-xl h-9 text-foreground bg-background">
+                      <SelectValue placeholder="Categoría" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map(c => (
+                        <SelectItem key={c.value} value={c.value} className="text-xs">
+                          {c.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Select value={selectedBenefit} onValueChange={setSelectedBenefit}>
+                    <SelectTrigger className="text-xs rounded-xl h-9 text-foreground bg-background">
+                      <SelectValue placeholder="Beneficio" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {benefits.map(b => (
+                        <SelectItem key={b.value} value={b.value} className="text-xs">
+                          {b.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Select value={selectedType} onValueChange={setSelectedType}>
+                    <SelectTrigger className="text-xs rounded-xl h-9 text-foreground bg-background">
+                      <SelectValue placeholder="Tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {productTypes.map(t => (
+                        <SelectItem key={t.value} value={t.value} className="text-xs">
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Panel expandible completo al pulsar "Filtros" */}
+              <AnimatePresence>
+                {mobileFiltersOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden pt-3 mt-3 border-t border-border space-y-4"
+                  >
+                    {/* Categorías en chips */}
+                    <div>
+                      <span className="text-xs font-bold text-foreground block mb-2">Categoría</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {categories.map(c => (
+                          <button
+                            key={c.value}
+                            type="button"
+                            onClick={() => setSelectedCategory(c.value)}
+                            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                              selectedCategory === c.value
+                                ? 'bg-primary text-primary-foreground font-semibold shadow-sm'
+                                : 'bg-muted/70 text-foreground hover:bg-muted'
+                            }`}
+                          >
+                            {c.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Beneficios en chips */}
+                    <div>
+                      <span className="text-xs font-bold text-foreground block mb-2">Beneficio</span>
+                      <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto pr-1">
+                        {benefits.map(b => (
+                          <button
+                            key={b.value}
+                            type="button"
+                            onClick={() => setSelectedBenefit(b.value)}
+                            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                              selectedBenefit === b.value
+                                ? 'bg-primary text-primary-foreground font-semibold shadow-sm'
+                                : 'bg-muted/70 text-foreground hover:bg-muted'
+                            }`}
+                          >
+                            {b.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Tipos en chips */}
+                    <div>
+                      <span className="text-xs font-bold text-foreground block mb-2">Tipo</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {productTypes.map(t => (
+                          <button
+                            key={t.value}
+                            type="button"
+                            onClick={() => setSelectedType(t.value)}
+                            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                              selectedType === t.value
+                                ? 'bg-primary text-primary-foreground font-semibold shadow-sm'
+                                : 'bg-muted/70 text-foreground hover:bg-muted'
+                            }`}
+                          >
+                            {t.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Píldoras de filtros activos con botón para descartar */}
+            {activeFilterCount > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5 px-1">
+                <span className="text-[11px] text-muted-foreground font-medium">Activos:</span>
+                {selectedCategory !== 'all' && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs bg-primary/10 text-primary font-medium">
+                    {selectedCategory}
+                    <button type="button" onClick={() => setSelectedCategory('all')} aria-label="Quitar filtro categoría">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                )}
+                {selectedBenefit !== 'all' && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs bg-primary/10 text-primary font-medium">
+                    {selectedBenefit}
+                    <button type="button" onClick={() => setSelectedBenefit('all')} aria-label="Quitar filtro beneficio">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                )}
+                {selectedType !== 'all' && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs bg-primary/10 text-primary font-medium">
+                    {selectedType}
+                    <button type="button" onClick={() => setSelectedType('all')} aria-label="Quitar filtro tipo">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* Filters Sidebar */}
-            <aside className="lg:col-span-1">
+            {/* Filters Sidebar (Solo en escritorio, sticky a un lado) */}
+            <aside className="hidden lg:block lg:col-span-1">
               <div className="bg-card rounded-xl p-6 shadow-sm border border-border sticky top-24 space-y-6">
                 
+                <div className="flex items-center justify-between pb-1">
+                  <div className="flex items-center gap-2">
+                    <SlidersHorizontal className="h-4 w-4 text-primary" />
+                    <span className="font-bold text-sm text-foreground">Filtros</span>
+                    {activeFilterCount > 0 && (
+                      <span className="bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        {activeFilterCount}
+                      </span>
+                    )}
+                  </div>
+                  {activeFilterCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={clearAllFilters}
+                      className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
+                    >
+                      <RotateCcw className="h-3 w-3" /> Limpiar
+                    </button>
+                  )}
+                </div>
+
                 {/* Category Filter */}
                 <div>
                   <span className="text-sm font-semibold text-foreground mb-3 block">Categoría</span>
@@ -254,7 +474,7 @@ const ShopPage = () => {
                 {/* Filtro por Beneficio */}
                 <div className="pt-4 border-t border-border">
                   <span className="text-sm font-semibold text-foreground mb-3 block">Filtrar por beneficio</span>
-                  <div className="space-y-1.5">
+                  <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1">
                     {benefits.map(opcion => (
                       <Button
                         key={opcion.value}
@@ -341,7 +561,7 @@ const ShopPage = () => {
                         />
                         <Button 
                           type="submit"
-                          className="bg-accent hover:bg-accent/90 text-white font-semibold px-6 py-3 rounded-xl text-sm shrink-0 shadow-sm"
+                          className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold px-6 py-3 rounded-xl text-sm shrink-0 shadow-sm"
                         >
                           Enviar sugerencia
                         </Button>
@@ -401,7 +621,7 @@ const ShopPage = () => {
                             <Button
                               onClick={(e) => handleAddToCart(product, e)}
                               disabled={product.stock === 0}
-                              className="w-full text-xs bg-accent text-white hover:bg-accent/90 py-3.5 rounded-xl transition-all duration-200 font-semibold"
+                              className="w-full text-xs bg-accent text-accent-foreground hover:bg-accent/90 py-3.5 rounded-xl transition-all duration-200 font-bold"
                             >
                               {product.stock === 0 ? 'Agotado' : 'Añadir a mi Rutina'}
                             </Button>
@@ -530,7 +750,7 @@ const ShopPage = () => {
                         setActiveProductIngredients(null);
                       }}
                       disabled={activeProductIngredients.stock === 0}
-                      className="text-xs bg-accent text-white hover:bg-accent/90 px-4 py-4 rounded-xl"
+                      className="text-xs bg-accent text-accent-foreground hover:bg-accent/90 px-4 py-4 rounded-xl font-bold"
                     >
                       Comprar
                     </Button>

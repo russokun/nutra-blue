@@ -331,26 +331,26 @@ const ProductDetailPage = () => {
 
             {/* Left Logo */}
             <div className="flex items-center space-x-2 shrink-0 z-10 select-none">
-              <span className="text-2xl font-display text-white">
+              <span className="text-2xl font-display text-white drop-shadow-sm">
                 NutraBlue
               </span>
-              <Ramita className="h-6 w-6 shrink-0 text-natural-300" />
+              <Ramita className="h-6 w-6 shrink-0 text-emerald-400" />
             </div>
 
             {/* Center Brand Statement */}
             <div className="text-center z-10 max-w-md">
-              <p className="text-sm md:text-base font-semibold tracking-wide text-white uppercase" style={{ letterSpacing: '0.1em' }}>
+              <p className="text-sm md:text-base font-bold tracking-wider text-white uppercase drop-shadow-sm" style={{ letterSpacing: '0.1em' }}>
                 Nutrición Consciente y Orgánica
               </p>
-              <p className="text-xs text-white/75 mt-1">
+              <p className="text-xs text-slate-200 font-medium mt-1">
                 Fórmulas puras diseñadas para potenciar tu longevidad y bienestar
               </p>
             </div>
 
             {/* Right Logo */}
             <div className="flex items-center space-x-2 shrink-0 z-10 select-none">
-              <Ramita className="h-6 w-6 shrink-0 text-natural-300" />
-              <span className="text-2xl font-display text-white">
+              <Ramita className="h-6 w-6 shrink-0 text-emerald-400" />
+              <span className="text-2xl font-display text-white drop-shadow-sm">
                 NutraBlue
               </span>
             </div>

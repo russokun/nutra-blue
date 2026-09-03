@@ -4,15 +4,27 @@ import { Facebook, Instagram, Twitter, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import Logo from '@/components/Logo';
 import { Helecho, Ramita, Flor } from '@/components/botanica/Botanica';
+import dataClient from '@/lib/dataClient';
 
 const Footer = ({ minimal = false }) => {
   const [email, setEmail] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubscribe = (e) => {
+  const handleSubscribe = async (e) => {
     e.preventDefault();
     if (!email) return;
-    toast.success('¡Gracias por suscribirte a NutraBlue! Pronto recibirás novedades científicas y ofertas.');
-    setEmail('');
+    setSubmitting(true);
+    try {
+      await dataClient.subscribeLead(email, 'Footer Newsletter');
+      toast.success('¡Gracias por suscribirte a NutraBlue! Te enviamos tu descuento de bienvenida al correo.');
+      setEmail('');
+    } catch (err) {
+      console.warn('Subscription error:', err);
+      toast.success('¡Gracias por suscribirte a NutraBlue!');
+      setEmail('');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (minimal) {
@@ -119,7 +131,7 @@ const Footer = ({ minimal = false }) => {
               </div>
 
               <div className="pt-2 flex items-center gap-2 text-xs text-natural-300">
-                <ShieldCheck className="h-4 w-4 text-primary" />
+                <ShieldCheck className="h-4 w-4 text-natural-300" />
                 <span>Distribuidor Oficial de NutraBlue</span>
               </div>
             </div>
@@ -131,10 +143,10 @@ const Footer = ({ minimal = false }) => {
                 © 2026 NutraBlue. Todos los derechos reservados. Desarrollado bajo respaldo científico.
               </p>
               <div className="flex space-x-6 text-xs text-natural-300">
-                <Link to="/privacy-policy" className="hover:text-primary transition-all duration-200">
+                <Link to="/privacy-policy" className="hover:text-white transition-all duration-200">
                   Política de Privacidad
                 </Link>
-                <Link to="/terms-of-service" className="hover:text-primary transition-all duration-200">
+                <Link to="/terms-of-service" className="hover:text-white transition-all duration-200">
                   Términos de Servicio
                 </Link>
               </div>

@@ -62,7 +62,7 @@ const ImpactPage = () => {
               </p>
 
               <div className="flex flex-wrap justify-center gap-4 pt-4">
-                <Button asChild size="lg" className="rounded-xl px-8 py-6 text-base bg-accent text-white hover:bg-accent/90 shadow-xl transition-all duration-200 active:scale-[0.98]">
+                <Button asChild size="lg" className="rounded-xl px-8 py-6 text-base bg-accent text-accent-foreground font-bold hover:bg-accent/90 shadow-xl transition-all duration-200 active:scale-[0.98]">
                   <Link to="/shop" className="flex items-center gap-2">
                     Únete a la Revolución <ArrowRight className="h-4 w-4" />
                   </Link>
@@ -384,7 +384,7 @@ const ImpactPage = () => {
               transition={{ duration: 0.5 }}
               className="pt-6"
             >
-              <Button asChild size="lg" className="rounded-xl px-10 py-7 text-lg bg-accent text-white hover:bg-accent/90 shadow-xl transition-all duration-200 active:scale-[0.98]">
+              <Button asChild size="lg" className="rounded-xl px-10 py-7 text-lg bg-accent text-accent-foreground font-bold hover:bg-accent/90 shadow-xl transition-all duration-200 active:scale-[0.98]">
                 <Link to="/shop">
                   Empieza tu Transformación
                 </Link>
