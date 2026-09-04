@@ -87,6 +87,27 @@ async def create_order(order_data: OrderCreate):
         "p_courier": validated_order["courier"],
     }
 
+    # `p_billing` se agrega SOLO en pedidos de empresa, y no siempre, a proposito.
+    #
+    # PostgREST resuelve las sobrecargas por el conjunto de nombres de parametros. Si la
+    # API se despliega antes de correr la migracion 015, la funcion de catorce parametros
+    # todavia no existe: mandando `p_billing` en todos los pedidos, ninguno resolveria y
+    # el checkout se caeria ENTERO. Omitiendolo, un pedido normal cae en la sobrecarga de
+    # trece parametros --que existe antes y despues de la migracion-- y lo unico que falla
+    # mientras tanto son los pedidos de empresa.
+    #
+    # Los seis campos van en un objeto y no sueltos: la firma ya tenia trece parametros y
+    # cada campo nuevo obligaba a otra sobrecarga.
+    if validated_order["is_company"]:
+        rpc_params["p_billing"] = {
+            "is_company": True,
+            "tax_id": validated_order["tax_id"],
+            "business_name": validated_order["business_name"],
+            "business_activity": validated_order["business_activity"],
+            "billing_email": validated_order["billing_email"],
+            "billing_address": validated_order["billing_address"],
+        }
+
     try:
         response = supabase_client.rpc("create_order_with_stock_check", rpc_params).execute()
 

@@ -940,45 +940,63 @@ def _sync_products_from_sheets_sync(csv_url: Optional[str] = None):
                 if db_data.get("product_type") is None:
                     db_data.pop("product_type", None)
 
-                # El sync no trae imagenes reales (doc_parser no las extrae, la columna
-                # de la planilla se ignora). Si el producto ya existe, no pisar la
-                # galeria curada a mano en el admin con el placeholder /logo.png.
-                # La misma consulta trae el stock local para reconciliarlo con la planilla.
+                # Buscar si el producto ya existe en la base de datos para preservar
+                # su galeria de imagenes, beneficios manuales y reconciliar stock
+                existing = None
                 try:
                     existing_res = supabase_client.from_("products").select(
-                        "id, stock, stock_synced"
+                        "id, name, stock, stock_synced, image_url, images, benefit, product_type"
                     ).eq("name", name).limit(1).execute()
                     if existing_res.data:
                         existing = existing_res.data[0]
-                        db_data.pop("image_url", None)
-                        db_data.pop("images", None)
-                        db_data["stock"] = reconcile_stock(
-                            sheet_stock, existing.get("stock"), existing.get("stock_synced")
-                        )
-                except Exception:
-                    pass
+                except Exception as ex_err:
+                    logger.warning("Error consultando producto existente '%s': %s", name, str(ex_err))
 
-                db_data["stock_synced"] = db_data["stock"]
-                db_data["sort_order"] = sort_order
+                if existing:
+                    # El sync no trae imagenes reales (la planilla no las incluye).
+                    # Preservar siempre la galeria curada a mano en el panel admin.
+                    db_data.pop("image_url", None)
+                    db_data.pop("images", None)
 
-                # Realizar upsert basándonos en la restricción UNIQUE de 'name'
-                res_upsert = supabase_client.from_("products").upsert(
-                    db_data,
-                    on_conflict="name"
-                ).execute()
-                
-                if res_upsert.data:
-                    # En Supabase no sabemos directamente si fue INSERT o UPDATE a menos que comparemos
-                    # o contemos. Asumimos éxito e incrementamos actualizados por defecto.
-                    report["updated"] += 1
-                    # Lo que n8n escribe de vuelta en la columna Inventario de la planilla
-                    report["stock_writeback"].append({"name": name, "stock": db_data["stock"]})
+                    # Reconciliar inventario teniendo en cuenta ventas locales
+                    db_data["stock"] = reconcile_stock(
+                        sheet_stock, existing.get("stock"), existing.get("stock_synced")
+                    )
+                    db_data["stock_synced"] = db_data["stock"]
+                    db_data["sort_order"] = sort_order
+
+                    # Actualización directa por ID (nunca sobreescribe columnas omitidas)
+                    res_update = supabase_client.from_("products").update(
+                        db_data
+                    ).eq("id", existing["id"]).execute()
+
+                    if res_update.data:
+                        report["updated"] += 1
+                        report["stock_writeback"].append({"name": name, "stock": db_data["stock"]})
+                    else:
+                        report["errors"].append({
+                            "row": index + 1,
+                            "product": name,
+                            "error": "No se retornaron datos tras actualizar el producto"
+                        })
                 else:
-                    report["errors"].append({
-                        "row": index + 1,
-                        "product": name,
-                        "error": "No se retornaron datos tras el guardado"
-                    })
+                    # Producto nuevo en el catálogo: insertar registro inicial
+                    db_data["stock_synced"] = db_data["stock"]
+                    db_data["sort_order"] = sort_order
+
+                    res_insert = supabase_client.from_("products").insert(
+                        db_data
+                    ).execute()
+
+                    if res_insert.data:
+                        report["created"] += 1
+                        report["stock_writeback"].append({"name": name, "stock": db_data["stock"]})
+                    else:
+                        report["errors"].append({
+                            "row": index + 1,
+                            "product": name,
+                            "error": "No se retornaron datos tras crear el producto"
+                        })
             except Exception as e:
                 report["errors"].append({
                     "row": index + 1,

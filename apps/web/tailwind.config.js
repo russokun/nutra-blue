@@ -52,6 +52,20 @@ module.exports = {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
         },
+        // La familia de la naturaleza. Toma regiones y atmosfera; las acciones
+        // siguen siendo azules. Ver el bloque de tokens en index.css.
+        natural: {
+          50: "hsl(var(--natural-50))",
+          100: "hsl(var(--natural-100))",
+          200: "hsl(var(--natural-200))",
+          300: "hsl(var(--natural-300))",
+          400: "hsl(var(--natural-400))",
+          500: "hsl(var(--natural-500))",
+          600: "hsl(var(--natural-600))",
+          700: "hsl(var(--natural-700))",
+          800: "hsl(var(--natural-800))",
+          900: "hsl(var(--natural-900))",
+        },
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",

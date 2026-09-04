@@ -263,7 +263,7 @@ const CartPage = () => {
                 <div className="space-y-3 pt-2">
                   <Button
                     onClick={() => navigate('/checkout')}
-                    className="w-full bg-accent text-white hover:bg-accent/90 text-base font-bold py-7 rounded-xl shadow-lg transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"
+                    className="w-full bg-accent text-accent-foreground hover:bg-accent/90 text-base font-bold py-7 rounded-xl shadow-lg transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"
                     size="lg"
                   >
                     <Lock className="h-4 w-4" /> Pagar de Forma Segura

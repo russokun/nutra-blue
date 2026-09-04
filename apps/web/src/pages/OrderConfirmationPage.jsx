@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from '@/components/Meta';
 import { useParams, useLocation, Link } from 'react-router-dom';
-import { CheckCircle2, Package } from 'lucide-react';
+import { CheckCircle2, Package, Building2 } from 'lucide-react';
 import dataClient from '@/lib/dataClient';
 import { useCart } from '@/hooks/useCart';
 import Header from '@/components/Header';
@@ -177,6 +177,40 @@ const OrderConfirmationPage = () => {
               </p>
             </div>
           </div>
+
+          {order.is_company && (
+            <div className="bg-card rounded-xl p-6 border border-border shadow-sm mb-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Building2 className="h-5 w-5 text-primary" />
+                <h2 className="text-xl font-semibold text-card-foreground">Datos de Facturación</h2>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-xs text-muted-foreground block">Razón Social</span>
+                  <span className="font-semibold text-card-foreground">{order.business_name}</span>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground block">RUT Empresa</span>
+                  <span className="font-semibold font-mono text-card-foreground">{order.tax_id}</span>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground block">Giro Comercial</span>
+                  <span className="text-card-foreground">{order.business_activity}</span>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground block">Correo de Facturación</span>
+                  <span className="text-card-foreground">{order.billing_email || order.email}</span>
+                </div>
+                <div className="md:col-span-2">
+                  <span className="text-xs text-muted-foreground block">Domicilio Comercial (Tributario)</span>
+                  <span className="text-card-foreground">{order.billing_address}</span>
+                </div>
+              </div>
+              <div className="mt-4 p-3 bg-muted/40 rounded-lg text-xs text-muted-foreground">
+                Emitiremos tu factura electrónica con estos datos y te la enviaremos por correo una vez procesada.
+              </div>
+            </div>
+          )}
 
           <div className="bg-card rounded-xl p-6 border border-border shadow-sm mb-6">
             <h2 className="text-xl font-semibold text-card-foreground mb-6">Productos</h2>

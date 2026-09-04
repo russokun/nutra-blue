@@ -5,19 +5,71 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Tag, RefreshCw, Upload, Loader2, ChevronLeft, ChevronRight, X, CloudDownload } from 'lucide-react';
+import { 
+  Plus, 
+  Pencil, 
+  Trash2, 
+  Tag, 
+  RefreshCw, 
+  Upload, 
+  Loader2, 
+  ChevronLeft, 
+  ChevronRight, 
+  X, 
+  CloudDownload,
+  Image as ImageIcon,
+  CheckCircle2,
+  FileText,
+  EyeOff,
+  Link as LinkIcon,
+  Sparkles
+} from 'lucide-react';
 
 const emptyProduct = {
-  name: '', price: '', stock: '', category: '', benefit: '', product_type: '', is_hidden: false, images: [],
+  name: '', 
+  price: '', 
+  stock: '', 
+  category: '', 
+  benefit: '', 
+  product_type: '', 
+  is_hidden: false, 
+  images: [],
+  google_doc_url: '',
+  benefits: [],
+  certifications: [],
+  docFields: {}
 };
 
-// Categorías de respaldo: solo se usan si el catálogo aún está vacío. La lista real
-// sale de los productos, que a su vez vienen de la columna "Categoría / Objetivo"
-// de la planilla — esa es la fuente de verdad.
 const FALLBACK_CATEGORIES = ['Energía', 'Concentración y Calma', 'Descanso y Longevidad', 'Alimentación Diaria'];
 
 const formatPrice = (price) =>
   new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(price);
+
+// Helper para renderizar imágenes de forma segura con fallback visual
+const SafeProductImage = ({ src, alt, className, fallbackSize = 'h-5 w-5' }) => {
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [src]);
+
+  if (!src || imgError) {
+    return (
+      <div className={`bg-muted/60 border border-border/80 rounded-xl flex items-center justify-center text-muted-foreground/60 ${className}`}>
+        <Tag className={fallbackSize} />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt || 'Producto'}
+      onError={() => setImgError(true)}
+      className={`${className} object-cover`}
+    />
+  );
+};
 
 const ProductsPage = () => {
   const [products, setProducts] = useState([]);
@@ -25,6 +77,7 @@ const ProductsPage = () => {
   const [form, setForm] = useState(emptyProduct);
   const [editingId, setEditingId] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [urlInputValue, setUrlInputValue] = useState('');
@@ -35,12 +88,11 @@ const ProductsPage = () => {
     return fromCatalog.length ? fromCatalog : FALLBACK_CATEGORIES;
   }, [products]);
 
-  // Sugerencias para los datalist de beneficio y tipo. Se dejan como texto libre para
-  // no encajonar al cliente: la planilla puede traer valores nuevos en cualquier momento.
   const benefitOptions = React.useMemo(
     () => [...new Set(products.map((p) => p.benefit).filter(Boolean))].sort(),
     [products]
   );
+  
   const typeOptions = React.useMemo(
     () => [...new Set(products.map((p) => p.product_type).filter(Boolean))].sort(),
     [products]
@@ -66,10 +118,8 @@ const ProductsPage = () => {
     try {
       setSyncing(true);
       await adminClient.startCatalogSync();
-      toast.info('Sincronizando con la planilla. Esto puede tardar unos minutos.');
+      toast.info('Sincronizando con la planilla. Esto puede tardar unos momentos...');
 
-      // El backend descarga una ficha de Google Docs por producto, así que el sync
-      // corre en segundo plano y acá seguimos su avance.
       while (true) {
         await new Promise((resolve) => setTimeout(resolve, 3000));
         const status = await adminClient.getCatalogSyncStatus();
@@ -79,14 +129,11 @@ const ProductsPage = () => {
           toast.error(`La sincronización falló: ${status.error}`);
         } else if (status.summary) {
           const { created, updated, errors, warnings } = status.summary;
-          toast.success(`Catálogo sincronizado: ${created + updated} productos actualizados`);
+          toast.success(`Catálogo sincronizado: ${created + updated} productos actualizados.`);
           if (errors?.length) {
             toast.error(`${errors.length} producto(s) con error: ${errors[0].product} — ${errors[0].error}`);
           }
           if (warnings?.length) {
-            // Antes esto daba por sentado que todo warning era una ficha de Google Docs
-            // ilegible. El sync también avisa por otras cosas — por ejemplo que la
-            // planilla no trae las columnas Beneficio y Tipo — y se reportaban mal.
             warnings.slice(0, 3).forEach((w) => toast.warning(w.error));
           }
         }
@@ -104,22 +151,22 @@ const ProductsPage = () => {
     setEditingId(null);
     setForm(emptyProduct);
     setShowUrlInput(false);
+    setUrlInputValue('');
     setModalOpen(true);
   };
 
   const openEdit = (product) => {
     setEditingId(product.id);
     setForm({
-      name: product.name,
-      price: String(product.price),
-      stock: String(product.stock),
-      category: product.category,
+      name: product.name || '',
+      price: String(product.price ?? ''),
+      stock: String(product.stock ?? ''),
+      category: product.category || '',
       benefit: product.benefit || '',
       product_type: product.product_type || '',
       is_hidden: Boolean(product.is_hidden),
       images: product.images?.length ? product.images : (product.image_url ? [product.image_url] : []),
       google_doc_url: product.google_doc_url || '',
-      // Los trae el sync desde la ficha de Google Docs: se conservan tal cual al guardar.
       benefits: product.benefits || [],
       certifications: product.certifications || [],
       docFields: {
@@ -133,6 +180,7 @@ const ProductsPage = () => {
       },
     });
     setShowUrlInput(false);
+    setUrlInputValue('');
     setModalOpen(true);
   };
 
@@ -143,8 +191,10 @@ const ProductsPage = () => {
     try {
       setUploadingImage(true);
       const res = await adminClient.uploadProductImage(file);
-      setForm((prev) => ({ ...prev, images: [...prev.images, res.image_url] }));
-      toast.success('Imagen subida con éxito');
+      if (res?.image_url) {
+        setForm((prev) => ({ ...prev, images: [...prev.images, res.image_url] }));
+        toast.success('Imagen subida con éxito');
+      }
     } catch (err) {
       toast.error(err.message || 'Error al subir la imagen');
     } finally {
@@ -153,9 +203,12 @@ const ProductsPage = () => {
     }
   };
 
-  const handleAddUrlImage = (url) => {
-    if (!url.trim()) return;
-    setForm((prev) => ({ ...prev, images: [...prev.images, url.trim()] }));
+  const handleAddUrlImage = () => {
+    if (!urlInputValue.trim()) return;
+    setForm((prev) => ({ ...prev, images: [...prev.images, urlInputValue.trim()] }));
+    setUrlInputValue('');
+    setShowUrlInput(false);
+    toast.success('Imagen añadida a la galería');
   };
 
   const handleRemoveImage = (index) => {
@@ -174,41 +227,40 @@ const ProductsPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSaving(true);
     const payload = {
-      name: form.name,
-      price: parseInt(form.price, 10),
-      stock: parseInt(form.stock, 10),
+      name: form.name.trim(),
+      price: parseInt(form.price, 10) || 0,
+      stock: parseInt(form.stock, 10) || 0,
       category: form.category,
-      // Se manda '' y no null a proposito: el backend descarta los campos None al
-      // actualizar, asi que con null nunca se podria vaciar un beneficio ya cargado.
       benefit: form.benefit || '',
       product_type: form.product_type || '',
       is_hidden: Boolean(form.is_hidden),
       images: form.images,
       image_url: form.images[0] || null,
-      // No vaciar lo que trajo el sync desde la ficha de Google Docs: editar el precio
-      // de un producto no puede borrarle los beneficios.
       benefits: form.benefits || [],
       certifications: form.certifications || [],
-      google_doc_url: form.google_doc_url || null,
+      google_doc_url: form.google_doc_url ? form.google_doc_url.trim() : null,
     };
     try {
       if (editingId) {
         await adminClient.updateProduct(editingId, payload);
-        toast.success('Producto actualizado');
+        toast.success('Producto actualizado correctamente');
       } else {
         await adminClient.createProduct(payload);
-        toast.success('Producto creado');
+        toast.success('Producto creado exitosamente');
       }
       setModalOpen(false);
       fetchProducts();
     } catch (err) {
       toast.error(err.message || 'Error al guardar producto');
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('¿Seguro que deseas eliminar este producto del catálogo?')) return;
+  const handleDelete = async (id, name) => {
+    if (!window.confirm(`¿Seguro que deseas eliminar "${name}" del catálogo?`)) return;
     try {
       await adminClient.deleteProduct(id);
       toast.success('Producto eliminado del catálogo');
@@ -219,25 +271,41 @@ const ProductsPage = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-7xl mx-auto pb-12">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-6">
         <div>
-          <h1 className="text-3xl font-bold text-foreground" style={{ fontFamily: 'Playfair Display, serif' }}>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
             Catálogo de Productos
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">Controla los precios, el stock y la clasificación de suplementos</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Gestiona los precios, stock, galería de fotos y ficha técnica de tus suplementos
+          </p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={fetchProducts} variant="outline" size="sm" className="rounded-xl gap-2">
-            <RefreshCw className="h-4 w-4" />
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Button 
+            onClick={fetchProducts} 
+            variant="outline" 
+            size="sm" 
+            title="Recargar catálogo"
+            className="rounded-xl gap-2 h-10 px-3 bg-card hover:bg-muted/60"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
-          <Button onClick={handleSync} disabled={syncing} variant="outline" className="rounded-xl gap-2">
-            {syncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <CloudDownload className="h-4 w-4" />}
+          <Button 
+            onClick={handleSync} 
+            disabled={syncing} 
+            variant="outline" 
+            className="rounded-xl gap-2 h-10 px-4 bg-card hover:bg-muted/60 shadow-xs border-border/80 font-medium"
+          >
+            {syncing ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <CloudDownload className="h-4 w-4 text-primary" />}
             {syncing ? 'Sincronizando…' : 'Sincronizar catálogo'}
           </Button>
-          <Button onClick={openCreate} className="rounded-xl gap-2 shadow-md">
-            <Plus className="h-4.5 w-4.5" /> Nuevo Producto
+          <Button 
+            onClick={openCreate} 
+            className="rounded-xl gap-2 h-10 px-5 shadow-sm bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
+          >
+            <Plus className="h-4 w-4" /> Nuevo Producto
           </Button>
         </div>
       </div>
@@ -245,64 +313,115 @@ const ProductsPage = () => {
       {/* Grid count & list */}
       {loading ? (
         <div className="space-y-4">
-          <Skeleton className="h-12 w-full rounded-xl" />
-          <Skeleton className="h-64 w-full rounded-xl" />
+          <Skeleton className="h-12 w-full rounded-2xl" />
+          <Skeleton className="h-96 w-full rounded-2xl" />
         </div>
       ) : products.length === 0 ? (
-        <div className="py-16 text-center bg-card border border-border/60 rounded-2xl shadow-sm">
-          <p className="text-muted-foreground text-sm">No se encontraron productos registrados.</p>
+        <div className="py-20 text-center bg-card border border-border/60 rounded-3xl shadow-sm p-8 max-w-md mx-auto">
+          <div className="w-12 h-12 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground mb-4">
+            <Tag className="h-6 w-6" />
+          </div>
+          <h3 className="text-lg font-semibold text-foreground">No hay productos registrados</h3>
+          <p className="text-muted-foreground text-sm mt-1 mb-6">
+            Puedes sincronizar con tu planilla de Google Sheets o crear tu primer producto manualmente.
+          </p>
+          <Button onClick={openCreate} className="rounded-xl gap-2">
+            <Plus className="h-4 w-4" /> Crear Producto
+          </Button>
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="text-sm text-muted-foreground font-medium px-1">
-            {products.length} producto(s) en el catálogo
+          <div className="flex items-center justify-between px-1 text-sm text-muted-foreground">
+            <span className="font-medium text-foreground/80">{products.length} producto(s) en total</span>
+            <span className="text-xs">Sincronizado con Google Sheets</span>
           </div>
 
           <div className="bg-card border border-border/60 rounded-2xl shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="bg-muted/40 font-medium text-muted-foreground border-b border-border/60">
+              <table className="w-full text-sm text-left border-collapse">
+                <thead className="bg-muted/30 font-medium text-muted-foreground border-b border-border/60 text-xs uppercase tracking-wider">
                   <tr>
-                    <th className="p-4">Imagen</th>
-                    <th className="p-4">Nombre del Producto</th>
-                    <th className="p-4">Categoría</th>
-                    <th className="p-4">Precio (CLP)</th>
-                    <th className="p-4">Stock</th>
-                    <th className="p-4 text-right">Acciones</th>
+                    <th className="py-3.5 px-4 w-16">Imagen</th>
+                    <th className="py-3.5 px-4">Producto</th>
+                    <th className="py-3.5 px-4">Categoría / Tipo</th>
+                    <th className="py-3.5 px-4">Precio</th>
+                    <th className="py-3.5 px-4">Stock</th>
+                    <th className="py-3.5 px-4 text-center">Estado</th>
+                    <th className="py-3.5 px-4 text-right">Acciones</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-border/40">
                   {products.map((p) => (
-                    <tr key={p.id} className="border-t border-border/60 hover:bg-muted/5 transition-colors">
-                      <td className="p-4">
-                        {p.image_url ? (
-                          <img 
-                            src={p.image_url} 
-                            alt={p.name} 
-                            className="w-10 h-10 object-cover rounded-lg border border-border"
+                    <tr key={p.id} className="hover:bg-muted/15 transition-colors group">
+                      <td className="py-3.5 px-4">
+                        <div className="w-12 h-12 rounded-xl overflow-hidden bg-muted/30 border border-border/60 flex-shrink-0">
+                          <SafeProductImage
+                            src={p.images?.[0] || p.image_url}
+                            alt={p.name}
+                            className="w-full h-full"
                           />
-                        ) : (
-                          <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center text-muted-foreground">
-                            <Tag className="h-4 w-4" />
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="font-semibold text-foreground">{p.name}</div>
+                        {p.benefit && (
+                          <div className="text-xs text-muted-foreground/80 line-clamp-1 mt-0.5 flex items-center gap-1">
+                            <Sparkles className="h-3 w-3 text-accent inline" />
+                            {p.benefit}
                           </div>
                         )}
                       </td>
-                      <td className="p-4 font-semibold text-foreground">{p.name}</td>
-                      <td className="p-4 text-muted-foreground">{p.category}</td>
-                      <td className="p-4 font-semibold text-foreground">{formatPrice(p.price)}</td>
-                      <td className="p-4">
-                        <span className={`inline-flex px-2 py-0.5 rounded text-xs font-semibold ${
-                          p.stock <= 10 ? 'bg-rose-100 text-rose-800' : 'bg-muted text-muted-foreground'
+                      <td className="py-3.5 px-4">
+                        <div className="text-xs font-medium text-foreground">{p.category || '—'}</div>
+                        {p.product_type && (
+                          <span className="text-[11px] text-muted-foreground inline-block mt-0.5">
+                            {p.product_type}
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-4 font-semibold text-foreground whitespace-nowrap">
+                        {formatPrice(p.price)}
+                      </td>
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          p.stock <= 5 
+                            ? 'bg-destructive/10 text-destructive border border-destructive/20 font-semibold' 
+                            : p.stock <= 15 
+                            ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20' 
+                            : 'bg-muted/80 text-foreground/80'
                         }`}>
                           {p.stock} un.
                         </span>
                       </td>
-                      <td className="p-4 text-right">
+                      <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                        {p.is_hidden ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-muted text-muted-foreground">
+                            <EyeOff className="h-3 w-3" /> Oculto
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-success/10 text-success">
+                            Visible
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-4 text-right whitespace-nowrap">
                         <div className="flex gap-1.5 justify-end">
-                          <Button variant="ghost" size="icon" onClick={() => openEdit(p)} className="rounded-lg h-8 w-8">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => openEdit(p)} 
+                            title="Editar producto"
+                            className="rounded-xl h-8 w-8 text-foreground/80 hover:text-primary hover:bg-primary/10"
+                          >
                             <Pencil className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => handleDelete(p.id)} className="rounded-lg h-8 w-8 text-destructive hover:bg-destructive/10">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => handleDelete(p.id, p.name)} 
+                            title="Eliminar producto"
+                            className="rounded-xl h-8 w-8 text-destructive hover:bg-destructive/10"
+                          >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
@@ -316,260 +435,358 @@ const ProductsPage = () => {
         </div>
       )}
 
-      {/* Modal Drawer: Create / Edit Product */}
+      {/* Modal Rediseñado: Formato 2 Columnas, Header y Footer fijos */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-card border border-border rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
-            <h3 className="text-lg font-bold text-foreground mb-4">
-              {editingId ? 'Editar Producto' : 'Crear Nuevo Producto'}
-            </h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label>Nombre del Producto</Label>
-                <Input 
-                  value={form.name} 
-                  onChange={(e) => setForm({ ...form, name: e.target.value })} 
-                  required 
-                  className="mt-1"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Precio (CLP)</Label>
-                  <Input 
-                    type="number" 
-                    value={form.price} 
-                    onChange={(e) => setForm({ ...form, price: e.target.value })} 
-                    required 
-                    className="mt-1"
-                  />
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setModalOpen(false);
+          }}
+        >
+          <div className="bg-card border border-border/80 rounded-2xl w-full max-w-4xl max-h-[90vh] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            
+            {/* Header Fijo */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border/60 bg-muted/20">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+                  {editingId ? <Pencil className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
                 </div>
                 <div>
-                  <Label>Stock</Label>
-                  <Input 
-                    type="number" 
-                    value={form.stock} 
-                    onChange={(e) => setForm({ ...form, stock: e.target.value })} 
-                    required 
-                    className="mt-1"
-                  />
+                  <h3 className="text-xl font-bold text-foreground" style={{ fontFamily: 'Playfair Display, serif' }}>
+                    {editingId ? 'Editar Producto' : 'Crear Nuevo Producto'}
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    {editingId ? 'Modifica los datos comerciales, multimedia y clasificación' : 'Ingresa los datos para registrar un nuevo suplemento'}
+                  </p>
                 </div>
               </div>
-              <div>
-                <Label>Categoría</Label>
-                <select
-                  className="w-full mt-1.5 rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-                  value={form.category}
-                  onChange={(e) => setForm({ ...form, category: e.target.value })}
-                >
-                  <option value="">Sin categoría</option>
-                  {categories.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Las categorías salen de la columna «Categoría / Objetivo» de la planilla.
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Beneficio</Label>
-                  <Input
-                    list="benefit-options"
-                    value={form.benefit}
-                    onChange={(e) => setForm({ ...form, benefit: e.target.value })}
-                    placeholder="Ej: Energía Natural"
-                    className="mt-1"
-                  />
-                  <datalist id="benefit-options">
-                    {benefitOptions.map((b) => <option key={b} value={b} />)}
-                  </datalist>
-                </div>
-                <div>
-                  <Label>Tipo</Label>
-                  <Input
-                    list="type-options"
-                    value={form.product_type}
-                    onChange={(e) => setForm({ ...form, product_type: e.target.value })}
-                    placeholder="Ej: Polvo"
-                    className="mt-1"
-                  />
-                  <datalist id="type-options">
-                    {typeOptions.map((t) => <option key={t} value={t} />)}
-                  </datalist>
-                </div>
-              </div>
-              <p className="-mt-2 text-xs text-muted-foreground">
-                Normalmente salen de la ficha de Google Docs del producto. Lo que cargues
-                acá se conserva mientras la ficha no aporte un valor reconocible.
-              </p>
-              <div className="rounded-lg border border-border bg-muted/30 p-3">
-                <label className="flex items-start gap-2.5 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={Boolean(form.is_hidden)}
-                    onChange={(e) => setForm({ ...form, is_hidden: e.target.checked })}
-                    className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
-                  />
-                  <span>
-                    <span className="block text-sm font-medium text-foreground">Ocultar del catálogo</span>
-                    <span className="block text-xs text-muted-foreground">
-                      No aparece en la tienda ni en los carruseles, pero sigue siendo
-                      comprable por su URL directa. Se usa para el producto de prueba con
-                      el que se valida el cobro real.
-                    </span>
-                  </span>
-                </label>
-              </div>
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <Label>Imágenes del Producto</Label>
-                  <button
-                    type="button"
-                    onClick={() => setShowUrlInput(!showUrlInput)}
-                    className="text-xs text-primary hover:underline font-medium"
-                  >
-                    {showUrlInput ? 'Subir archivo (PNG/JPG)' : 'Usar URL externa'}
-                  </button>
-                </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setModalOpen(false)}
+                className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
 
-                {form.images.length > 0 && (
-                  <div className="mb-2 flex flex-wrap gap-2">
-                    {form.images.map((url, index) => (
-                      <div key={`${url}-${index}`} className="relative w-20 h-20 rounded-xl border border-border overflow-hidden bg-muted/20 group">
-                        <img src={url} alt={`Vista previa ${index + 1}`} className="w-full h-full object-cover" />
-                        {index === 0 && (
-                          <span className="absolute top-1 left-1 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.5 rounded-full">
-                            Portada
-                          </span>
-                        )}
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
-                          <div className="flex gap-1">
-                            <button
-                              type="button"
-                              onClick={() => handleMoveImage(index, -1)}
-                              disabled={index === 0}
-                              className="text-white disabled:opacity-30 hover:text-primary"
-                            >
-                              <ChevronLeft className="h-4 w-4" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveImage(index)}
-                              className="text-white hover:text-destructive"
-                            >
-                              <X className="h-4 w-4" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleMoveImage(index, 1)}
-                              disabled={index === form.images.length - 1}
-                              className="text-white disabled:opacity-30 hover:text-primary"
-                            >
-                              <ChevronRight className="h-4 w-4" />
-                            </button>
-                          </div>
+            {/* Cuerpo Scrollable en 2 Columnas */}
+            <form id="product-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                {/* Columna Izquierda: Información General & Comercial (7 columnas) */}
+                <div className="lg:col-span-7 space-y-4">
+                  <div className="bg-muted/15 border border-border/60 rounded-2xl p-4 space-y-4">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                      <Tag className="h-3.5 w-3.5 text-primary" /> Datos Comerciales
+                    </h4>
+
+                    <div>
+                      <Label className="text-xs font-semibold">Nombre del Producto *</Label>
+                      <Input 
+                        value={form.name} 
+                        onChange={(e) => setForm({ ...form, name: e.target.value })} 
+                        placeholder="Ej: Melena de León 500 mg"
+                        required 
+                        className="mt-1.5 rounded-xl bg-background"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-xs font-semibold">Precio de Venta (CLP) *</Label>
+                        <div className="relative mt-1.5">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">$</span>
+                          <Input 
+                            type="number" 
+                            value={form.price} 
+                            onChange={(e) => setForm({ ...form, price: e.target.value })} 
+                            placeholder="0"
+                            required 
+                            className="pl-7 rounded-xl bg-background font-medium"
+                          />
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
+                      <div>
+                        <Label className="text-xs font-semibold">Stock Disponible *</Label>
+                        <Input 
+                          type="number" 
+                          value={form.stock} 
+                          onChange={(e) => setForm({ ...form, stock: e.target.value })} 
+                          placeholder="0"
+                          required 
+                          className="mt-1.5 rounded-xl bg-background font-medium"
+                        />
+                      </div>
+                    </div>
 
-                {!showUrlInput ? (
-                  <div className="mt-1">
-                    <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-border rounded-xl cursor-pointer bg-muted/10 hover:bg-muted/20 transition-colors">
-                      {uploadingImage ? (
-                        <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                          <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                          <span>Subiendo imagen...</span>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center text-center px-4">
-                          <Upload className="w-5 h-5 mb-1.5 text-muted-foreground" />
-                          <p className="text-xs text-foreground font-semibold">Agregar otra imagen</p>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">PNG, JPG, WEBP (Máx 10 MB)</p>
-                        </div>
-                      )}
+                    <div>
+                      <Label className="text-xs font-semibold">Categoría *</Label>
+                      <select
+                        className="w-full mt-1.5 rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        value={form.category}
+                        onChange={(e) => setForm({ ...form, category: e.target.value })}
+                        required
+                      >
+                        <option value="">Selecciona una categoría</option>
+                        {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                      <p className="mt-1 text-[11px] text-muted-foreground">
+                        Coincide con la columna «Categoría / Objetivo» de la planilla.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-xs font-semibold">Beneficio Principal</Label>
+                        <Input
+                          list="benefit-options"
+                          value={form.benefit}
+                          onChange={(e) => setForm({ ...form, benefit: e.target.value })}
+                          placeholder="Ej: Concentración y Foco"
+                          className="mt-1.5 rounded-xl bg-background text-xs"
+                        />
+                        <datalist id="benefit-options">
+                          {benefitOptions.map((b) => <option key={b} value={b} />)}
+                        </datalist>
+                      </div>
+                      <div>
+                        <Label className="text-xs font-semibold">Tipo / Formato</Label>
+                        <Input
+                          list="type-options"
+                          value={form.product_type}
+                          onChange={(e) => setForm({ ...form, product_type: e.target.value })}
+                          placeholder="Ej: Cápsulas, Gotas, Polvo"
+                          className="mt-1.5 rounded-xl bg-background text-xs"
+                        />
+                        <datalist id="type-options">
+                          {typeOptions.map((t) => <option key={t} value={t} />)}
+                        </datalist>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Switch Visibilidad */}
+                  <div className="rounded-2xl border border-border/80 bg-muted/20 p-4 transition-all hover:bg-muted/30">
+                    <label className="flex items-start gap-3 cursor-pointer select-none">
                       <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileUpload}
-                        disabled={uploadingImage}
-                        className="hidden"
+                        type="checkbox"
+                        checked={Boolean(form.is_hidden)}
+                        onChange={(e) => setForm({ ...form, is_hidden: e.target.checked })}
+                        className="mt-0.5 h-4 w-4 rounded text-primary focus:ring-primary accent-primary"
                       />
+                      <div className="space-y-0.5">
+                        <span className="text-sm font-semibold text-foreground flex items-center gap-2">
+                          <EyeOff className="h-4 w-4 text-muted-foreground" /> Ocultar del catálogo público
+                        </span>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          No aparecerá en la tienda ni en los carruseles principales, pero sigue siendo accesible y comprable por su enlace directo. Útil para productos de prueba.
+                        </p>
+                      </div>
                     </label>
                   </div>
-                ) : (
-                  <div className="flex gap-2 mt-1">
-                    <Input
-                      value={urlInputValue}
-                      onChange={(e) => setUrlInputValue(e.target.value)}
-                      placeholder="https://ejemplo.com/imagen.jpg"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => { handleAddUrlImage(urlInputValue); setUrlInputValue(''); }}
-                    >
-                      Agregar
-                    </Button>
-                  </div>
-                )}
-              </div>
+                </div>
 
-              <div className="border-t border-border pt-4">
-                <Label>Ficha del producto (Google Doc)</Label>
-                <Input
-                  value={form.google_doc_url || ''}
-                  onChange={(e) => setForm({ ...form, google_doc_url: e.target.value })}
-                  placeholder="https://docs.google.com/document/d/..."
-                  className="mt-1.5"
-                />
-                <p className="mt-1 text-xs text-muted-foreground">
-                  De acá el sync saca descripción, origen, beneficios, perfil y venta cruzada.
-                  Estos campos se sobrescriben en cada sincronización.
-                </p>
+                {/* Columna Derecha: Multimedia & Ficha Google Docs (5 columnas) */}
+                <div className="lg:col-span-5 space-y-4">
+                  
+                  {/* Galería de Imágenes */}
+                  <div className="bg-muted/15 border border-border/60 rounded-2xl p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                        <ImageIcon className="h-3.5 w-3.5 text-primary" /> Galería de Fotos ({form.images.length})
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={() => setShowUrlInput(!showUrlInput)}
+                        className="text-xs text-primary hover:underline font-medium flex items-center gap-1"
+                      >
+                        <LinkIcon className="h-3 w-3" />
+                        {showUrlInput ? 'Subir archivo' : 'Usar URL'}
+                      </button>
+                    </div>
 
-                {form.benefits?.length > 0 && (
-                  <div className="mt-3">
-                    <p className="text-xs font-semibold text-foreground mb-1">
-                      Beneficios importados ({form.benefits.length})
-                    </p>
-                    <ul className="space-y-1 max-h-24 overflow-y-auto pr-1">
-                      {form.benefits.map((b, i) => (
-                        <li key={i} className="text-xs text-muted-foreground line-clamp-2">• {b}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                    {/* Previews de imágenes */}
+                    {form.images.length > 0 ? (
+                      <div className="grid grid-cols-3 gap-2.5">
+                        {form.images.map((url, index) => (
+                          <div 
+                            key={`${url}-${index}`} 
+                            className="group relative aspect-square rounded-xl border border-border/80 overflow-hidden bg-background shadow-2xs"
+                          >
+                            <SafeProductImage 
+                              src={url} 
+                              alt={`Foto ${index + 1}`} 
+                              className="w-full h-full"
+                            />
+                            
+                            {index === 0 && (
+                              <span className="absolute top-1 left-1 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.5 rounded-md shadow-xs">
+                                Portada
+                              </span>
+                            )}
 
-                {form.docFields && Object.entries(form.docFields).some(([, v]) => v) && (
-                  <div className="mt-3 grid grid-cols-2 gap-2">
-                    {Object.entries({
-                      description: 'Descripción',
-                      origin: 'Origen',
-                      product_profile: 'Perfil',
-                      cross_selling: 'Venta cruzada',
-                      ingredients: 'Ingredientes',
-                      usage: 'Modo de uso',
-                      precautions: 'Precauciones',
-                    }).map(([key, label]) => (
-                      <div key={key} className="flex items-center gap-1.5 text-xs">
-                        <span className={form.docFields[key] ? 'text-primary' : 'text-muted-foreground/50'}>
-                          {form.docFields[key] ? '✓' : '—'}
-                        </span>
-                        <span className={form.docFields[key] ? 'text-foreground' : 'text-muted-foreground/50'}>
-                          {label}
-                        </span>
+                            {/* Controles flotantes */}
+                            <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1 p-1">
+                              <button
+                                type="button"
+                                onClick={() => handleMoveImage(index, -1)}
+                                disabled={index === 0}
+                                title="Mover a la izquierda"
+                                className="h-7 w-7 rounded-md bg-white/20 hover:bg-white/40 text-white flex items-center justify-center disabled:opacity-20 transition-colors"
+                              >
+                                <ChevronLeft className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveImage(index)}
+                                title="Eliminar imagen"
+                                className="h-7 w-7 rounded-md bg-destructive/80 hover:bg-destructive text-white flex items-center justify-center transition-colors"
+                              >
+                                <X className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleMoveImage(index, 1)}
+                                disabled={index === form.images.length - 1}
+                                title="Mover a la derecha"
+                                className="h-7 w-7 rounded-md bg-white/20 hover:bg-white/40 text-white flex items-center justify-center disabled:opacity-20 transition-colors"
+                              >
+                                <ChevronRight className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                    ) : (
+                      <div className="p-4 border border-dashed border-border/80 rounded-xl text-center bg-background/50">
+                        <ImageIcon className="h-6 w-6 text-muted-foreground/50 mx-auto mb-1" />
+                        <p className="text-xs text-muted-foreground">Sin imágenes asignadas</p>
+                      </div>
+                    )}
 
-              <div className="flex gap-3 pt-2">
-                <Button type="button" variant="outline" onClick={() => setModalOpen(false)} className="flex-1 rounded-xl">Cancelar</Button>
-                <Button type="submit" className="flex-1 rounded-xl">{editingId ? 'Guardar Cambios' : 'Crear Producto'}</Button>
+                    {/* Selector de subida o URL */}
+                    {!showUrlInput ? (
+                      <div>
+                        <label className="flex flex-col items-center justify-center w-full py-3.5 px-3 border-2 border-dashed border-border hover:border-primary/50 rounded-xl cursor-pointer bg-background/60 hover:bg-muted/30 transition-all">
+                          {uploadingImage ? (
+                            <div className="flex items-center gap-2 text-primary text-xs font-semibold">
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              <span>Subiendo a la nube...</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+                              <Upload className="w-4 h-4 text-primary" />
+                              <span className="text-xs font-semibold">Subir imagen (PNG, JPG, WEBP)</span>
+                            </div>
+                          )}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileUpload}
+                            disabled={uploadingImage}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Input
+                          value={urlInputValue}
+                          onChange={(e) => setUrlInputValue(e.target.value)}
+                          placeholder="https://ejemplo.com/foto.webp"
+                          className="text-xs h-9 rounded-xl bg-background"
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={handleAddUrlImage}
+                          className="rounded-xl h-9 px-3"
+                        >
+                          Añadir
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Ficha Google Docs */}
+                  <div className="bg-muted/15 border border-border/60 rounded-2xl p-4 space-y-3">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                      <FileText className="h-3.5 w-3.5 text-primary" /> Ficha Técnica (Google Doc)
+                    </h4>
+
+                    <div>
+                      <Input
+                        value={form.google_doc_url || ''}
+                        onChange={(e) => setForm({ ...form, google_doc_url: e.target.value })}
+                        placeholder="https://docs.google.com/document/d/..."
+                        className="text-xs rounded-xl bg-background"
+                      />
+                      <p className="mt-1 text-[11px] text-muted-foreground">
+                        El sync extrae automáticamente descripción, origen, ingredientes y precauciones.
+                      </p>
+                    </div>
+
+                    {/* Badges de campos detectados */}
+                    {form.docFields && Object.keys(form.docFields).length > 0 && (
+                      <div className="pt-2 border-t border-border/40">
+                        <p className="text-[11px] font-semibold text-muted-foreground mb-2">Campos importados:</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {Object.entries({
+                            description: 'Descripción',
+                            origin: 'Origen',
+                            product_profile: 'Perfil',
+                            cross_selling: 'Venta cruzada',
+                            ingredients: 'Ingredientes',
+                            usage: 'Modo de uso',
+                            precautions: 'Precauciones',
+                          }).map(([key, label]) => {
+                            const hasValue = Boolean(form.docFields[key]);
+                            return (
+                              <span 
+                                key={key} 
+                                className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-md font-medium ${
+                                  hasValue 
+                                    ? 'bg-success/10 text-success border border-success/20' 
+                                    : 'bg-muted/50 text-muted-foreground/60 border border-border/40'
+                                }`}
+                              >
+                                {hasValue && <CheckCircle2 className="h-2.5 w-2.5" />}
+                                {label}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
               </div>
             </form>
+
+            {/* Footer Fijo con Botones */}
+            <div className="p-4 sm:px-6 bg-muted/20 border-t border-border/60 flex items-center justify-end gap-3">
+              <Button 
+                type="button" 
+                variant="outline" 
+                disabled={saving}
+                onClick={() => setModalOpen(false)} 
+                className="rounded-xl px-5 h-10 font-medium"
+              >
+                Cancelar
+              </Button>
+              <Button 
+                type="submit" 
+                form="product-form"
+                disabled={saving}
+                className="rounded-xl px-6 h-10 font-medium bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm gap-2"
+              >
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                {saving ? 'Guardando...' : (editingId ? 'Guardar Cambios' : 'Crear Producto')}
+              </Button>
+            </div>
+
           </div>
         </div>
       )}

@@ -9,9 +9,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Truck, AlertCircle, X } from 'lucide-react';
+import { Truck, AlertCircle, X, Info, Building2 } from 'lucide-react';
 import { isFreeShipping, shippingHint } from '@/lib/shipping';
 import { recordarPedido } from '@/lib/orderAccess';
+import { rutEsValido, formatearRut, normalizarRut } from '@/lib/rut';
 import { toast } from 'sonner';
 
 const CheckoutPage = () => {
@@ -54,7 +55,15 @@ const CheckoutPage = () => {
     number: '',
     city: '',
     region: '',
-    postalCode: ''
+    postalCode: '',
+    // Facturacion. Solo se piden con "Soy empresa" marcado. `billingAddress` es el
+    // DOMICILIO COMERCIAL, el que va impreso en la factura: no reemplaza la direccion de
+    // entrega de mas arriba.
+    taxId: '',
+    businessName: '',
+    businessActivity: '',
+    billingEmail: '',
+    billingAddress: ''
   };
 
   // Si el pago se rechaza, Mercado Pago devuelve al cliente acá con una carga de página
@@ -80,6 +89,7 @@ const CheckoutPage = () => {
   const [errors, setErrors] = useState({});
   const [paymentMethod, setPaymentMethod] = useState('mercadopago');
   const [deliveryMethod, setDeliveryMethod] = useState(borrador?.deliveryMethod || 'domicilio');
+  const [esEmpresa, setEsEmpresa] = useState(borrador?.esEmpresa || false);
   const [courier, setCourier] = useState(borrador?.courier || '');
 
   // Coupon States
@@ -180,6 +190,20 @@ const CheckoutPage = () => {
     if (!formData.city.trim()) newErrors.city = 'La ciudad es requerida';
     if (!formData.region) newErrors.region = 'La región es requerida';
     if (!formData.postalCode.trim()) newErrors.postalCode = 'El código postal es requerido';
+
+    if (esEmpresa) {
+      if (!formData.taxId.trim()) {
+        newErrors.taxId = 'El RUT es requerido para facturar';
+      } else if (!rutEsValido(formData.taxId)) {
+        newErrors.taxId = 'Revisa el RUT: el dígito verificador no cuadra';
+      }
+      if (!formData.businessName.trim()) newErrors.businessName = 'La razón social es requerida';
+      if (!formData.businessActivity.trim()) newErrors.businessActivity = 'El giro es requerido';
+      if (!formData.billingAddress.trim()) newErrors.billingAddress = 'El domicilio comercial es requerido';
+      if (formData.billingEmail.trim() && !/\S+@\S+\.\S+/.test(formData.billingEmail)) {
+        newErrors.billingEmail = 'El correo de facturación no es válido';
+      }
+    }
     if (deliveryMethod === 'retiro_courier' && !courier) newErrors.courier = 'Elige la empresa de transporte';
 
     setErrors(newErrors);
@@ -204,6 +228,17 @@ const CheckoutPage = () => {
     try {
       // Create order
       const orderData = {
+        is_company: esEmpresa,
+        ...(esEmpresa
+          ? {
+              tax_id: normalizarRut(formData.taxId),
+              business_name: formData.businessName.trim(),
+              business_activity: formData.businessActivity.trim(),
+              // Vacio: la API cae al correo del pedido.
+              billing_email: formData.billingEmail.trim() || undefined,
+              billing_address: formData.billingAddress.trim(),
+            }
+          : {}),
         customer_name: formData.name,
         email: formData.email,
         phone: formData.phone,
@@ -277,6 +312,7 @@ const CheckoutPage = () => {
         formData,
         deliveryMethod,
         courier,
+        esEmpresa,
       }));
       // Registro duradero: permite volver a ver la confirmación de ESTE pedido más
       // adelante. La marca de sesión se borra apenas se vacía el carrito, así que por sí
@@ -506,6 +542,122 @@ const CheckoutPage = () => {
                       <p className="text-[11px] text-muted-foreground mt-2">
                         Te enviaremos a tu correo los detalles del envío y de tu compra.
                       </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Section 3b: Facturación a empresa */}
+                <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={esEmpresa}
+                      onChange={(e) => setEsEmpresa(e.target.checked)}
+                      className="mt-1 h-5 w-5 shrink-0 rounded border-border text-primary focus:ring-2 focus:ring-primary"
+                    />
+                    <div className="flex-grow">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="h-5 w-5 text-primary" />
+                        <span className="text-xl font-semibold text-card-foreground">Comprar con Factura (Empresa)</span>
+                      </div>
+                      <span className="block text-sm text-muted-foreground mt-0.5">
+                        Marca esta casilla si necesitas factura electrónica con RUT de tu empresa en vez de boleta
+                      </span>
+                    </div>
+                  </label>
+
+                  {esEmpresa && (
+                    <div className="mt-6 space-y-4 border-t border-border pt-6">
+                      {/* NutraBlue todavía no emite factura electrónica. Decir "te llega
+                          la factura con el pedido" sería prometer algo que hoy no se
+                          puede cumplir, y eso es justo lo que reclama un cliente empresa
+                          que necesita el documento para su contabilidad. */}
+                      <div className="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-200 p-4">
+                        <Info className="h-5 w-5 shrink-0 text-amber-600 mt-0.5" aria-hidden="true" />
+                        <p className="text-sm text-amber-900">
+                          Registramos tus datos para emitir la factura y te la enviamos por
+                          correo una vez procesada. <strong>No viaja con el pedido.</strong>
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="taxId" className="text-card-foreground">RUT de la empresa *</Label>
+                          <Input
+                            id="taxId"
+                            name="taxId"
+                            value={formData.taxId}
+                            onChange={(e) =>
+                              setFormData((prev) => ({ ...prev, taxId: formatearRut(e.target.value) }))
+                            }
+                            inputMode="text"
+                            autoComplete="off"
+                            placeholder="12.345.678-5"
+                            className={`mt-1 text-gray-900 ${errors.taxId ? 'border-destructive' : ''}`}
+                          />
+                          {errors.taxId && <p className="text-sm text-destructive mt-1">{errors.taxId}</p>}
+                        </div>
+
+                        <div>
+                          <Label htmlFor="businessName" className="text-card-foreground">Razón social *</Label>
+                          <Input
+                            id="businessName"
+                            name="businessName"
+                            value={formData.businessName}
+                            onChange={handleInputChange}
+                            placeholder="Comercial Ejemplo SpA"
+                            className={`mt-1 text-gray-900 ${errors.businessName ? 'border-destructive' : ''}`}
+                          />
+                          {errors.businessName && <p className="text-sm text-destructive mt-1">{errors.businessName}</p>}
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="businessActivity" className="text-card-foreground">Giro comercial *</Label>
+                        <Input
+                          id="businessActivity"
+                          name="businessActivity"
+                          value={formData.businessActivity}
+                          onChange={handleInputChange}
+                          placeholder="Venta al por menor de alimentos"
+                          className={`mt-1 text-gray-900 ${errors.businessActivity ? 'border-destructive' : ''}`}
+                        />
+                        {errors.businessActivity && <p className="text-sm text-destructive mt-1">{errors.businessActivity}</p>}
+                      </div>
+
+                      <div>
+                        <Label htmlFor="billingAddress" className="text-card-foreground">Domicilio comercial *</Label>
+                        <Input
+                          id="billingAddress"
+                          name="billingAddress"
+                          value={formData.billingAddress}
+                          onChange={handleInputChange}
+                          placeholder="Av. Comercial 100, oficina 5, Santiago"
+                          className={`mt-1 text-gray-900 ${errors.billingAddress ? 'border-destructive' : ''}`}
+                        />
+                        {errors.billingAddress && <p className="text-sm text-destructive mt-1">{errors.billingAddress}</p>}
+                        <p className="text-[11px] text-muted-foreground mt-1">
+                          La dirección tributaria de la empresa, que va impresa en la factura.
+                          El pedido igual se despacha a la dirección de envío que indicaste arriba.
+                        </p>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="billingEmail" className="text-card-foreground">Correo para la factura</Label>
+                        <Input
+                          id="billingEmail"
+                          name="billingEmail"
+                          type="email"
+                          value={formData.billingEmail}
+                          onChange={handleInputChange}
+                          placeholder="contabilidad@empresa.cl"
+                          className={`mt-1 text-gray-900 ${errors.billingEmail ? 'border-destructive' : ''}`}
+                        />
+                        {errors.billingEmail && <p className="text-sm text-destructive mt-1">{errors.billingEmail}</p>}
+                        <p className="text-[11px] text-muted-foreground mt-1">
+                          Opcional. Si lo dejas vacío usamos {formData.email || 'el correo del pedido'}.
+                        </p>
+                      </div>
                     </div>
                   )}
                 </div>

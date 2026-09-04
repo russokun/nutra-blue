@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, Heart, Sparkles, BookOpen, ArrowRight, X, Check, ShoppingBag } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import BannerNaturaleza from '@/components/BannerNaturaleza';
+import OrlaBotanica from '@/components/botanica/OrlaBotanica';
 import { Button } from '@/components/ui/button';
 import dataClient from '@/lib/dataClient';
 import { useCart } from '@/hooks/useCart';
@@ -116,10 +118,7 @@ const HomePage = () => {
     if (!popupEmail) return;
     
     try {
-      await dataClient.collection('leads').create({
-        email: popupEmail,
-        source: 'Pop-up Magnet'
-      });
+      await dataClient.subscribeLead(popupEmail, 'Pop-up Magnet');
     } catch (err) {
       console.warn('Failed to save subscriber to database:', err);
     }
@@ -229,6 +228,8 @@ const HomePage = () => {
       </Helmet>
 
       <Header />
+
+      <OrlaBotanica />
 
       <main className="overflow-x-hidden bg-background">
         {/* Carrusel de Confianza (Trust Bar) - Ahora arriba del Hero */}
@@ -573,7 +574,7 @@ const HomePage = () => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
                   <div className="absolute top-4 left-4">
-                    <span className="bg-accent text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                    <span className="bg-accent text-accent-foreground text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                       {cat.tag}
                     </span>
                   </div>
@@ -665,7 +666,7 @@ const HomePage = () => {
                       <Button
                         onClick={(e) => handleAddToCart(product, e)}
                         disabled={product.stock === 0}
-                        className="w-full text-xs bg-accent text-white hover:bg-accent/90 py-3 rounded-xl transition-all duration-200 shadow-sm"
+                        className="w-full text-xs bg-accent text-accent-foreground hover:bg-accent/90 py-3 rounded-xl transition-all duration-200 shadow-sm font-bold"
                       >
                         {product.stock === 0 ? 'Agotado' : 'Añadir a mi Rutina'}
                       </Button>
@@ -676,6 +677,8 @@ const HomePage = () => {
             )}
           </div>
         </section>
+
+        <BannerNaturaleza />
       </main>
 
       {/* Lead Magnet Pop-up */}
@@ -724,7 +727,7 @@ const HomePage = () => {
                   />
                   <Button
                     type="submit"
-                    className="w-full bg-accent hover:bg-accent/90 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all duration-200"
+                    className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-bold py-3.5 rounded-xl shadow-lg transition-all duration-200"
                   >
                     Quiero mi descuento y optimizarme
                   </Button>

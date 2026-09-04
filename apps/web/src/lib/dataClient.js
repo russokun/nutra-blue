@@ -185,6 +185,18 @@ const dataClient = {
       },
 
       create: async (payload) => {
+        if (tableName === 'leads') {
+          try {
+            return await fetchFromApi('/subscribers', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: payload.email, source: payload.source || 'website' })
+            });
+          } catch (e) {
+            console.warn('API subscription failed, falling back:', e);
+          }
+        }
+
         if (!isSupabaseConfigured) {
           try {
             return await fetchFromApi(`/${tableName}`, {
@@ -208,6 +220,13 @@ const dataClient = {
         return data;
       },
     };
+  },
+  subscribeLead: async (email, source = 'website') => {
+    return await fetchFromApi('/subscribers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, source })
+    });
   },
 };
 

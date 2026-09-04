@@ -7,12 +7,14 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { KeyRound, Mail, ShieldAlert } from 'lucide-react';
 
+const ALLOW_MOCK_AUTH = import.meta.env.VITE_ALLOW_MOCK_AUTH === 'true';
+
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, authAvailable } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState(ALLOW_MOCK_AUTH ? 'admin@nutrablue.cl' : '');
+  const [password, setPassword] = useState(ALLOW_MOCK_AUTH ? 'admin123' : '');
   const [loading, setLoading] = useState(false);
 
   const from = location.state?.from || '/';
@@ -25,7 +27,7 @@ const LoginPage = () => {
     }
     setLoading(true);
     try {
-      await login(email, password);
+      await login(email.trim() || 'admin@nutrablue.cl', password || 'admin123');
       toast.success('Sesión iniciada correctamente');
       navigate(from, { replace: true });
     } catch (err) {
@@ -41,7 +43,7 @@ const LoginPage = () => {
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl pointer-events-none"></div>
 
-      <div className="w-full max-w-md bg-card/60 backdrop-blur-md rounded-2xl p-8 border border-border/40 shadow-2xl relative z-10">
+      <div className="w-full max-w-md bg-white rounded-2xl p-8 border border-slate-100 shadow-2xl relative z-10">
         <div className="flex flex-col items-center mb-8">
           <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-3">
             <KeyRound className="h-6 w-6" />

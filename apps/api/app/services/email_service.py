@@ -62,6 +62,22 @@ async def send_order_confirmation(order: dict) -> bool:
     # sirve directo para decidir si el despacho lo asume NutraBlue o va por pagar.
     envio_gratis = has_free_shipping(order.get("total", 0))
 
+    billing_html = ""
+    if order.get("is_company"):
+        billing_html = f"""
+        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+            <p style="color: #0f172a; font-size: 14px; font-weight: 700; margin: 0 0 10px 0;">📋 Datos de Facturación Registrados</p>
+            <table width="100%" style="font-size: 13px; color: #475569;">
+                <tr><td style="color: #64748b; padding-bottom: 4px;">Razón Social:</td><td style="text-align: right; font-weight: 600; color: #0f172a;">{order.get('business_name', '')}</td></tr>
+                <tr><td style="color: #64748b; padding-bottom: 4px;">RUT Empresa:</td><td style="text-align: right; font-family: monospace; font-weight: 600; color: #0f172a;">{order.get('tax_id', '')}</td></tr>
+                <tr><td style="color: #64748b; padding-bottom: 4px;">Giro Comercial:</td><td style="text-align: right; color: #0f172a;">{order.get('business_activity', '')}</td></tr>
+                <tr><td style="color: #64748b; padding-bottom: 4px;">Domicilio Comercial:</td><td style="text-align: right; color: #0f172a;">{order.get('billing_address', '')}</td></tr>
+                <tr><td style="color: #64748b;">Correo Facturación:</td><td style="text-align: right; color: #0f172a;">{order.get('billing_email') or order.get('email', '')}</td></tr>
+            </table>
+            <p style="color: #64748b; font-size: 11px; margin: 10px 0 0 0; line-height: 1.4;">Emitiremos la factura electrónica con estos datos y te la enviaremos por correo una vez procesada. No viaja en el paquete de despacho.</p>
+        </div>
+        """
+
     html = f"""
     <!DOCTYPE html>
     <html>
@@ -98,6 +114,8 @@ async def send_order_confirmation(order: dict) -> bool:
                             </tr>
                         </table>
                     </div>
+
+                    {billing_html}
 
                     <!-- Items Table -->
                     <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-bottom: 24px;">
@@ -147,14 +165,37 @@ async def send_order_confirmation(order: dict) -> bool:
     </body>
     </html>
     """
-    return await send_email(
+    res = await send_email(
         order["email"],
         f"Confirmación de orden #{str(order.get('id',''))[:8].upper()} - Nutra Blue",
         html,
     )
+    billing_email = order.get("billing_email")
+    if billing_email and str(billing_email).lower().strip() != str(order.get("email", "")).lower().strip():
+        await send_email(
+            billing_email,
+            f"Confirmación de orden #{str(order.get('id',''))[:8].upper()} (Facturación) - Nutra Blue",
+            html,
+        )
+    return res
 
 
 async def send_payment_confirmation(order: dict) -> bool:
+    billing_html = ""
+    if order.get("is_company"):
+        billing_html = f"""
+        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+            <p style="color: #0f172a; font-size: 14px; font-weight: 700; margin: 0 0 10px 0;">📋 Datos de Facturación Registrados</p>
+            <table width="100%" style="font-size: 13px; color: #475569;">
+                <tr><td style="color: #64748b; padding-bottom: 4px;">Razón Social:</td><td style="text-align: right; font-weight: 600; color: #0f172a;">{order.get('business_name', '')}</td></tr>
+                <tr><td style="color: #64748b; padding-bottom: 4px;">RUT Empresa:</td><td style="text-align: right; font-family: monospace; font-weight: 600; color: #0f172a;">{order.get('tax_id', '')}</td></tr>
+                <tr><td style="color: #64748b; padding-bottom: 4px;">Giro Comercial:</td><td style="text-align: right; color: #0f172a;">{order.get('business_activity', '')}</td></tr>
+                <tr><td style="color: #64748b; padding-bottom: 4px;">Domicilio Comercial:</td><td style="text-align: right; color: #0f172a;">{order.get('billing_address', '')}</td></tr>
+                <tr><td style="color: #64748b;">Correo Facturación:</td><td style="text-align: right; color: #0f172a;">{order.get('billing_email') or order.get('email', '')}</td></tr>
+            </table>
+            <p style="color: #64748b; font-size: 11px; margin: 10px 0 0 0; line-height: 1.4;">Emitiremos la factura electrónica con estos datos y te la enviaremos por correo una vez procesada.</p>
+        </div>
+        """
     html = f"""
     <!DOCTYPE html>
     <html>
@@ -201,6 +242,8 @@ async def send_payment_confirmation(order: dict) -> bool:
                         </table>
                     </div>
 
+                    {billing_html}
+
                     <p style="color: #475569; font-size: 14px; line-height: 1.6; margin: 0 0 16px 0;">Recibirás un nuevo correo con el código de seguimiento una vez que el courier retire tu paquete.</p>
                 </td>
             </tr>
@@ -215,11 +258,19 @@ async def send_payment_confirmation(order: dict) -> bool:
     </body>
     </html>
     """
-    return await send_email(
+    res = await send_email(
         order["email"],
         f"Pago confirmado - Orden #{str(order.get('id',''))[:8].upper()} - Nutra Blue",
         html,
     )
+    billing_email = order.get("billing_email")
+    if billing_email and str(billing_email).lower().strip() != str(order.get("email", "")).lower().strip():
+        await send_email(
+            billing_email,
+            f"Pago confirmado - Orden #{str(order.get('id',''))[:8].upper()} (Facturación) - Nutra Blue",
+            html,
+        )
+    return res
 
 
 COURIER_LABELS = {
