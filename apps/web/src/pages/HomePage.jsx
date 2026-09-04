@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, Heart, Sparkles, BookOpen, ArrowRight, X, Check, ShoppingBag } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import BannerNaturaleza from '@/components/BannerNaturaleza';
 import { Button } from '@/components/ui/button';
 import dataClient from '@/lib/dataClient';
 import { useCart } from '@/hooks/useCart';
@@ -676,6 +677,8 @@ const HomePage = () => {
             )}
           </div>
         </section>
+
+        <BannerNaturaleza />
       </main>
 
       {/* Lead Magnet Pop-up */}

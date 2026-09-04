@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from '@/components/Meta';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Minus, Plus, ShoppingCart, CheckCircle2 } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, CheckCircle2, ZoomIn } from 'lucide-react';
 import dataClient from '@/lib/dataClient';
 import { useCart } from '@/hooks/useCart';
 import Header from '@/components/Header';
@@ -12,6 +12,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import ProductTags from '@/components/common/ProductTags';
+import VisorImagen from '@/components/VisorImagen';
 import { absoluteUrl, breadcrumbSchema, productSchema } from '@/lib/seo';
 import { toast } from 'sonner';
 import { getProductExtraDetails } from '@/lib/productExtraDetails';
@@ -22,6 +23,10 @@ const ProductDetailPage = () => {
   const { addToCart } = useCart();
 
   const [product, setProduct] = useState(null);
+  // Índice de la foto abierta en el visor; `null` con el visor cerrado. Va acá arriba y
+  // no junto a `images`: abajo quedaría después de los `return` de carga y de error, y un
+  // hook que solo se ejecuta a veces rompe el orden que React espera entre renders.
+  const [fotoAmpliada, setFotoAmpliada] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [crossSellProducts, setCrossSellProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -212,11 +217,24 @@ const ProductDetailPage = () => {
                 <CarouselContent className="-ml-0">
                   {images.map((url, index) => (
                     <CarouselItem key={`${url}-${index}`} className="pl-0">
-                      <img
-                        src={url}
-                        alt={`${product.name}${images.length > 1 ? ` — foto ${index + 1}` : ''}`}
-                        className="w-full h-[450px] object-cover"
-                      />
+                      {/* Acá la foto va recortada a 450px de alto: de un frasco no se
+                          alcanza a leer la etiqueta. El botón abre el visor, que la
+                          muestra entera y deja acercarla. */}
+                      <button
+                        type="button"
+                        onClick={() => setFotoAmpliada(index)}
+                        aria-label={`Ampliar foto${images.length > 1 ? ` ${index + 1}` : ''} de ${product.name}`}
+                        className="group relative block w-full cursor-zoom-in focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                      >
+                        <img
+                          src={url}
+                          alt={`${product.name}${images.length > 1 ? ` — foto ${index + 1}` : ''}`}
+                          className="w-full h-[450px] object-cover"
+                        />
+                        <span className="pointer-events-none absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur transition group-hover:bg-black/80">
+                          <ZoomIn className="h-3.5 w-3.5" aria-hidden="true" /> Ampliar
+                        </span>
+                      </button>
                     </CarouselItem>
                   ))}
                 </CarouselContent>
@@ -304,7 +322,7 @@ const ProductDetailPage = () => {
           </div>
 
           {/* Banner de la Marca NutraBlue */}
-          <div className="w-full bg-gradient-to-r from-sky-950 via-slate-900 to-sky-950 text-foreground py-6 px-8 rounded-2xl border border-primary/20 shadow-md mb-12 flex flex-col md:flex-row justify-between items-center gap-4 overflow-hidden relative group">
+          <div className="w-full bg-gradient-to-r from-sky-950 via-slate-900 to-sky-950 text-white py-6 px-8 rounded-2xl border border-primary/20 shadow-md mb-12 flex flex-col md:flex-row justify-between items-center gap-4 overflow-hidden relative group">
             {/* Left Decorative Shape */}
             <div className="absolute top-0 left-0 w-32 h-full bg-gradient-to-r from-primary/5 to-transparent skew-x-12 pointer-events-none"></div>
             {/* Right Decorative Shape */}
@@ -312,7 +330,7 @@ const ProductDetailPage = () => {
 
             {/* Left Logo */}
             <div className="flex items-center space-x-2 shrink-0 z-10 select-none">
-              <span className="text-2xl font-display text-primary">
+              <span className="text-2xl font-display text-white">
                 NutraBlue
               </span>
               <span className="text-lg text-emerald-500 font-bold">🌿</span>
@@ -320,10 +338,10 @@ const ProductDetailPage = () => {
 
             {/* Center Brand Statement */}
             <div className="text-center z-10 max-w-md">
-              <p className="text-sm md:text-base font-medium tracking-wide text-foreground/90 uppercase" style={{ letterSpacing: '0.1em' }}>
+              <p className="text-sm md:text-base font-semibold tracking-wide text-white uppercase" style={{ letterSpacing: '0.1em' }}>
                 Nutrición Consciente y Orgánica
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-white/75 mt-1">
                 Fórmulas puras diseñadas para potenciar tu longevidad y bienestar
               </p>
             </div>
@@ -331,7 +349,7 @@ const ProductDetailPage = () => {
             {/* Right Logo */}
             <div className="flex items-center space-x-2 shrink-0 z-10 select-none">
               <span className="text-lg text-emerald-500 font-bold">🌿</span>
-              <span className="text-2xl font-display text-primary">
+              <span className="text-2xl font-display text-white">
                 NutraBlue
               </span>
             </div>
@@ -488,6 +506,14 @@ const ProductDetailPage = () => {
           )}
         </div>
       </main>
+
+      <VisorImagen
+        imagenes={images}
+        indiceInicial={fotoAmpliada ?? 0}
+        abierto={fotoAmpliada !== null}
+        onCerrar={() => setFotoAmpliada(null)}
+        nombre={product.name}
+      />
 
       <Footer />
     </>

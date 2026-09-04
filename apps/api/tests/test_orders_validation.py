@@ -122,3 +122,69 @@ def test_rejects_retiro_vendedor():
     """Se ofrecio al principio pero NutraBlue no tiene puntos fisicos de retiro."""
     with pytest.raises(OrderValidationError):
         validate_and_build_order(build_order(delivery_method="retiro_vendedor"))
+
+
+# --- Facturacion a empresa -------------------------------------------------------
+
+EMPRESA_OK = {
+    "is_company": True,
+    "tax_id": "12.345.678-5",  # DV calculado a mano, ver tests/test_rut.py
+    "business_name": "Comercial Ejemplo SpA",
+    "business_activity": "Venta al por menor de alimentos",
+    "billing_address": "Av. Comercial 100, oficina 5",
+}
+
+
+def test_pedido_normal_no_guarda_datos_de_facturacion():
+    # Un RUT colgado en un pedido que nadie va a facturar es un dato personal guardado
+    # sin motivo.
+    result = validate_and_build_order(build_order())
+    assert result["is_company"] is False
+    for campo in ("tax_id", "business_name", "business_activity", "billing_email", "billing_address"):
+        assert result[campo] is None, campo
+
+
+def test_pedido_de_empresa_guarda_los_datos_normalizados():
+    result = validate_and_build_order(build_order(**EMPRESA_OK))
+    assert result["is_company"] is True
+    # Se guarda sin puntos y con guion, no como lo tipeo el cliente.
+    assert result["tax_id"] == "12345678-5"
+    assert result["business_name"] == "Comercial Ejemplo SpA"
+    assert result["business_activity"] == "Venta al por menor de alimentos"
+    assert result["billing_address"] == "Av. Comercial 100, oficina 5"
+
+
+def test_el_domicilio_comercial_no_pisa_la_direccion_de_entrega():
+    # Son dos cosas distintas: oficina contra donde se recibe el pedido.
+    result = validate_and_build_order(build_order(**EMPRESA_OK))
+    assert result["address"] == "Calle 1"
+    assert result["billing_address"] == "Av. Comercial 100, oficina 5"
+
+
+def test_sin_correo_de_facturacion_se_usa_el_del_pedido():
+    # Dejarlo vacio obliga a perseguir al cliente despues para poder emitir.
+    result = validate_and_build_order(build_order(**EMPRESA_OK))
+    assert result["billing_email"] == "test@example.com"
+
+
+def test_correo_de_facturacion_propio_se_respeta():
+    result = validate_and_build_order(
+        build_order(**{**EMPRESA_OK, "billing_email": "contabilidad@ejemplo.cl"})
+    )
+    assert result["billing_email"] == "contabilidad@ejemplo.cl"
+
+
+def test_rechaza_rut_con_digito_verificador_equivocado():
+    with pytest.raises(OrderValidationError, match="RUT"):
+        validate_and_build_order(build_order(**{**EMPRESA_OK, "tax_id": "12.345.678-4"}))
+
+
+def test_rechaza_empresa_sin_rut():
+    with pytest.raises(OrderValidationError, match="RUT"):
+        validate_and_build_order(build_order(**{**EMPRESA_OK, "tax_id": None}))
+
+
+@pytest.mark.parametrize("campo", ["business_name", "business_activity", "billing_address"])
+def test_rechaza_empresa_sin_los_datos_obligatorios(campo):
+    with pytest.raises(OrderValidationError):
+        validate_and_build_order(build_order(**{**EMPRESA_OK, campo: "   "}))

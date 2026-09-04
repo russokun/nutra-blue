@@ -3,7 +3,7 @@ import adminClient from '@/lib/adminClient';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { X, MapPin, Truck, CreditCard, Package, Mail, Phone, MessageCircle } from 'lucide-react';
+import { X, MapPin, Truck, CreditCard, Package, Mail, Phone, MessageCircle, Building2, Copy } from 'lucide-react';
 
 const formatPrice = (price) =>
   new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(price || 0);
@@ -74,6 +74,7 @@ const Seccion = ({ icon: Icon, titulo, children }) => (
  */
 const OrderDetailModal = ({ orderId, onClose }) => {
   const [order, setOrder] = useState(null);
+  const [copiado, setCopiado] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -108,6 +109,34 @@ const OrderDetailModal = ({ orderId, onClose }) => {
 
   const items = order?.items || [];
   const direccion = [order?.address, order?.city, order?.region].filter(Boolean).join(', ');
+
+  // El RUT se guarda normalizado ("12345678-5"); acá se muestra con puntos, que es como
+  // se lee y como se pega en un sistema contable.
+  const formatearRut = (valor) => {
+    const limpio = String(valor || '').replace(/[^0-9kK]/g, '').toUpperCase();
+    if (limpio.length < 2) return valor || '—';
+    return `${limpio.slice(0, -1).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}-${limpio.slice(-1)}`;
+  };
+
+  const copiarFacturacion = async () => {
+    const texto = [
+      `RUT: ${formatearRut(order?.tax_id)}`,
+      `Razón social: ${order?.business_name || ''}`,
+      `Giro: ${order?.business_activity || ''}`,
+      `Domicilio comercial: ${order?.billing_address || ''}`,
+      `Correo: ${order?.billing_email || order?.email || ''}`,
+      `Total: ${order?.total ?? ''}`,
+    ].join('\n');
+    try {
+      await navigator.clipboard.writeText(texto);
+      setCopiado(true);
+      // Vuelve solo: dejar "Copiado" fijo hace dudar de si el segundo clic funcionó.
+      setTimeout(() => setCopiado(false), 2000);
+    } catch {
+      /* portapapeles bloqueado (sitio sin https o permiso denegado): los datos igual
+         están a la vista arriba para copiarlos a mano */
+    }
+  };
   const enlaceWhatsApp = order ? armarEnlaceWhatsApp(order) : null;
 
   return (
@@ -178,6 +207,40 @@ const OrderDetailModal = ({ orderId, onClose }) => {
                 </dl>
               </Seccion>
             </div>
+
+            {order.is_company && (
+              /* Estos datos existen para emitir la factura a mano: NutraBlue todavia no
+                 emite factura electronica, asi que alguien los copia al sistema
+                 contable. De ahi el boton de copiar todo junto. */
+              <div className="mb-4">
+                <Seccion icon={Building2} titulo="Facturación">
+                  <dl className="space-y-2">
+                    <Campo label="RUT">
+                      <span className="font-mono font-semibold">{formatearRut(order.tax_id)}</span>
+                    </Campo>
+                    <Campo label="Razón social">{order.business_name}</Campo>
+                    <Campo label="Giro">{order.business_activity}</Campo>
+                    <Campo label="Domicilio comercial">{order.billing_address}</Campo>
+                    <Campo label="Correo de facturación">
+                      {order.billing_email ? (
+                        <a href={`mailto:${order.billing_email}`} className="text-primary hover:underline">
+                          {order.billing_email}
+                        </a>
+                      ) : '—'}
+                    </Campo>
+                  </dl>
+
+                  <button
+                    type="button"
+                    onClick={copiarFacturacion}
+                    className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-muted"
+                  >
+                    <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+                    {copiado ? 'Copiado' : 'Copiar datos de facturación'}
+                  </button>
+                </Seccion>
+              </div>
+            )}
 
             <Seccion icon={Package} titulo={`Productos (${items.length})`}>
               <div className="overflow-x-auto">
