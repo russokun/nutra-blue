@@ -29,11 +29,11 @@ const CheckoutPage = () => {
   const [avisoPago, setAvisoPago] = useState(() => {
     const motivo = new URLSearchParams(window.location.search).get('error');
     if (!motivo) return null;
-    if (motivo === 'user_rejected' || motivo === 'aborted') {
-      return 'Cancelaste el pago antes de terminar. Tus datos siguen acá: puedes intentarlo de nuevo cuando quieras.';
+    if (motivo === 'user_rejected' || motivo === 'aborted' || motivo === 'cancelled') {
+      return 'Cancelaste el pago en la pasarela antes de terminar. Tus datos siguen acá: puedes intentarlo de nuevo cuando quieras.';
     }
     if (motivo === 'failed' || motivo === 'rejected') {
-      return 'Tu banco rechazó la transacción y no se te cobró nada. Puedes reintentar con otro medio de pago.';
+      return 'Tu banco o tarjeta rechazó la transacción y no se te cobró nada. Puedes reintentar con otro medio de pago.';
     }
     if (motivo === 'payment_validation') {
       return 'No pudimos validar el monto del pago y no se te cobró nada. Vuelve a intentarlo; si se repite, escríbenos.';
@@ -321,7 +321,20 @@ const CheckoutPage = () => {
 
       toast.success('Redirigiendo a la pasarela de pago segura...');
       setTimeout(() => {
-        window.location.href = redirectUrl;
+        if (paymentMethod === 'transbank' || paymentResult.payment_method === 'POST') {
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.action = paymentResult.url || redirectUrl;
+          const tokenInput = document.createElement('input');
+          tokenInput.type = 'hidden';
+          tokenInput.name = 'token_ws';
+          tokenInput.value = paymentResult.token;
+          form.appendChild(tokenInput);
+          document.body.appendChild(form);
+          form.submit();
+        } else {
+          window.location.href = redirectUrl;
+        }
       }, 1000);
 
 
@@ -670,8 +683,15 @@ const CheckoutPage = () => {
                     siguen implementados en el backend (app/core/payments/): para volver a
                     ofrecerlos hay que reponer sus <label> aca y verificar sus credenciales.
                   */}
-                  <div className="grid grid-cols-1 gap-4">
-                    <label className="border rounded-xl p-4 flex flex-col justify-between border-primary bg-primary/5 ring-1 ring-primary">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Mercado Pago */}
+                    <label
+                      className={`border rounded-xl p-4 flex flex-col justify-between cursor-pointer transition-all duration-200 ${
+                        paymentMethod === 'mercadopago'
+                          ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                          : 'border-border/80 hover:bg-slate-50/50'
+                      }`}
+                    >
                       <input
                         type="radio"
                         name="paymentMethod"
@@ -682,9 +702,44 @@ const CheckoutPage = () => {
                       />
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-bold text-sm text-foreground">Mercado Pago</span>
-                        <span className="h-2.5 w-2.5 rounded-full bg-primary" />
+                        <span
+                          className={`h-2.5 w-2.5 rounded-full bg-primary transition-opacity ${
+                            paymentMethod === 'mercadopago' ? 'opacity-100' : 'opacity-0'
+                          }`}
+                        />
                       </div>
-                      <p className="text-[10px] text-muted-foreground leading-relaxed">Dinero en cuenta, tarjetas de débito y crédito, y cuotas sin interés</p>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        Dinero en cuenta, tarjetas de débito, crédito y cuotas sin interés
+                      </p>
+                    </label>
+
+                    {/* Webpay Plus (Transbank) */}
+                    <label
+                      className={`border rounded-xl p-4 flex flex-col justify-between cursor-pointer transition-all duration-200 ${
+                        paymentMethod === 'transbank'
+                          ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                          : 'border-border/80 hover:bg-slate-50/50'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="transbank"
+                        checked={paymentMethod === 'transbank'}
+                        onChange={() => setPaymentMethod('transbank')}
+                        className="sr-only"
+                      />
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-bold text-sm text-foreground">Webpay Plus (Transbank)</span>
+                        <span
+                          className={`h-2.5 w-2.5 rounded-full bg-primary transition-opacity ${
+                            paymentMethod === 'transbank' ? 'opacity-100' : 'opacity-0'
+                          }`}
+                        />
+                      </div>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        Tarjetas de débito, crédito, prepago y Redcompra
+                      </p>
                     </label>
                   </div>
                 </div>

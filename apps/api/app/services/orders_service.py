@@ -168,33 +168,46 @@ def validate_and_build_order(order_data: OrderCreate) -> dict:
     }
 
 
+from app.core.couriers import get_courier_name, get_tracking_url
+
+
 def get_order_by_id(order_id: str) -> Optional[dict]:
+    clean_id = (order_id or "").strip().lstrip("#").lower()
+    if not clean_id:
+        return None
+
     if supabase_client is None:
-        return MOCK_ORDERS.get(order_id)
+        for oid, order in MOCK_ORDERS.items():
+            if oid.lower() == clean_id:
+                return order
+            if len(clean_id) >= 8 and oid.lower().startswith(clean_id):
+                return order
+        return None
 
     try:
-        response = supabase_client.from_("orders").select("*").eq("id", order_id).execute()
+        response = supabase_client.from_("orders").select("*").eq("id", clean_id).execute()
         if response.data:
             return response.data[0]
     except Exception:
         pass
+
+    if len(clean_id) >= 8:
+        try:
+            response = supabase_client.from_("orders").select("*").ilike("id", f"{clean_id}%").limit(1).execute()
+            if response.data:
+                return response.data[0]
+        except Exception:
+            pass
+
     return None
 
 
 def enrich_order_items(order: dict) -> dict:
     """
-    Completa cada linea del pedido con el nombre, precio e imagen del producto.
-
-    En la base los items se guardan solo como [{product_id, quantity}]: el RPC
-    create_order_with_stock_check descarta el nombre y el precio unitario que arma
-    validate_and_build_order. Sin esto quien mire el pedido ve identificadores pelados y
-    los totales por linea salen NaN, porque no hay precio con el que multiplicar.
-
-    Lo usan tanto el panel admin como "Mis pedidos" del cliente.
+    Completa cada linea del pedido con el nombre, precio e imagen del producto,
+    ademas de la URL de seguimiento directo y el nombre legible del courier.
     """
     items = order.get("items") or []
-    if not items:
-        return order
 
     ids = [i.get("product_id") for i in items if i.get("product_id")]
     catalogo = {}
@@ -225,7 +238,17 @@ def enrich_order_items(order: dict) -> dict:
             "line_total": precio * cantidad,
         })
 
-    return {**order, "items": enriquecidos}
+    shipping_company = order.get("shipping_company") or order.get("courier")
+    tracking_code = order.get("tracking_code")
+    tracking_url = get_tracking_url(shipping_company, tracking_code) if (shipping_company and tracking_code) else None
+    courier_display = get_courier_name(shipping_company) if shipping_company else None
+
+    return {
+        **order,
+        "items": enriquecidos,
+        "tracking_url": tracking_url,
+        "courier_name": courier_display,
+    }
 
 
 def verify_order_access(order: dict, email: Optional[str], require_email: bool) -> None:

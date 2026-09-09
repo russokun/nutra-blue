@@ -50,3 +50,16 @@ def hermetic_test_environment(monkeypatch):
     monkeypatch.setattr(settings, "r2_secret_access_key", "")
 
     yield
+
+
+@pytest.fixture(autouse=True)
+def reset_mock_state():
+    from app.core.mock_data import MOCK_PRODUCTS
+    from app.core.mock_store import MOCK_ORDERS
+
+    stock_inicial = {p["id"]: p.get("stock", 100) for p in MOCK_PRODUCTS}
+    yield
+    MOCK_ORDERS.clear()
+    for p in MOCK_PRODUCTS:
+        if p["id"] in stock_inicial:
+            p["stock"] = stock_inicial[p["id"]]

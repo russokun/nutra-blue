@@ -11,7 +11,7 @@ IVA_RATE = 0.19
 # Metodo de entrega elegido en el checkout. No afecta el precio: el flete se resuelve
 # fuera de la app y la entrega concreta se coordina por correo/telefono.
 DELIVERY_METHODS = ["domicilio", "retiro_courier"]
-COURIERS = ["blue_express", "starken", "pullman"]
+COURIERS = ["blue_express", "starken", "chilexpress", "correos_chile", "pullman"]
 
 
 # La tienda NUNCA cobra flete: el total que se paga por la pasarela es solo el de los

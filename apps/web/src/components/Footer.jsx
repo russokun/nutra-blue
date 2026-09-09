@@ -40,6 +40,9 @@ const Footer = ({ minimal = false }) => {
               <Link to="/privacy-policy" className="hover:text-primary transition-colors duration-200">
                 Política de Privacidad
               </Link>
+              <Link to="/seguimiento" className="hover:text-primary transition-colors duration-200">
+                Seguimiento de Envíos
+              </Link>
               <a href="mailto:soporte@nutrablue.cl" className="hover:text-primary transition-colors duration-200">
                 Soporte al Cliente
               </a>
@@ -98,6 +101,9 @@ const Footer = ({ minimal = false }) => {
                 </Link>
                 <Link to="/faqs" className="text-sm text-natural-200 hover:text-white transition-colors duration-200">
                   Preguntas Frecuentes (FAQs)
+                </Link>
+                <Link to="/seguimiento" className="text-sm text-natural-200 hover:text-white transition-colors duration-200 font-medium text-sky-200">
+                  Seguimiento de Envíos 📦
                 </Link>
                 <a href="mailto:contacto@nutrablue.cl" className="text-sm text-natural-200 hover:text-white transition-colors duration-200">
                   Contacto & Soporte

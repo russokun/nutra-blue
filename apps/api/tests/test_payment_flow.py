@@ -409,17 +409,49 @@ def test_flow_webhook_rejects_invalid_signature(monkeypatch):
     assert MOCK_ORDERS[order["id"]]["status"] != "paid"
 
 
+def test_transbank_init_returns_post_form_data(monkeypatch):
+    order = create_test_order()
+
+    fake_create_resp = {
+        "token": "mock-transbank-token-test-12345",
+        "url": "https://webpay3gint.transbank.cl/webpayserver/initTransaction",
+    }
+    monkeypatch.setattr(
+        transbank_module.Transaction,
+        "create",
+        lambda self, buy_order, session_id, amount, return_url: fake_create_resp,
+    )
+
+    response = client.post(
+        "/payment/init",
+        json={
+            "order_id": order["id"],
+            "amount": order["total"],
+            "email": order["email"],
+            "gateway": "transbank",
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["token"] == fake_create_resp["token"]
+    assert data["url"] == fake_create_resp["url"]
+    assert data["redirect_url"] == fake_create_resp["url"]
+    assert data["payment_method"] == "POST"
+
+
 def test_transbank_return_marks_order_paid(monkeypatch):
     order = create_test_order()
 
-    fake_response = SimpleNamespace(
-        status="AUTHORIZED",
-        response_code=0,
-        buy_order=order["id"],
-        payment_type_code="VD",
-        shares_number=1,
-        card_detail={"card_number": "6623"},
-    )
+    fake_response = {
+        "status": "AUTHORIZED",
+        "response_code": 0,
+        "amount": order["total"],
+        "buy_order": order["id"],
+        "authorization_code": "123456",
+        "payment_type_code": "VD",
+        "shares_number": 1,
+        "card_detail": {"card_number": "6623"},
+    }
     monkeypatch.setattr(transbank_module.Transaction, "commit", lambda self, token: fake_response)
 
     response = client.get(
@@ -429,6 +461,50 @@ def test_transbank_return_marks_order_paid(monkeypatch):
     assert response.status_code == 303
     assert f"/order-confirmation/{order['id']}" in response.headers["location"]
     assert MOCK_ORDERS[order["id"]]["status"] == "paid"
+    assert MOCK_ORDERS[order["id"]]["payment_provider"] == "transbank"
+    assert MOCK_ORDERS[order["id"]]["payment_id"] == "123456"
+    assert MOCK_ORDERS[order["id"]]["is_test"] is True
+
+
+def test_transbank_return_rejects_amount_mismatch(monkeypatch):
+    order = create_test_order()
+
+    fake_response = {
+        "status": "AUTHORIZED",
+        "response_code": 0,
+        "amount": order["total"] + 9999,
+        "buy_order": order["id"],
+        "authorization_code": "123456",
+    }
+    monkeypatch.setattr(transbank_module.Transaction, "commit", lambda self, token: fake_response)
+
+    response = client.get(
+        f"/payment/transbank-return?token_ws=fake-token&order_id={order['id']}",
+        follow_redirects=False,
+    )
+    assert response.status_code == 303
+    assert "checkout?error=payment_validation" in response.headers["location"]
+    assert MOCK_ORDERS[order["id"]]["status"] != "paid"
+
+
+def test_transbank_return_bank_rejected(monkeypatch):
+    order = create_test_order()
+
+    fake_response = {
+        "status": "FAILED",
+        "response_code": -1,
+        "amount": order["total"],
+        "buy_order": order["id"],
+    }
+    monkeypatch.setattr(transbank_module.Transaction, "commit", lambda self, token: fake_response)
+
+    response = client.get(
+        f"/payment/transbank-return?token_ws=fake-token&order_id={order['id']}",
+        follow_redirects=False,
+    )
+    assert response.status_code == 303
+    assert "checkout?error=rejected" in response.headers["location"]
+    assert MOCK_ORDERS[order["id"]]["status"] != "paid"
 
 
 def test_transbank_return_cancelled_by_user():
@@ -443,6 +519,15 @@ def test_transbank_return_cancelled_by_user():
     assert MOCK_ORDERS[order["id"]]["status"] != "paid"
 
 
+def test_transbank_requires_credentials_in_production(monkeypatch):
+    monkeypatch.setattr(settings, "environment", "production")
+    monkeypatch.setattr(settings, "webpay_commerce_code", "")
+    monkeypatch.setattr(settings, "webpay_api_key", "")
+
+    with pytest.raises(transbank_module.TransbankConfigError):
+        transbank_module.TransbankPayment()
+
+
 def test_webhook_is_idempotent_for_already_paid_orders():
     order = create_test_order()
     MOCK_ORDERS[order["id"]]["status"] = "paid"
@@ -453,3 +538,32 @@ def test_webhook_is_idempotent_for_already_paid_orders():
     )
     assert response.status_code == 200
     assert MOCK_ORDERS[order["id"]]["status"] == "paid"
+
+
+def test_transbank_init_truncates_long_uuid_buy_order(monkeypatch):
+    order = create_test_order()
+    long_order_id = order["id"]
+    assert len(long_order_id) == 36
+
+    captured_args = {}
+
+    def fake_create(self, buy_order, session_id, amount, return_url):
+        captured_args["buy_order"] = buy_order
+        captured_args["session_id"] = session_id
+        return {"token": "valid_token", "url": "https://webpay3gint.transbank.cl/init"}
+
+    monkeypatch.setattr(transbank_module.Transaction, "create", fake_create)
+
+    response = client.post(
+        "/payment/init",
+        json={
+            "order_id": order["id"],
+            "amount": order["total"],
+            "email": order["email"],
+            "gateway": "transbank",
+        },
+    )
+    assert response.status_code == 200
+    assert captured_args["buy_order"] == long_order_id.replace("-", "")[:26]
+    assert len(captured_args["buy_order"]) <= 26
+

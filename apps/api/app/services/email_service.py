@@ -273,29 +273,53 @@ async def send_payment_confirmation(order: dict) -> bool:
     return res
 
 
+from app.core.couriers import get_courier_name, get_tracking_url
+
 COURIER_LABELS = {
     "blue_express": "Blue Express",
     "starken": "Starken",
-    "pullman": "Pullman",
+    "pullman": "Pullman Cargo",
+    "chilexpress": "Chilexpress",
+    "correos_chile": "Correos de Chile",
 }
 
 
 def courier_label(value: str) -> str:
-    return COURIER_LABELS.get((value or "").lower(), value or "el courier")
+    if not value:
+        return "Courier"
+    clean = str(value).lower().strip()
+    return COURIER_LABELS.get(clean, get_courier_name(clean))
 
 
 async def send_shipping_notification(order: dict) -> bool:
     """
-    Avisa al cliente que su pedido salio, con el codigo de seguimiento.
+    Avisa al cliente que su pedido salió, con el código de seguimiento y enlace directo.
 
-    Es el correo que send_payment_confirmation viene prometiendo ("Recibiras un nuevo
-    correo con el codigo de seguimiento...") y que hasta ahora nadie enviaba.
+    Es el correo que send_payment_confirmation promete y que acompaña el despacho
+    con acceso directo al courier y a la página de seguimiento de NutraBlue.
     """
-    empresa = courier_label(order.get("shipping_company") or order.get("courier"))
+    company_id = order.get("shipping_company") or order.get("courier")
+    empresa = courier_label(company_id)
     tracking = order.get("tracking_code") or "—"
+    tracking_url = get_tracking_url(company_id, tracking) if tracking != "—" else ""
+    order_id = str(order.get("id", ""))
+    order_short = order_id.upper()[:8]
+    store_tracking_url = f"https://nutrablue.cl/seguimiento?order_id={order_id}"
+
     destino = ", ".join(
         p for p in [order.get("address"), order.get("city"), order.get("region")] if p
     )
+    flete = "Envío pagado por NutraBlue" if order.get("shipping_payment") == "pagado" else "Flete por pagar al recibir"
+
+    tracking_button_html = ""
+    if tracking_url:
+        tracking_button_html = f"""
+        <div style="text-align: center; margin: 28px 0 20px 0;">
+            <a href="{tracking_url}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; text-decoration: none; font-weight: 700; font-size: 15px; padding: 14px 32px; border-radius: 12px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35); letter-spacing: 0.01em;">
+                📦 Rastrear Envío en {empresa} &rarr;
+            </a>
+        </div>
+        """
 
     html = f"""
     <!DOCTYPE html>
@@ -318,33 +342,46 @@ async def send_shipping_notification(order: dict) -> bool:
                     <div style="text-align: center; margin-bottom: 24px;">
                         <span style="font-size: 48px;">📦</span>
                         <h2 style="color: #0f172a; margin: 12px 0 4px 0; font-size: 22px; font-weight: 700;">¡Tu pedido va en camino!</h2>
-                        <p style="color: #64748b; margin: 0; font-size: 14px;">Ya lo entregamos al courier</p>
+                        <p style="color: #64748b; margin: 0; font-size: 14px;">Ya fue entregado a la empresa de transporte</p>
                     </div>
 
-                    <p style="color: #475569; line-height: 1.6; margin: 0 0 24px 0; font-size: 15px;">Hola <strong>{order.get('customer_name', 'Cliente')}</strong>, tu pedido salió de nuestra bodega. Con el código de seguimiento puedes revisar el estado del envío directamente en el sitio de {empresa}.</p>
+                    <p style="color: #475569; line-height: 1.6; margin: 0 0 20px 0; font-size: 15px;">Hola <strong>{order.get('customer_name', 'Cliente')}</strong>, tu pedido salió de nuestras instalaciones y ya se encuentra en manos de <strong>{empresa}</strong> para su entrega.</p>
 
-                    <div style="background-color: #f1f5f9; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+                    <div style="background-color: #f1f5f9; border-radius: 12px; padding: 18px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
                         <table width="100%">
                             <tr>
-                                <td style="color: #64748b; font-size: 13px; font-weight: 600;">ID PEDIDO:</td>
-                                <td style="color: #0f172a; font-size: 13px; font-weight: 700; font-family: monospace; text-align: right;">{str(order.get('id', '')).upper()[:8]}</td>
+                                <td style="color: #64748b; font-size: 13px; font-weight: 600;">N° DE PEDIDO:</td>
+                                <td style="color: #0f172a; font-size: 13px; font-weight: 700; font-family: monospace; text-align: right;">#{order_short}</td>
                             </tr>
                             <tr>
-                                <td style="color: #64748b; font-size: 13px; font-weight: 600; padding-top: 6px;">EMPRESA DE TRANSPORTE:</td>
-                                <td style="color: #0f172a; font-size: 13px; font-weight: 700; text-align: right; padding-top: 6px;">{empresa}</td>
+                                <td style="color: #64748b; font-size: 13px; font-weight: 600; padding-top: 8px;">EMPRESA DE TRANSPORTE:</td>
+                                <td style="color: #0f172a; font-size: 13px; font-weight: 700; text-align: right; padding-top: 8px;">{empresa}</td>
                             </tr>
                             <tr>
-                                <td style="color: #64748b; font-size: 13px; font-weight: 600; padding-top: 6px;">CÓDIGO DE SEGUIMIENTO:</td>
-                                <td style="color: #0284c7; font-size: 15px; font-weight: 800; font-family: monospace; text-align: right; padding-top: 6px;">{tracking}</td>
+                                <td style="color: #64748b; font-size: 13px; font-weight: 600; padding-top: 8px;">CÓDIGO DE SEGUIMIENTO:</td>
+                                <td style="color: #0284c7; font-size: 15px; font-weight: 800; font-family: monospace; text-align: right; padding-top: 8px;">{tracking}</td>
                             </tr>
                             <tr>
-                                <td style="color: #64748b; font-size: 13px; font-weight: 600; padding-top: 6px;">DESTINO:</td>
-                                <td style="color: #0f172a; font-size: 13px; font-weight: 600; text-align: right; padding-top: 6px;">{destino}</td>
+                                <td style="color: #64748b; font-size: 13px; font-weight: 600; padding-top: 8px;">DESTINO:</td>
+                                <td style="color: #0f172a; font-size: 13px; font-weight: 600; text-align: right; padding-top: 8px;">{destino}</td>
+                            </tr>
+                            <tr>
+                                <td style="color: #64748b; font-size: 13px; font-weight: 600; padding-top: 8px;">MODALIDAD DE FLETE:</td>
+                                <td style="color: #0f172a; font-size: 13px; font-weight: 600; text-align: right; padding-top: 8px;">{flete}</td>
                             </tr>
                         </table>
                     </div>
 
-                    <p style="color: #475569; font-size: 14px; line-height: 1.6; margin: 0;">Si el código todavía no aparece en el sitio del courier, dale unas horas: recién lo estamos entregando. Cualquier duda, respóndenos directamente a este correo.</p>
+                    {tracking_button_html}
+
+                    <!-- Anti-anxiety tip -->
+                    <div style="background-color: #f8fafc; border-left: 4px solid #0284c7; border-radius: 4px 8px 8px 4px; padding: 12px 16px; margin: 20px 0; font-size: 13px; color: #475569; line-height: 1.5;">
+                        💡 <strong>Nota sobre la actualización:</strong> Las empresas de transporte pueden demorar entre <strong>1 y 3 horas</strong> en sincronizar el código en sus plataformas web una vez admitido el paquete. Si aún no registra movimientos, dale unas horas.
+                    </div>
+
+                    <p style="color: #64748b; font-size: 13px; line-height: 1.6; margin: 20px 0 0 0; text-align: center;">
+                        También puedes consultar el estado en cualquier momento desde <a href="{store_tracking_url}" target="_blank" style="color: #0284c7; text-decoration: underline; font-weight: 600;">nuestra web de seguimiento</a>.
+                    </p>
                 </td>
             </tr>
             <tr>
@@ -359,9 +396,10 @@ async def send_shipping_notification(order: dict) -> bool:
     """
     return await send_email(
         order["email"],
-        f"Tu pedido va en camino - #{str(order.get('id',''))[:8].upper()} - Nutra Blue",
+        f"Tu pedido va en camino - #{order_short} - Nutra Blue",
         html,
     )
+
 
 
 async def send_welcome_email(to: str) -> bool:

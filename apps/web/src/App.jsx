@@ -23,6 +23,7 @@ import ContactoPage from '@/pages/ContactoPage';
 import FaqPage from '@/pages/FaqPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 import PaymentPendingPage from '@/pages/PaymentPendingPage';
+import TrackingPage from '@/pages/TrackingPage';
 
 const RedirectToAdmin = () => {
   useEffect(() => {
@@ -63,6 +64,8 @@ function App() {
             <Route path="/historia" element={<HistoriaPage />} />
             <Route path="/contacto" element={<ContactoPage />} />
             <Route path="/faqs" element={<FaqPage />} />
+            <Route path="/seguimiento" element={<TrackingPage />} />
+            <Route path="/tracking" element={<TrackingPage />} />
             {/* Antes esto era un <Navigate to="/">: una URL rota mandaba al inicio sin
                 explicar nada, y Google la seguia tratando como valida. */}
             <Route path="*" element={<NotFoundPage />} />

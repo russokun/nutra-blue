@@ -15,8 +15,10 @@ import {
   Plus, 
   Tag, 
   Scan,
-  RefreshCw
+  RefreshCw,
+  Truck
 } from 'lucide-react';
+import { COURIER_LABELS, getCourierName } from '@nutrablue/shared';
 
 const formatPrice = (price) =>
   new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(price);
@@ -66,11 +68,64 @@ const DashboardPage = () => {
   const [modalQuickAdd, setModalQuickAdd] = useState(false);
   const [modalCoupon, setModalCoupon] = useState(false);
   const [modalTracking, setModalTracking] = useState(false);
+  const [paidOrders, setPaidOrders] = useState([]);
+  const [loadingPaidOrders, setLoadingPaidOrders] = useState(false);
+  const [manualOrderId, setManualOrderId] = useState(false);
 
   // Form States
   const [quickAddForm, setQuickAddForm] = useState({ name: '', price: '', stock: '', category: 'Longevidad' });
   const [couponForm, setCouponForm] = useState({ code: '', discount: '15', expiry: '' });
-  const [trackingForm, setTrackingForm] = useState({ orderId: '', trackingCode: '', shippingCompany: 'starken' });
+  const [trackingForm, setTrackingForm] = useState({
+    orderId: '',
+    trackingCode: '',
+    shippingCompany: 'starken',
+    shippingPayment: 'por_pagar',
+  });
+
+  const openTrackingModal = async () => {
+    setModalTracking(true);
+    setManualOrderId(false);
+    try {
+      setLoadingPaidOrders(true);
+      const orders = await adminClient.getOrders('paid');
+      const list = orders || [];
+      setPaidOrders(list);
+      if (list.length > 0) {
+        const first = list[0];
+        setTrackingForm({
+          orderId: first.id,
+          trackingCode: '',
+          shippingCompany: (first.courier && ['starken', 'chilexpress', 'blue_express', 'correos_chile', 'pullman'].includes(first.courier))
+            ? first.courier
+            : 'starken',
+          shippingPayment: ((first.total || 0) >= 50000) ? 'pagado' : 'por_pagar',
+        });
+      } else {
+        setTrackingForm({
+          orderId: '',
+          trackingCode: '',
+          shippingCompany: 'starken',
+          shippingPayment: 'por_pagar',
+        });
+      }
+    } catch {
+      setPaidOrders([]);
+    } finally {
+      setLoadingPaidOrders(false);
+    }
+  };
+
+  const handleSelectOrder = (selectedId) => {
+    const found = paidOrders.find((o) => o.id === selectedId);
+    setTrackingForm((prev) => ({
+      ...prev,
+      orderId: selectedId,
+      shippingCompany: (found?.courier && ['starken', 'chilexpress', 'blue_express', 'correos_chile', 'pullman'].includes(found.courier))
+        ? found.courier
+        : prev.shippingCompany,
+      shippingPayment: ((found?.total || 0) >= 50000) ? 'pagado' : 'por_pagar',
+    }));
+  };
   const isSyncStale = () => {
     if (!metrics.last_sync) return true;
     try {
@@ -186,21 +241,29 @@ const DashboardPage = () => {
   };
 
   // Quick Action: Scan Tracking
-  // Antes esto solo hacia PATCH del estado a 'shipped' y usaba el codigo de tracking
-  // en el texto del toast, o sea: lo tiraba. Ahora se guarda y se le avisa al cliente.
   const handleScanTracking = async (e) => {
     e.preventDefault();
+    if (!trackingForm.orderId) {
+      toast.error('Selecciona o ingresa el ID de un pedido');
+      return;
+    }
+    if (!trackingForm.trackingCode.trim()) {
+      toast.error('Ingresa el código de seguimiento del courier');
+      return;
+    }
     try {
       await adminClient.shipOrder(trackingForm.orderId, {
-        tracking_code: trackingForm.trackingCode,
+        tracking_code: trackingForm.trackingCode.trim(),
         shipping_company: trackingForm.shippingCompany,
+        shipping_payment: trackingForm.shippingPayment || 'por_pagar',
+        notify_customer: true,
       });
-      toast.success(`Pedido ${trackingForm.orderId.slice(0, 8)} despachado. Se le avisó al cliente por correo.`);
+      toast.success(`Pedido #${trackingForm.orderId.slice(0, 8).toUpperCase()} despachado exitosamente. Se le avisó al cliente por correo.`);
       setModalTracking(false);
-      setTrackingForm({ orderId: '', trackingCode: '', shippingCompany: 'starken' });
+      setTrackingForm({ orderId: '', trackingCode: '', shippingCompany: 'starken', shippingPayment: 'por_pagar' });
       fetchData();
     } catch (err) {
-      toast.error(err.message || 'ID de orden no encontrado o inválido');
+      toast.error(err.message || 'Error al despachar el pedido');
     }
   };
 
@@ -316,8 +379,8 @@ const DashboardPage = () => {
           <Button onClick={() => setModalCoupon(true)} variant="outline" className="h-auto min-h-[48px] py-2 whitespace-normal rounded-xl text-sm font-semibold gap-2 border-border/80">
             <Tag className="h-4 w-4 text-primary" /> Crear Cupón de Descuento
           </Button>
-          <Button onClick={() => setModalTracking(true)} variant="secondary" className="h-auto min-h-[48px] py-2 whitespace-normal rounded-xl text-sm font-semibold gap-2 bg-secondary/80">
-            <Scan className="h-4 w-4 text-primary" /> Escanear / Cargar Tracking
+          <Button onClick={openTrackingModal} variant="secondary" className="h-auto min-h-[48px] py-2 whitespace-normal rounded-xl text-sm font-semibold gap-2 bg-secondary/80">
+            <Truck className="h-4 w-4 text-primary" /> Registrar Despacho
           </Button>
         </div>
       </div>
@@ -581,52 +644,144 @@ const DashboardPage = () => {
         </div>
       )}
 
-      {/* MODAL: SCAN BARCODE / DISPATCH TRACKING */}
+      {/* MODAL: DISPATCH TRACKING */}
       {modalTracking && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-card border border-border rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
-            <h3 className="text-lg font-bold text-foreground mb-4">Registrar Despacho de Pedido</h3>
+          <div className="bg-card border border-border rounded-2xl w-full max-w-lg p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <Truck className="h-5 w-5 text-primary" /> Registrar Despacho de Pedido
+              </h3>
+              <button
+                type="button"
+                onClick={() => setModalTracking(false)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                ✕
+              </button>
+            </div>
+
             <form onSubmit={handleScanTracking} className="space-y-4">
+              {/* Order Selection */}
               <div>
-                <Label>ID del Pedido</Label>
-                <Input 
-                  placeholder="Pega el ID del pedido (ej: Supabase UUID)"
-                  value={trackingForm.orderId} 
-                  onChange={(e) => setTrackingForm({ ...trackingForm, orderId: e.target.value })} 
-                  required 
-                  className="mt-1"
-                />
+                <div className="flex items-center justify-between mb-1">
+                  <Label>Pedido a Despachar</Label>
+                  <button
+                    type="button"
+                    onClick={() => setManualOrderId(!manualOrderId)}
+                    className="text-xs text-primary hover:underline font-medium"
+                  >
+                    {manualOrderId ? '← Seleccionar de la lista' : '✏️ Ingresar ID a mano'}
+                  </button>
+                </div>
+
+                {manualOrderId ? (
+                  <Input 
+                    placeholder="Pega el ID del pedido (ej: Supabase UUID)"
+                    value={trackingForm.orderId} 
+                    onChange={(e) => setTrackingForm({ ...trackingForm, orderId: e.target.value })} 
+                    required 
+                    className="font-mono text-xs"
+                  />
+                ) : (
+                  <div>
+                    {loadingPaidOrders ? (
+                      <div className="p-3 bg-muted/40 rounded-lg text-xs text-muted-foreground animate-pulse text-center">
+                        Cargando pedidos pagados pendientes...
+                      </div>
+                    ) : paidOrders.length === 0 ? (
+                      <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-800">
+                        No hay pedidos pagados pendientes de despacho en este momento.
+                      </div>
+                    ) : (
+                      <select
+                        value={trackingForm.orderId}
+                        onChange={(e) => handleSelectOrder(e.target.value)}
+                        required
+                        className="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary font-medium"
+                      >
+                        {paidOrders.map((o) => (
+                          <option key={o.id} value={o.id}>
+                            #{o.id.slice(0, 8).toUpperCase()} · {o.customer_name} ({o.city || o.region}) · {formatPrice(o.total)}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                )}
               </div>
+
+              {/* Order Preview Card */}
+              {(() => {
+                const selected = paidOrders.find((o) => o.id === trackingForm.orderId);
+                if (!selected) return null;
+                return (
+                  <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 text-xs space-y-1.5 animate-in fade-in">
+                    <div className="flex justify-between items-center font-semibold text-foreground">
+                      <span>👤 {selected.customer_name}</span>
+                      <span className="font-mono text-[10px] text-primary">#{selected.id.slice(0, 8).toUpperCase()}</span>
+                    </div>
+                    <div className="text-muted-foreground text-[11px]">
+                      📍 {[selected.address, selected.city, selected.region].filter(Boolean).join(', ')}
+                    </div>
+                    <div className="flex flex-wrap justify-between text-[11px] text-muted-foreground pt-1 border-t border-primary/10 gap-1">
+                      <span>Entrega: <strong className="text-foreground">{selected.delivery_method === 'retiro_courier' ? `Retiro (${selected.courier || 'courier'})` : 'A domicilio'}</strong></span>
+                      <span>Total: <strong className="text-foreground">{formatPrice(selected.total)}</strong></span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Courier and Tracking Code */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">Empresa de Transporte</Label>
+                  <select
+                    value={trackingForm.shippingCompany}
+                    onChange={(e) => setTrackingForm({ ...trackingForm, shippingCompany: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                  >
+                    <option value="starken">Starken</option>
+                    <option value="chilexpress">Chilexpress</option>
+                    <option value="blue_express">Blue Express</option>
+                    <option value="correos_chile">Correos de Chile</option>
+                    <option value="pullman">Pullman Cargo</option>
+                  </select>
+                </div>
+
+                <div>
+                  <Label className="text-xs">Modalidad de Flete</Label>
+                  <select
+                    value={trackingForm.shippingPayment || 'por_pagar'}
+                    onChange={(e) => setTrackingForm({ ...trackingForm, shippingPayment: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                  >
+                    <option value="pagado">Pagado (NutraBlue)</option>
+                    <option value="por_pagar">Por pagar al recibir</option>
+                  </select>
+                </div>
+              </div>
+
               <div>
-                <Label>Código de Tracking (Courier)</Label>
+                <Label className="text-xs">Código de Tracking (Courier)</Label>
                 <div className="relative mt-1">
                   <span className="absolute inset-y-0 left-3 flex items-center text-muted-foreground">
                     <Scan className="h-4 w-4" />
                   </span>
                   <Input 
-                    placeholder="Escanea el código de barra o digítalo"
+                    placeholder="Escanea el código de barra o digítalo (ej: ST-9481720491)"
                     value={trackingForm.trackingCode} 
                     onChange={(e) => setTrackingForm({ ...trackingForm, trackingCode: e.target.value })} 
                     required 
-                    className="pl-10"
+                    className="pl-10 text-xs font-mono"
                   />
                 </div>
               </div>
-              <div>
-                <Label>Empresa de Transporte</Label>
-                <select
-                  value={trackingForm.shippingCompany}
-                  onChange={(e) => setTrackingForm({ ...trackingForm, shippingCompany: e.target.value })}
-                  className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-                >
-                  <option value="blue_express">Blue Express</option>
-                  <option value="starken">Starken</option>
-                  <option value="pullman">Pullman</option>
-                </select>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Al registrar el envío se le manda al cliente un correo con el código de seguimiento.
+
+              <p className="text-[11px] text-muted-foreground">
+                Al registrar el envío, el pedido pasa a estado <strong>SHIPPED</strong> y se le envía automáticamente un correo al cliente con el enlace de rastreo directo.
               </p>
+
               <div className="flex gap-3 pt-2">
                 <Button type="button" variant="outline" onClick={() => setModalTracking(false)} className="flex-1 rounded-xl">Cancelar</Button>
                 <Button type="submit" className="flex-1 rounded-xl">Registrar Envío</Button>
