@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from app.core.payments.factory import PaymentGatewayFactory, UnknownGatewayError
@@ -5,6 +6,8 @@ from app.database.supabase import supabase_client
 from app.core.config import settings
 from app.core.mock_store import MOCK_ORDERS
 from app.services.orders_service import get_order_by_id
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/payment", tags=["Payment"])
 
@@ -110,7 +113,8 @@ async def initialize_payment(request: Request):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Failed to initialize payment")
+        logger.exception("Failed to initialize payment: %s", str(e))
+        raise HTTPException(status_code=500, detail=f"Failed to initialize payment: {str(e)}")
 
 
 async def _handle_payment_webhook(request: Request, provider: str):
@@ -195,25 +199,43 @@ async def transbank_return(request: Request):
 
         if status == "success" and final_order_id:
             order = get_order_by_id(final_order_id)
-            if order:
-                validate_payment_request(final_order_id, order["total"])
-            await mark_order_as_paid(final_order_id, provider="transbank")
+            if not order:
+                return RedirectResponse(
+                    url=f"{settings.public_web_url}/checkout?error=order_not_found",
+                    status_code=303,
+                )
+
+            monto_cobrado = result.get("amount")
+            if monto_cobrado is not None and int(round(float(monto_cobrado))) != int(order["total"]):
+                return RedirectResponse(
+                    url=f"{settings.public_web_url}/checkout?error=payment_validation",
+                    status_code=303,
+                )
+
+            if order.get("status") != "paid":
+                await mark_order_as_paid(
+                    final_order_id,
+                    provider="transbank",
+                    payment_id=result.get("payment_id"),
+                    is_test=result.get("is_test", False),
+                )
+
             return RedirectResponse(
-                url=f"https://{settings.website_domain}/order-confirmation/{final_order_id}",
+                url=f"{settings.public_web_url}/order-confirmation/{final_order_id}",
                 status_code=303,
             )
 
         return RedirectResponse(
-            url=f"https://{settings.website_domain}/checkout?error={status}",
+            url=f"{settings.public_web_url}/checkout?error={status or 'failed'}",
             status_code=303,
         )
     except HTTPException:
         return RedirectResponse(
-            url=f"https://{settings.website_domain}/checkout?error=payment_validation",
+            url=f"{settings.public_web_url}/checkout?error=payment_validation",
             status_code=303,
         )
     except Exception:
         return RedirectResponse(
-            url=f"https://{settings.website_domain}/checkout?error=exception",
+            url=f"{settings.public_web_url}/checkout?error=exception",
             status_code=303,
         )

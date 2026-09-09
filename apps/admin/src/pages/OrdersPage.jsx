@@ -3,7 +3,7 @@ import adminClient from '@/lib/adminClient';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { RefreshCw, Filter, Calendar, DollarSign, User, Eye } from 'lucide-react';
+import { RefreshCw, Filter, Calendar, DollarSign, User, Eye, Truck } from 'lucide-react';
 import OrderDetailModal from '@/components/OrderDetailModal';
 
 // Se usan solo para filtrar la lista. El estado de un pedido no se edita a mano: lo
@@ -104,7 +104,7 @@ const OrdersPage = () => {
                   <th className="p-4">Entrega</th>
                   <th className="p-4">Total</th>
                   <th className="p-4">Estado</th>
-                  <th className="p-4 text-right">Detalle</th>
+                  <th className="p-4 text-right">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -147,21 +147,26 @@ const OrdersPage = () => {
                         {order.status}
                       </span>
                     </td>
-                    {/* Acá había un selector para cambiar el estado a mano. El estado lo
-                        maneja el propio flujo: 'paid' lo pone el webhook de Mercado Pago
-                        cuando el cobro se confirma, y 'shipped' queda al registrar el
-                        despacho con su código de seguimiento. Cambiarlo a dedo desde una
-                        lista desplegable —a un clic de distancia, sin confirmación— podía
-                        dar por pagado un pedido que nadie pagó. */}
                     <td className="p-4 text-right">
-                      <Button
-                        onClick={() => setDetalleId(order.id)}
-                        variant="outline"
-                        size="sm"
-                        className="rounded-lg gap-1.5"
-                      >
-                        <Eye className="h-3.5 w-3.5" /> Ver
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        {order.status === 'paid' && (
+                          <Button
+                            onClick={() => setDetalleId(order.id)}
+                            size="sm"
+                            className="rounded-lg gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 text-xs shadow-sm"
+                          >
+                            <Truck className="h-3.5 w-3.5" /> Despachar
+                          </Button>
+                        )}
+                        <Button
+                          onClick={() => setDetalleId(order.id)}
+                          variant="outline"
+                          size="sm"
+                          className="rounded-lg gap-1.5"
+                        >
+                          <Eye className="h-3.5 w-3.5" /> Ver
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -171,7 +176,8 @@ const OrdersPage = () => {
         </div>
       )}
 
-      <OrderDetailModal orderId={detalleId} onClose={() => setDetalleId(null)} />
+      <OrderDetailModal orderId={detalleId} onClose={() => setDetalleId(null)} onOrderUpdated={fetchOrders} />
+
     </div>
   );
 };

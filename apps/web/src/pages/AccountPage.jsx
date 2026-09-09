@@ -6,8 +6,9 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import { ClipboardList, MapPin, CreditCard, User, LogOut, Package, ShieldCheck, ExternalLink } from 'lucide-react';
+import { ClipboardList, MapPin, CreditCard, User, LogOut, Package, ShieldCheck, ExternalLink, Copy } from 'lucide-react';
 import { toast } from 'sonner';
+import { getTrackingUrl } from '@nutrablue/shared';
 
 const AccountContent = () => {
   const { currentUser, isAdmin, logout } = useAuth();
@@ -274,17 +275,36 @@ const AccountContent = () => {
 
                           {/* Tracking Progress Visualizer */}
                           <div className="pt-4 border-t border-border/45 space-y-4">
-                            <div className="flex justify-between items-center text-xs text-muted-foreground">
+                            <div className="flex flex-wrap justify-between items-center text-xs text-muted-foreground gap-2">
                               <span>Courier: <strong className="text-foreground">{getCourierLabel(order)}</strong></span>
-                              <span>Código de Seguimiento: <strong className="text-foreground flex items-center gap-1 cursor-pointer hover:underline" onClick={() => {
-                                const trackingCode = order.tracking_code;
-                                if (trackingCode) {
-                                  navigator.clipboard.writeText(trackingCode);
-                                  toast.success('Código copiado al portapapeles');
-                                } else {
-                                  toast.info('Código de seguimiento pendiente de asignación');
-                                }
-                              }}>{order.tracking_code || 'Pendiente'} <ExternalLink className="h-3 w-3" /></strong></span>
+                              <div className="flex items-center gap-2">
+                                <span>Código: <strong className="text-foreground font-mono">{order.tracking_code || 'Pendiente'}</strong></span>
+                                {order.tracking_code && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(order.tracking_code);
+                                        toast.success('Código copiado al portapapeles');
+                                      }}
+                                      className="text-[11px] text-primary hover:underline flex items-center gap-1 font-semibold"
+                                      title="Copiar código"
+                                    >
+                                      <Copy className="h-3 w-3" /> Copiar
+                                    </button>
+                                    {getTrackingUrl(order.shipping_company, order.tracking_code) && (
+                                      <a
+                                        href={getTrackingUrl(order.shipping_company, order.tracking_code)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-[11px] text-sky-700 bg-sky-50 border border-sky-200 hover:bg-sky-100 px-2 py-0.5 rounded-md font-bold flex items-center gap-1 transition-colors"
+                                      >
+                                        Rastrear <ExternalLink className="h-2.5 w-2.5" />
+                                      </a>
+                                    )}
+                                  </>
+                                )}
+                              </div>
                             </div>
 
                             {/* Progress Bar */}

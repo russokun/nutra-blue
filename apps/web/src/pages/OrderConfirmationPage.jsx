@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from '@/components/Meta';
 import { useParams, useLocation, Link } from 'react-router-dom';
-import { CheckCircle2, Package, Building2 } from 'lucide-react';
+import { CheckCircle2, Package, Building2, Truck, ExternalLink, Copy } from 'lucide-react';
+import { toast } from 'sonner';
+import { COURIER_LABELS, getCourierName, getTrackingUrl } from '@nutrablue/shared';
 import dataClient from '@/lib/dataClient';
 import { useCart } from '@/hooks/useCart';
 import Header from '@/components/Header';
@@ -147,6 +149,64 @@ const OrderConfirmationPage = () => {
             </p>
           </div>
 
+          {/* Tracking Highlight if order is dispatched */}
+          {order.tracking_code && (
+            <div className="bg-gradient-to-br from-sky-900 to-slate-900 text-white rounded-2xl p-6 sm:p-8 border border-sky-800 shadow-lg mb-8">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+                <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-sky-300">
+                  <Truck className="h-4 w-4 text-sky-400" /> ¡Tu Pedido va en Camino!
+                </div>
+                <span className="text-xs text-sky-200 font-medium">
+                  Transporte: <strong>{COURIER_LABELS[order.shipping_company] || getCourierName(order.shipping_company)}</strong>
+                </span>
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
+                <div>
+                  <span className="text-xs text-sky-200/80 block mb-1 font-medium">Código de Seguimiento</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl sm:text-2xl font-black font-mono tracking-wider text-white select-all">
+                      {order.tracking_code}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(order.tracking_code);
+                        toast.success('Código copiado al portapapeles');
+                      }}
+                      className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-white"
+                      title="Copiar código"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {getTrackingUrl(order.shipping_company, order.tracking_code) && (
+                  <a
+                    href={getTrackingUrl(order.shipping_company, order.tracking_code)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-sky-400 to-cyan-400 text-slate-950 hover:opacity-95 transition-opacity shadow"
+                  >
+                    <span>Rastrear en {COURIER_LABELS[order.shipping_company] || getCourierName(order.shipping_company)}</span>
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                )}
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-white/10 text-xs text-sky-200/80 flex items-center justify-between">
+                <span>¿Quieres revisar el estado más tarde?</span>
+                <Link
+                  to={`/seguimiento?order_id=${order.id}`}
+                  className="text-sky-300 font-semibold underline hover:text-white"
+                >
+                  Ir a la página de seguimiento &rarr;
+                </Link>
+              </div>
+            </div>
+          )}
+
           <div className="bg-card rounded-xl p-6 border border-border shadow-sm mb-6">
             <h2 className="text-xl font-semibold text-card-foreground mb-6">Detalles de la Orden</h2>
 
@@ -167,6 +227,24 @@ const OrderConfirmationPage = () => {
                 <span className="text-sm text-muted-foreground block mb-1">Email</span>
                 <span className="text-lg font-semibold text-card-foreground">{order.email}</span>
               </div>
+              {order.payment_provider && (
+                <div>
+                  <span className="text-sm text-muted-foreground block mb-1">Medio de Pago</span>
+                  <span className="text-lg font-semibold text-card-foreground">
+                    {order.payment_provider === 'transbank'
+                      ? 'Webpay Plus (Transbank)'
+                      : order.payment_provider === 'mercadopago'
+                      ? 'Mercado Pago'
+                      : order.payment_provider}
+                  </span>
+                </div>
+              )}
+              {order.payment_id && (
+                <div>
+                  <span className="text-sm text-muted-foreground block mb-1">Código de Autorización</span>
+                  <span className="text-lg font-semibold font-mono text-card-foreground">{order.payment_id}</span>
+                </div>
+              )}
             </div>
 
             <div className="border-t border-border pt-6">
