@@ -28,8 +28,8 @@ import TrackingPage from '@/pages/TrackingPage';
 const RedirectToAdmin = () => {
   useEffect(() => {
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '::1';
-    // En local → dev del admin; en cualquier entorno de producción/staging → admin en Vercel
-    window.location.href = isLocal ? 'http://localhost:3002' : 'https://nutra-blue-admin.vercel.app/';
+    const prodAdminUrl = import.meta.env.VITE_ADMIN_URL || 'https://nutra-blue-admin-russokuns-projects.vercel.app';
+    window.location.href = isLocal ? 'http://localhost:3002' : prodAdminUrl;
   }, []);
   return (
     <div className="min-h-screen flex items-center justify-center bg-background text-muted-foreground text-sm">

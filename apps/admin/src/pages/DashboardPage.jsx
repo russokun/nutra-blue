@@ -16,9 +16,12 @@ import {
   Tag, 
   Scan,
   RefreshCw,
-  Truck
+  Truck,
+  Eye,
+  ExternalLink
 } from 'lucide-react';
-import { COURIER_LABELS, getCourierName } from '@nutrablue/shared';
+import { COURIER_LABELS, getCourierName, getTrackingUrl } from '@nutrablue/shared';
+import OrderDetailModal from '@/components/OrderDetailModal';
 
 const formatPrice = (price) =>
   new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(price);
@@ -68,6 +71,7 @@ const DashboardPage = () => {
   const [modalQuickAdd, setModalQuickAdd] = useState(false);
   const [modalCoupon, setModalCoupon] = useState(false);
   const [modalTracking, setModalTracking] = useState(false);
+  const [selectedOrderForDetail, setSelectedOrderForDetail] = useState(null);
   const [paidOrders, setPaidOrders] = useState([]);
   const [loadingPaidOrders, setLoadingPaidOrders] = useState(false);
   const [manualOrderId, setManualOrderId] = useState(false);
@@ -81,6 +85,20 @@ const DashboardPage = () => {
     shippingCompany: 'starken',
     shippingPayment: 'por_pagar',
   });
+
+  const openDispatchForOrder = (order) => {
+    if (!order) return;
+    setManualOrderId(false);
+    setTrackingForm({
+      orderId: order.id,
+      trackingCode: '',
+      shippingCompany: (order.courier && ['starken', 'chilexpress', 'blue_express', 'correos_chile', 'pullman'].includes(order.courier))
+        ? order.courier
+        : 'starken',
+      shippingPayment: ((order.total || 0) >= 50000) ? 'pagado' : 'por_pagar',
+    });
+    setModalTracking(true);
+  };
 
   const openTrackingModal = async () => {
     setModalTracking(true);
@@ -169,12 +187,14 @@ const DashboardPage = () => {
 
       const leadsData = await adminClient.getLeads().catch(() => []);
       const suggestionsData = await adminClient.getSuggestions().catch(() => []);
+      const paidData = await adminClient.getOrders('paid').catch(() => []);
 
       setMetrics(metricsData);
       setRecentOrders(ordersData);
       setAlerts(alertsData);
       setLeads(leadsData);
       setSuggestions(suggestionsData);
+      setPaidOrders(paidData || []);
     } catch (err) {
       toast.error('Error al cargar datos del dashboard');
     } finally {
@@ -380,10 +400,100 @@ const DashboardPage = () => {
             <Tag className="h-4 w-4 text-primary" /> Crear Cupón de Descuento
           </Button>
           <Button onClick={openTrackingModal} variant="secondary" className="h-auto min-h-[48px] py-2 whitespace-normal rounded-xl text-sm font-semibold gap-2 bg-secondary/80">
-            <Truck className="h-4 w-4 text-primary" /> Registrar Despacho
+            <Truck className="h-4 w-4 text-primary" /> Registrar Despacho {paidOrders.length > 0 ? `(${paidOrders.length})` : ''}
           </Button>
         </div>
       </div>
+
+      {/* SECCIÓN DESTACADA: ENVÍOS PENDIENTES DE DESPACHO */}
+      {paidOrders.length > 0 && (
+        <div className="bg-emerald-500/10 border-2 border-emerald-500/30 rounded-2xl p-5 shadow-sm space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 rounded-xl">
+                <Truck className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+                  Pedidos Pagados Listos para Despachar
+                  <span className="px-2.5 py-0.5 text-xs font-extrabold bg-emerald-600 text-white rounded-full">
+                    {paidOrders.length}
+                  </span>
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  Estos pedidos están pagados y esperan su código de seguimiento para notificar al cliente por correo.
+                </p>
+              </div>
+            </div>
+            <Button
+              onClick={openTrackingModal}
+              size="sm"
+              className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold gap-1.5 shadow-sm"
+            >
+              <Truck className="h-3.5 w-3.5" /> Despachar Siguiente
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
+            {paidOrders.slice(0, 6).map((order) => {
+              const dest = [order.city, order.region].filter(Boolean).join(', ') || 'Sin ciudad';
+              const courierPref = order.delivery_method === 'retiro_courier'
+                ? `Retiro en ${getCourierName(order.courier)}`
+                : (order.courier ? `${getCourierName(order.courier)} (Domicilio)` : 'A domicilio');
+              return (
+                <div
+                  key={order.id}
+                  className="bg-card/90 border border-emerald-500/20 rounded-xl p-3.5 shadow-sm hover:border-emerald-500/50 transition-all flex flex-col justify-between gap-3 text-xs"
+                >
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-start gap-2">
+                      <span className="font-bold text-foreground text-sm truncate">
+                        {order.customer_name || 'Cliente'}
+                      </span>
+                      <span className="font-mono text-[11px] font-bold text-primary px-1.5 py-0.5 bg-primary/10 rounded">
+                        #{order.id.slice(0, 8).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="text-muted-foreground text-[11px] flex items-center gap-1">
+                      <span>📍</span>
+                      <span className="truncate">{dest}</span>
+                    </div>
+                    <div className="text-[11px] font-medium text-emerald-800 dark:text-emerald-300">
+                      📦 {courierPref}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                    <span className="font-bold text-foreground text-xs">
+                      {formatPrice(order.total || 0)}
+                    </span>
+                    <div className="flex gap-1.5">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedOrderForDetail(order.id)}
+                        className="h-7 px-2 text-[11px] rounded-lg"
+                        title="Ver detalle completo"
+                      >
+                        <Eye className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => openDispatchForOrder(order)}
+                        className="h-7 px-2.5 text-[11px] rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold gap-1"
+                      >
+                        <Truck className="h-3 w-3" /> Despachar
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Main Grid: Orders & Alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -401,26 +511,81 @@ const DashboardPage = () => {
                     <th className="p-3">Cliente</th>
                     <th className="p-3">Monto</th>
                     <th className="p-3">Estado</th>
+                    <th className="p-3 text-right">Acción</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {Array.isArray(recentOrders) && recentOrders.slice(0, 7).map((order) => (
-                    <tr key={order?.id} className="border-t border-border/60 hover:bg-muted/10 transition-colors">
-                      <td className="p-3 font-mono text-xs text-primary font-semibold">{String(order?.id || '').slice(0, 8)}…</td>
-                      <td className="p-3 truncate max-w-[150px]">{order.customer_name || order.email}</td>
-                      <td className="p-3 font-medium">{formatPrice(order.total || order.total_amount || 0)}</td>
-                      <td className="p-3">
-                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold uppercase ${
-                          order.status === 'paid' ? 'bg-emerald-100 text-emerald-800' :
-                          order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
-                          order.status === 'pending' ? 'bg-amber-100 text-amber-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {order.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                  {Array.isArray(recentOrders) && recentOrders.slice(0, 7).map((order) => {
+                    const trackingUrl = getTrackingUrl(order.courier, order.tracking_code);
+                    return (
+                      <tr key={order?.id} className="border-t border-border/60 hover:bg-muted/10 transition-colors">
+                        <td className="p-3 font-mono text-xs text-primary font-semibold">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedOrderForDetail(order.id)}
+                            className="hover:underline font-mono"
+                          >
+                            #{String(order?.id || '').slice(0, 8).toUpperCase()}…
+                          </button>
+                        </td>
+                        <td className="p-3 truncate max-w-[150px]">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedOrderForDetail(order.id)}
+                            className="hover:underline font-medium text-left"
+                          >
+                            {order.customer_name || order.email}
+                          </button>
+                        </td>
+                        <td className="p-3 font-medium">{formatPrice(order.total || order.total_amount || 0)}</td>
+                        <td className="p-3">
+                          <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold uppercase ${
+                            order.status === 'paid' ? 'bg-emerald-100 text-emerald-800' :
+                            order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
+                            order.status === 'pending' ? 'bg-amber-100 text-amber-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {order.status === 'paid' ? 'Pagado' : order.status === 'shipped' ? 'Enviado' : order.status}
+                          </span>
+                        </td>
+                        <td className="p-3 text-right">
+                          <div className="inline-flex items-center gap-1.5 justify-end">
+                            {order.status === 'paid' && (
+                              <Button
+                                type="button"
+                                size="sm"
+                                onClick={() => openDispatchForOrder(order)}
+                                className="h-7 px-2.5 text-[11px] rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold gap-1"
+                              >
+                                <Truck className="h-3 w-3" /> Despachar
+                              </Button>
+                            )}
+                            {order.status === 'shipped' && trackingUrl && (
+                              <a
+                                href={trackingUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="h-7 px-2.5 text-[11px] rounded-lg inline-flex items-center gap-1 font-semibold text-primary bg-primary/10 hover:bg-primary/20 transition-colors"
+                              >
+                                <span>{getCourierName(order.courier)}</span>
+                                <ExternalLink className="h-3 w-3" />
+                              </a>
+                            )}
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setSelectedOrderForDetail(order.id)}
+                              className="h-7 w-7 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+                              title="Ver detalle del pedido"
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -789,6 +954,18 @@ const DashboardPage = () => {
             </form>
           </div>
         </div>
+      )}
+
+      {/* MODAL: ORDER DETAIL */}
+      {selectedOrderForDetail && (
+        <OrderDetailModal
+          orderId={selectedOrderForDetail}
+          onClose={() => setSelectedOrderForDetail(null)}
+          onOrderUpdated={() => {
+            fetchData();
+            setSelectedOrderForDetail(null);
+          }}
+        />
       )}
     </div>
   );
