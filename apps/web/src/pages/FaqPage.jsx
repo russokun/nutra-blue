@@ -36,7 +36,7 @@ const FaqPage = () => {
     },
     {
       q: '¿Puedo devolver un producto?',
-      a: 'Sí. Si tu producto llega dañado o no corresponde a lo que compraste, puedes devolverlo. Revisa nuestra política de devoluciones o escríbenos para ayudarte.'
+      a: 'Sí. Tienes derecho a retracto de 10 días para productos sellados sin expresión de causa, y garantía legal ante cualquier producto dañado o defectuoso. Revisa en detalle nuestra Política de Cambios, Devoluciones y Retracto o escríbenos a Info.nutra@gmail.com.'
     }
   ];
 

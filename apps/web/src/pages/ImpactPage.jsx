@@ -28,9 +28,9 @@ const ImpactPage = () => {
         <section className="relative py-28 md:py-40 flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 z-0">
             <img
-              src="/impact_bg.webp"
-              alt="Pristine valley and glacial lake background"
-              className="w-full h-full object-cover"
+              src="/images/lifestyle/sports_outdoor_spirulina.jpg"
+              alt="Estilo de vida saludable y activo NutraBlue"
+              className="w-full h-full object-cover object-center brightness-90"
             />
             {/* Smooth transition from dark image overlay to pure white at the bottom */}
             <div className="absolute inset-0 bg-black/40 bg-gradient-to-b from-transparent via-slate-950/50 to-[#ffffff]" />
@@ -48,8 +48,8 @@ const ImpactPage = () => {
               </span>
               
               <h1
-                className="text-4xl sm:text-5xl md:text-6xl font-display text-white leading-[1.05]"
-                style={{ textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}
+                className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white leading-tight tracking-tight"
+                style={{ fontFamily: 'Impact, sans-serif', letterSpacing: '-0.02em', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}
               >
                 La salud primero. <br />
                 <span className="text-accent font-black">
@@ -127,6 +127,24 @@ const ImpactPage = () => {
                   <blockquote className="border-l-4 border-accent pl-4 py-2 italic text-foreground bg-accent/5 rounded-r-lg">
                     "No eres tú, es el combustible. Es hora de hackear tu energía desde la raíz."
                   </blockquote>
+                </div>
+
+                <div className="pt-2 rounded-2xl overflow-hidden shadow-md h-72 md:h-80 relative group border border-border/60">
+                  <img
+                    src="/images/lifestyle/nutrablue_rendimiento_deporte_activo.jpg"
+                    alt="Rendimiento y bienestar físico real con alimentos funcionales"
+                    className="w-full h-full object-cover object-[center_45%] group-hover:scale-105 transition-transform duration-500 rounded-2xl"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/20 to-transparent rounded-2xl flex items-end p-5">
+                    <div className="text-white">
+                      <span className="text-accent text-[11px] font-bold uppercase tracking-wider block mb-0.5">
+                        Energía Limpia & Movimiento
+                      </span>
+                      <span className="text-white text-sm font-semibold">
+                        Bienestar & Rendimiento Físico Diario
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
 

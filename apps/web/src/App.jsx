@@ -24,6 +24,7 @@ import FaqPage from '@/pages/FaqPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 import PaymentPendingPage from '@/pages/PaymentPendingPage';
 import TrackingPage from '@/pages/TrackingPage';
+import ReturnPolicyPage from '@/pages/ReturnPolicyPage';
 
 const RedirectToAdmin = () => {
   useEffect(() => {
@@ -56,6 +57,8 @@ function App() {
             <Route path="/pago-pendiente/:orderId" element={<PaymentPendingPage />} />
             <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
             <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+            <Route path="/politica-de-devoluciones" element={<ReturnPolicyPage />} />
+            <Route path="/devoluciones" element={<ReturnPolicyPage />} />
             <Route path="/impacto" element={<ImpactPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />

@@ -26,6 +26,7 @@ const RUTAS_PUBLICAS = [
 	{ url: '/seguimiento', priority: '0.6', changefreq: 'monthly' },
 	{ url: '/privacy-policy', priority: '0.3', changefreq: 'yearly' },
 	{ url: '/terms-of-service', priority: '0.3', changefreq: 'yearly' },
+	{ url: '/politica-de-devoluciones', priority: '0.4', changefreq: 'monthly' },
 ];
 
 async function obtenerProductos() {

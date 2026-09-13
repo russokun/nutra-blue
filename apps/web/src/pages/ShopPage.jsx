@@ -202,6 +202,28 @@ const ShopPage = () => {
 
       <main className="min-h-screen bg-[#fbfbfa] py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Banner Hero Superior de Colección */}
+          <div className="relative rounded-3xl overflow-hidden mb-10 h-64 md:h-80 shadow-lg border border-border/60 group select-none">
+            <img
+              src="/images/lifestyle/nutrablue_coleccion_productos_mesa.jpg"
+              alt="Colección completa de superalimentos y productos funcionales NutraBlue"
+              className="w-full h-full object-cover object-[center_60%] group-hover:scale-[1.02] transition-transform duration-700"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/50 to-transparent flex items-center p-8 md:p-12">
+              <div className="max-w-md text-white space-y-2">
+                <span className="text-xs font-bold uppercase tracking-widest text-accent bg-accent/20 px-3 py-1 rounded-full border border-accent/30 inline-block">
+                  Calidad & Nutrición Real
+                </span>
+                <h1 className="text-3xl md:text-4xl font-extrabold text-white" style={{ fontFamily: 'Impact, sans-serif' }}>
+                  Catálogo de Productos
+                </h1>
+                <p className="text-sm text-slate-200 leading-relaxed">
+                  Semillas, frutos secos, adaptógenos y superalimentos 100% naturales para potenciar tu salud desde la raíz.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Header con Buscador Inteligente y Ordenar por */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10 border-b border-border pb-6">
             <div>
@@ -513,8 +535,8 @@ const ShopPage = () => {
               {loading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {[...Array(6)].map((_, i) => (
-                    <div key={i} className="bg-card rounded-xl p-4 border border-border">
-                      <Skeleton className="w-full h-48 rounded-lg mb-4" />
+                    <div key={i} className="bg-card rounded-xl p-4 border border-border space-y-4">
+                      <Skeleton className="w-full h-60 rounded-xl mb-4" />
                       <Skeleton className="h-6 w-3/4 mb-2" />
                       <Skeleton className="h-4 w-1/2 mb-4" />
                       <Skeleton className="h-10 w-full" />
@@ -580,11 +602,11 @@ const ShopPage = () => {
                         className="bg-card rounded-xl overflow-hidden border border-border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer group flex flex-col justify-between"
                       >
                         <div>
-                          <div className="relative h-48 overflow-hidden bg-muted flex items-center justify-center p-4">
+                          <div className="relative h-60 w-full overflow-hidden bg-muted">
                             <img
                               src={product.image_url}
                               alt={product.name}
-                              className="h-full w-auto object-contain group-hover:scale-103 transition-all duration-300 drop-shadow-md"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
                             <ProductTags product={product} variant="overlay" />
                             {/* Solo se ve en modo prueba, porque el catálogo normal no

@@ -17,7 +17,7 @@ export const absoluteUrl = (path = '/') => {
 
 export const OG_IMAGE = absoluteUrl('/og-image.png');
 
-export const CONTACTO_EMAIL = 'contacto@nutrablue.cl';
+export const CONTACTO_EMAIL = 'Info.nutra@gmail.com';
 
 /**
  * Datos estructurados (schema.org). Google los usa para mostrar precio, disponibilidad y

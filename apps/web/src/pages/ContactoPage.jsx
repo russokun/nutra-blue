@@ -45,7 +45,9 @@ const ContactoPage = () => {
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-slate-900">WhatsApp</h3>
-                  <p className="text-slate-600">[COMPLETAR]</p>
+                  <a href="https://wa.me/56993493971" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
+                    +56 9 9349 3971
+                  </a>
                 </div>
               </div>
 
@@ -55,7 +57,9 @@ const ContactoPage = () => {
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-slate-900">Correo</h3>
-                  <p className="text-slate-600">[COMPLETAR]</p>
+                  <a href="mailto:Info.nutra@gmail.com" className="text-primary hover:underline font-medium">
+                    Info.nutra@gmail.com
+                  </a>
                 </div>
               </div>
 
@@ -65,7 +69,7 @@ const ContactoPage = () => {
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-slate-900">Horario de atención</h3>
-                  <p className="text-slate-600">[COMPLETAR]</p>
+                  <p className="text-slate-600">Lunes a Viernes de 09:00 a 18:00 hrs</p>
                 </div>
               </div>
             </div>
