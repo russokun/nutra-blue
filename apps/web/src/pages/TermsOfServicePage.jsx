@@ -155,17 +155,20 @@ const TermsOfServicePage = () => {
 
             <section className="space-y-3">
               <h2 className="text-2xl font-bold text-foreground border-b border-border pb-2 flex items-center gap-2">
-                <span className="text-primary text-lg">5.</span> Garantías y Devoluciones (Derecho de Retracto)
+                <span className="text-primary text-lg">5.</span> Garantías y Devoluciones (Derecho a Retracto)
               </h2>
               <p className="text-sm leading-relaxed text-muted-foreground">
-                En cumplimiento de las normas de consumo nacionales:
+                De conformidad con la Ley N° 19.496 sobre Protección de los Derechos de los Consumidores y el Decreto N° 52 de 2024 del Ministerio de Economía, Fomento y Turismo:
               </p>
               <ul className="list-disc pl-6 space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <strong className="text-foreground/90">Derecho a Retracto:</strong> De conformidad con el artículo 3 bis letra b) de la Ley N° 19.496, NutraBlue dispone que en las compras realizadas a través de este portal <strong className="text-foreground/95">no se podrá ejercer el derecho de retracto</strong> de forma discrecional una vez abierto el empaque, dado que comercializamos alimentos y suplementos alimenticios cuyas condiciones de esterilidad e inocuidad se pierden al abrirse los sellos de seguridad. Sin embargo, para productos completamente sellados, sin abrir y en su embalaje original, se podrá solicitar la devolución dentro de los 10 días siguientes a la recepción.
+                  <strong className="text-foreground/90">Derecho a Retracto:</strong> Tienes derecho a retracto dentro de los 10 días corridos desde la recepción del producto, sin necesidad de justificación. Por razones sanitarias y de higiene (art. 3° bis letra b Ley 19.496 y D. 52/2024), únicamente quedan excluidos aquellos productos alimenticios cuyo sello o envase original haya sido abierto o retirado. En productos cerrados se devuelve el 100% de lo pagado.
                 </li>
                 <li>
-                  <strong className="text-foreground/90">Garantía Legal:</strong> Si el producto presenta fallas de origen, defectos de fabricación, roturas de envase o no corresponde a lo solicitado, el cliente tiene derecho a la garantía legal dentro de los 6 meses siguientes a la compra, pudiendo optar entre el cambio del producto, reparación o la devolución del dinero pagado. Para esto, se debe presentar la boleta o comprobante de compra respectivo.
+                  <strong className="text-foreground/90">Garantía Legal:</strong> Si el producto llega defectuoso, vencido, roto o equivocado, tienes derecho a la garantía legal (en alimentos, hasta la fecha de vencimiento impresa), pudiendo elegir libremente entre cambio, reposición o devolución íntegra del dinero.
+                </li>
+                <li>
+                  <strong className="text-foreground/90">Política Completa:</strong> Para conocer el detalle íntegro de plazos, requisitos y procedimiento, consulta nuestra <a href="/politica-de-devoluciones" className="text-primary hover:underline font-semibold">Política de Cambios, Devoluciones y Derecho a Retracto</a>.
                 </li>
               </ul>
             </section>
@@ -196,7 +199,7 @@ const TermsOfServicePage = () => {
               ¿Quieres realizar una devolución o consultar sobre la garantía legal de tu pedido?
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Escríbenos directamente a <a href="mailto:contacto@nutrablue.cl" className="text-primary hover:underline font-semibold">contacto@nutrablue.cl</a> incluyendo tu número de orden y boleta.
+              Escríbenos directamente a <a href="mailto:Info.nutra@gmail.com" className="text-primary hover:underline font-semibold">Info.nutra@gmail.com</a> incluyendo tu número de orden y comprobante.
             </p>
           </div>
         </div>

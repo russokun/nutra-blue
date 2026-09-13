@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, Heart, Sparkles, BookOpen, ArrowRight, X, Check, ShoppingBag } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import BannerNaturaleza from '@/components/BannerNaturaleza';
 import OrlaBotanica from '@/components/botanica/OrlaBotanica';
 import { Button } from '@/components/ui/button';
 import dataClient from '@/lib/dataClient';
@@ -147,7 +146,8 @@ const HomePage = () => {
       cta: 'Ver productos de Energía',
       description: 'Para rendir en tu día sin estimulantes que pasan la cuenta.',
       category: 'Energía',
-      image: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&h=400&fit=crop'
+      image: '/images/lifestyle/nutrablue_rendimiento_deporte_activo.jpg',
+      imagePosition: 'object-[center_35%]'
     },
     {
       icon: Brain,
@@ -155,7 +155,8 @@ const HomePage = () => {
       cta: 'Ver productos de Concentración y Calma',
       description: 'Claridad mental en un mundo lleno de distracciones.',
       category: 'Concentración y Calma',
-      image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600&h=400&fit=crop'
+      image: '/images/lifestyle/office_team_landscape.jpg',
+      imagePosition: 'object-[center_28%]'
     },
     {
       icon: Heart,
@@ -163,7 +164,8 @@ const HomePage = () => {
       cta: 'Ver productos de Descanso y Longevidad',
       description: 'Dormir bien hoy para vivir mejor mañana.',
       category: 'Descanso y Longevidad',
-      image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600&h=400&fit=crop'
+      image: '/images/lifestyle/yoga_senior_portrait.jpg',
+      imagePosition: 'object-[center_15%]'
     }
   ];
 
@@ -290,18 +292,37 @@ const HomePage = () => {
         </section>
 
         {/* Hero Product Showcase Carousel Section */}
-        <section className="relative min-h-[70vh] flex items-center justify-center bg-white py-16 md:py-24 border-b border-slate-100 overflow-hidden">
-          <div className="max-w-7xl mx-auto px-4 w-full text-center">
+        <section className="relative min-h-[70vh] flex items-center justify-center bg-slate-950 text-white py-16 md:py-24 border-b border-slate-100 overflow-hidden">
+          <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+            <img
+              src="/images/lifestyle/familia_mesa_productos_nutrablue.jpg"
+              alt="Familia compartiendo alimentos saludables en la mesa de comedor"
+              className="w-full h-full object-cover object-[center_35%] scale-105 transition-transform duration-1000"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-slate-950/85 via-slate-950/70 to-slate-950/90" />
+          </div>
+
+          <div className="relative z-10 max-w-7xl mx-auto px-4 w-full text-center">
             {/* Hero Copy */}
             <div className="max-w-3xl mx-auto mb-16 space-y-6">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-display text-slate-900 leading-[1.05]">
+              <h1
+                className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight"
+                style={{ fontFamily: 'Impact, sans-serif', textShadow: '0 2px 14px rgba(0,0,0,0.6)' }}
+              >
                 Tu salud es el punto de partida de todo.
               </h1>
-              <p className="text-lg md:text-xl text-slate-600 leading-relaxed">
+              <p
+                className="text-lg md:text-xl text-slate-200 leading-relaxed"
+                style={{ textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}
+              >
                 En NutraBlue creemos que una vida mejor comienza por cómo te alimentas. Por eso seleccionamos alimentos naturales y funcionales que aportan a lo fundamental: tu energía, tu descanso, tu claridad y tus años por vivir.
               </p>
               <div className="pt-4">
-                <Button onClick={() => navigate('/shop')} size="lg" className="rounded-full text-base font-bold px-8 py-6 h-auto shadow-lg hover:shadow-xl transition-all">
+                <Button
+                  onClick={() => navigate('/shop')}
+                  size="lg"
+                  className="rounded-full text-base font-bold px-8 py-6 h-auto shadow-lg hover:shadow-xl transition-all bg-accent hover:bg-accent/90 text-white"
+                >
                   Conocer el catálogo
                 </Button>
               </div>
@@ -405,20 +426,18 @@ const HomePage = () => {
           </div>
         </section>
 
-        {/* Packs y Favoritos Section */}
+        {/* Ofertas y Favoritos Section */}
         <section className="py-20 bg-white border-b border-slate-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <div className="mb-12">
-              {/* No decimos "Descuentos" ni "Ofertas": no hay descuentos reales detrás.
-                  Anunciarlos sin un precio anterior verdadero es publicidad engañosa. */}
               <span className="text-primary font-bold text-xs tracking-wider uppercase bg-primary/10 px-3 py-1.5 rounded-full">
-                Packs y Combinaciones
+                Descuentos y Combos
               </span>
-              <h2 className="text-3xl md:text-4xl font-display text-slate-900 mt-3">
-                Packs y Favoritos
+              <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mt-3" style={{ fontFamily: 'Impact, sans-serif' }}>
+                Ofertas y Favoritos
               </h2>
               <p className="text-slate-600 max-w-xl mx-auto mt-2 text-sm">
-                Nuestras combinaciones y los productos que más eligen quienes ya nos conocen.
+                Optimiza tu rendimiento al mejor precio con nuestras selecciones y combos especiales.
               </p>
             </div>
             
@@ -477,7 +496,7 @@ const HomePage = () => {
                         <img
                           src={pillar.image}
                           alt={pillar.title}
-                          className="w-full h-[350px] object-cover transition-all duration-300 group-hover:scale-105"
+                          className={`w-full h-[360px] md:h-[420px] object-cover ${pillar.imagePosition || 'object-center'} transition-all duration-300 group-hover:scale-105`}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300" />
                       </div>
@@ -529,25 +548,29 @@ const HomePage = () => {
                 {
                   name: 'Energía',
                   desc: 'Vitalidad natural para tu día a día',
-                  image: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&h=400&fit=crop',
+                  image: '/images/lifestyle/sports_outdoor_spirulina.jpg',
+                  imagePosition: 'object-[center_20%]',
                   tag: 'Vitalidad'
                 },
                 {
                   name: 'Concentración y Calma',
                   desc: 'Potencia tu memoria, enfoque y claridad mental',
-                  image: 'https://images.unsplash.com/photo-1507413245164-6160d8298b31?w=600&h=400&fit=crop',
+                  image: '/images/lifestyle/office_team_card.jpg',
+                  imagePosition: 'object-center',
                   tag: 'Enfoque'
                 },
                 {
                   name: 'Descanso y Longevidad',
                   desc: 'Descansa bien hoy para vivir mejor mañana',
-                  image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600&h=400&fit=crop',
+                  image: '/images/lifestyle/yoga_senior_card.jpg',
+                  imagePosition: 'object-[center_25%]',
                   tag: 'Descanso'
                 },
                 {
                   name: 'Alimentación Diaria',
                   desc: 'La base de una vida saludable, todos los días',
-                  image: 'https://images.unsplash.com/photo-1498837167922-41c3735b366a?w=600&h=400&fit=crop',
+                  image: '/images/lifestyle/breakfast_couple_card.jpg',
+                  imagePosition: 'object-[center_20%]',
                   tag: 'Nutrición'
                 }
               ].map((cat) => (
@@ -556,21 +579,11 @@ const HomePage = () => {
                   onClick={() => navigate(`/shop?category=${encodeURIComponent(cat.name)}`)}
                   className="relative rounded-2xl overflow-hidden aspect-[4/3] cursor-pointer group shadow-sm border border-border"
                 >
-                  {/* Son fotos de stock alojadas en un tercero: si alguna desaparece
-                      —hoy ya hay una caída— no puede quedar el ícono de imagen rota en
-                      la portada. Degrada al logo y se marca para no reintentar en bucle. */}
                   <img
                     src={cat.image}
                     alt={cat.name}
                     loading="lazy"
-                    onError={(e) => {
-                      if (e.currentTarget.dataset.fallback) return;
-                      e.currentTarget.dataset.fallback = '1';
-                      e.currentTarget.src = '/logo.webp';
-                      e.currentTarget.className =
-                        'absolute inset-0 w-full h-full object-contain bg-muted p-10';
-                    }}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    className={`absolute inset-0 w-full h-full object-cover ${cat.imagePosition || 'object-center'} transition-transform duration-500 group-hover:scale-105`}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
                   <div className="absolute top-4 left-4">
@@ -678,7 +691,55 @@ const HomePage = () => {
           </div>
         </section>
 
-        <BannerNaturaleza />
+        {/* Estilo de Vida NutraBlue Showcase Section */}
+        <section className="py-16 bg-slate-950 text-white relative overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+              <div className="space-y-4">
+                <span className="text-xs font-bold uppercase tracking-widest text-accent bg-accent/20 px-3 py-1 rounded-full border border-accent/30">
+                  Estilo de Vida NutraBlue
+                </span>
+                <h2 className="text-3xl md:text-4xl font-extrabold" style={{ fontFamily: 'Impact, sans-serif' }}>
+                  Nutrición Real para cada momento de tu día
+                </h2>
+                <p className="text-slate-300 leading-relaxed text-sm md:text-base">
+                  Ya sea en tu rutina de ejercicio matutina, en la oficina con tu equipo o disfrutando una tarde en casa con amigos, nuestros alimentos funcionales están diseñados para acompañarte en todo momento.
+                </p>
+                <div className="pt-2">
+                  <Button
+                    onClick={() => navigate('/shop')}
+                    className="bg-accent text-white font-bold px-6 py-3 rounded-xl hover:bg-accent/90 transition-all duration-200 shadow-md active:scale-[0.98]"
+                  >
+                    Explora todos los productos
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-2xl overflow-hidden shadow-lg h-64 group relative border border-slate-800">
+                  <img
+                    src="/images/lifestyle/nutrablue_coleccion_productos_mesa.jpg"
+                    alt="Colección de alimentos funcionales en la mesa"
+                    className="w-full h-full object-cover object-[center_60%] group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute bottom-2 left-2 bg-slate-950/80 backdrop-blur-xs px-2.5 py-0.5 rounded-md text-[11px] font-medium text-white">
+                    Colección NutraBlue
+                  </div>
+                </div>
+                <div className="rounded-2xl overflow-hidden shadow-lg h-64 group relative border border-slate-800">
+                  <img
+                    src="/images/lifestyle/friends_healthy_living_nowine.jpg"
+                    alt="Compartir saludable en familia y amigos"
+                    className="w-full h-full object-cover object-[center_25%] group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute bottom-2 left-2 bg-slate-950/80 backdrop-blur-xs px-2.5 py-0.5 rounded-md text-[11px] font-medium text-white">
+                    Momentos en familia y amigos
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
       {/* Lead Magnet Pop-up */}

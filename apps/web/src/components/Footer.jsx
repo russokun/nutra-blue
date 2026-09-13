@@ -43,7 +43,10 @@ const Footer = ({ minimal = false }) => {
               <Link to="/seguimiento" className="hover:text-primary transition-colors duration-200">
                 Seguimiento de Envíos
               </Link>
-              <a href="mailto:soporte@nutrablue.cl" className="hover:text-primary transition-colors duration-200">
+              <Link to="/politica-de-devoluciones" className="hover:text-primary transition-colors duration-200">
+                Devoluciones y Retracto
+              </Link>
+              <a href="mailto:Info.nutra@gmail.com" className="hover:text-primary transition-colors duration-200">
                 Soporte al Cliente
               </a>
             </div>
@@ -105,7 +108,10 @@ const Footer = ({ minimal = false }) => {
                 <Link to="/seguimiento" className="text-sm text-natural-200 hover:text-white transition-colors duration-200 font-medium text-sky-200">
                   Seguimiento de Envíos 📦
                 </Link>
-                <a href="mailto:contacto@nutrablue.cl" className="text-sm text-natural-200 hover:text-white transition-colors duration-200">
+                <Link to="/politica-de-devoluciones" className="text-sm text-natural-200 hover:text-white transition-colors duration-200">
+                  Cambios, Devoluciones y Retracto
+                </Link>
+                <a href="mailto:Info.nutra@gmail.com" className="text-sm text-natural-200 hover:text-white transition-colors duration-200">
                   Contacto & Soporte
                 </a>
               </nav>
@@ -148,7 +154,10 @@ const Footer = ({ minimal = false }) => {
               <p className="text-xs text-natural-300">
                 © 2026 NutraBlue. Todos los derechos reservados. Desarrollado bajo respaldo científico.
               </p>
-              <div className="flex space-x-6 text-xs text-natural-300">
+              <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-natural-300">
+                <Link to="/politica-de-devoluciones" className="hover:text-white transition-all duration-200">
+                  Política de Devoluciones
+                </Link>
                 <Link to="/privacy-policy" className="hover:text-white transition-all duration-200">
                   Política de Privacidad
                 </Link>

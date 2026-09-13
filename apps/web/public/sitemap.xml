@@ -2,289 +2,295 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 	<url>
 		<loc>https://nutrablue.cl/</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>1.0</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/shop</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>daily</changefreq>
 		<priority>0.9</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/historia</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>monthly</changefreq>
 		<priority>0.6</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/impacto</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>monthly</changefreq>
 		<priority>0.6</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/contacto</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>monthly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/faqs</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>monthly</changefreq>
 		<priority>0.7</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/seguimiento</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>monthly</changefreq>
 		<priority>0.6</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/privacy-policy</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>yearly</changefreq>
 		<priority>0.3</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/terms-of-service</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>yearly</changefreq>
 		<priority>0.3</priority>
 	</url>
 	<url>
+		<loc>https://nutrablue.cl/politica-de-devoluciones</loc>
+		<lastmod>2026-09-13</lastmod>
+		<changefreq>monthly</changefreq>
+		<priority>0.4</priority>
+	</url>
+	<url>
 		<loc>https://nutrablue.cl/product/5817a501-d5f2-4cd2-a094-4e0a5eb4eccc</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/23cd3eaa-d31d-4e3a-8595-a6cb0436c21c</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/00be3553-5e89-47b2-a773-8cda5621ddb1</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/c08f3ff3-e1b0-46c6-85c6-c537327e2ac4</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/f6263f52-f9cb-4ba3-be0d-328fe89c6c34</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/73df7453-7120-4988-a0b7-4904c227e56e</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/df765316-0e0b-432c-8187-5a04e630e038</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/b2860bb8-c04d-4792-8773-d9ef2c2cc864</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/93ffe9c5-5258-4724-8309-452c8b398126</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/4374809b-02ac-49d3-80c1-eb6321c9c3a2</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/5906ea4f-f4b6-4c64-b144-9caf6e26fc08</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/6ba562c2-aeea-477f-a82a-af75dc305031</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/10836763-798f-417f-8f5c-4e8ab1e75c76</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/b089a008-9ff4-47c4-be1f-8c525eea2269</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
+		<changefreq>weekly</changefreq>
+		<priority>0.8</priority>
+	</url>
+	<url>
+		<loc>https://nutrablue.cl/product/df5e7a62-e240-4c79-a052-c28db1b0b30f</loc>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/0c01fbe1-2abf-481f-a816-8486d6cb9be7</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/de63d86b-4394-4e4c-94da-07d2b2de3c95</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/cc318981-6b68-4c12-92f3-43adcf999e58</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/3105cd41-8606-410f-87f8-6770df804ff1</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/461a2726-6440-48c6-b100-34a6b72111f4</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/058b8ed1-fe9d-4bc9-b982-66567aafadcc</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/32c46657-b7b4-4ae8-ba5c-fa653677c1e2</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/aedc86b3-2420-4a45-9563-aa56da6fedc9</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/f855636c-6e35-4ac1-979f-fd34c759315f</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/4c321c1e-f658-4946-9877-58e4d76f25a6</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/5362f75a-c74d-4933-97c7-784a262115a0</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/e33f5b55-fa1f-4d77-a15e-9fdf64f568c4</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/408229e1-704b-4487-b78c-af8c1a6d4b22</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/e56a2091-072d-4322-8c11-14e8f6ff3845</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/396db902-a3f7-4e1a-9901-1d929db8bae4</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/7bed16a2-a56f-4918-a016-60af7dfe7148</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/9ee233d4-a816-45f3-979a-327d5c105af7</loc>
-		<lastmod>2026-09-09</lastmod>
-		<changefreq>weekly</changefreq>
-		<priority>0.8</priority>
-	</url>
-	<url>
-		<loc>https://nutrablue.cl/product/8ff49351-f062-473f-9283-c8f78f2d337f</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/29f78d0c-69d1-4b5f-ab7a-1f46ebfab5e4</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/c75281ae-cfca-443b-981c-2cc1ad07c842</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/3819368f-42fe-4c21-b0f0-16a20fbb6a51</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/bc72fefb-f2f2-42a9-8219-b1759a6ed6ae</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/b369c703-4127-4122-b7de-3fe2fd2b01e3</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/bf8d1c39-04e0-4be9-a62b-53561f4c0c42</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://nutrablue.cl/product/bdc522d6-5f65-49eb-9103-45822bdb33a3</loc>
-		<lastmod>2026-09-09</lastmod>
+		<lastmod>2026-09-13</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>

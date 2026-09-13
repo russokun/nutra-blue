@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from '@/components/Meta';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Minus, Plus, ShoppingCart, CheckCircle2, ZoomIn } from 'lucide-react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Minus, Plus, ShoppingCart, CheckCircle2, ZoomIn, ShieldCheck } from 'lucide-react';
 import dataClient from '@/lib/dataClient';
 import { useCart } from '@/hooks/useCart';
 import Header from '@/components/Header';
@@ -319,6 +319,20 @@ const ProductDetailPage = () => {
                 <ShoppingCart className="h-5 w-5 mr-2" />
                 {product.stock === 0 ? 'Agotado' : 'Añadir a mi Rutina'}
               </Button>
+
+              {/* Bloque Legal de Derecho a Retracto (Ley 19.496 / Decreto 52 de 2024) */}
+              <div className="mt-4 p-3.5 bg-muted/60 rounded-xl border border-border/60 space-y-1">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                  <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
+                  <span>Derecho a retracto:</span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Tienes 10 días desde que recibes el producto para arrepentirte, si el envase está sin abrir. Por razones sanitarias, no aplica a productos abiertos.{' '}
+                  <Link to="/politica-de-devoluciones" className="text-primary hover:underline font-semibold">
+                    Ver política
+                  </Link>
+                </p>
+              </div>
             </div>
           </div>
 
