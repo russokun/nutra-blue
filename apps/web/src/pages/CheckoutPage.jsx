@@ -87,7 +87,7 @@ const CheckoutPage = () => {
   const [formData, setFormData] = useState({ ...FORMULARIO_VACIO, ...(borrador?.formData || {}) });
 
   const [errors, setErrors] = useState({});
-  const [paymentMethod, setPaymentMethod] = useState('mercadopago');
+  const [paymentMethod, setPaymentMethod] = useState(borrador?.paymentMethod || 'mercadopago');
   const [deliveryMethod, setDeliveryMethod] = useState(borrador?.deliveryMethod || 'domicilio');
   const [esEmpresa, setEsEmpresa] = useState(borrador?.esEmpresa || false);
   const [courier, setCourier] = useState(borrador?.courier || '');
@@ -313,6 +313,7 @@ const CheckoutPage = () => {
         deliveryMethod,
         courier,
         esEmpresa,
+        paymentMethod,
       }));
       // Registro duradero: permite volver a ver la confirmación de ESTE pedido más
       // adelante. La marca de sesión se borra apenas se vacía el carrito, así que por sí

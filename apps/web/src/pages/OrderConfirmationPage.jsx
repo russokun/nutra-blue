@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from '@/components/Meta';
 import { useParams, useLocation, Link } from 'react-router-dom';
-import { CheckCircle2, Package, Building2, Truck, ExternalLink, Copy } from 'lucide-react';
+import { CheckCircle2, Package, Building2, Truck, ExternalLink, Copy, Printer, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 import { COURIER_LABELS, getCourierName, getTrackingUrl } from '@nutrablue/shared';
 import dataClient from '@/lib/dataClient';
@@ -82,6 +82,22 @@ const OrderConfirmationPage = () => {
       month: 'long',
       day: 'numeric',
     });
+  };
+
+  const formatDateTime = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const datePart = date.toLocaleDateString('es-CL', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+    const timePart = date.toLocaleTimeString('es-CL', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+    return `${datePart}, ${timePart} hrs`;
   };
 
   const getEstimatedDelivery = (orderDate) => {
@@ -203,6 +219,84 @@ const OrderConfirmationPage = () => {
                 >
                   Ir a la página de seguimiento &rarr;
                 </Link>
+              </div>
+            </div>
+          )}
+
+          {/* Voucher Oficial Webpay Plus (Transbank) */}
+          {order.payment_provider === 'transbank' && (
+            <div className="bg-card rounded-2xl p-6 sm:p-8 border-2 border-emerald-500/30 shadow-sm mb-8 print:border print:m-0 print:p-4">
+              <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-border">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+                    <CreditCard className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">
+                      Comprobante Oficial de Pago
+                    </span>
+                    <h2 className="text-lg sm:text-xl font-bold text-foreground">
+                      Voucher Webpay Plus (Transbank)
+                    </h2>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.print()}
+                  className="print:hidden text-xs flex items-center gap-1.5"
+                >
+                  <Printer className="h-3.5 w-3.5" />
+                  <span>Imprimir Comprobante</span>
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 pt-6 text-sm">
+                <div>
+                  <span className="text-xs text-muted-foreground block mb-0.5">Comercio</span>
+                  <span className="font-semibold text-foreground">Nutra Blue</span>
+                  <span className="text-xs text-muted-foreground block">https://nutrablue.cl</span>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground block mb-0.5">Orden de Compra</span>
+                  <span className="font-mono font-semibold text-foreground text-xs sm:text-sm break-all">
+                    {order.id}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground block mb-0.5">Código de Autorización</span>
+                  <span className="font-mono font-bold text-emerald-600 text-base sm:text-lg">
+                    {order.payment_id || 'Aprobada'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground block mb-0.5">Fecha y Hora</span>
+                  <span className="font-medium text-foreground">
+                    {formatDateTime(order.paid_at || order.created)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground block mb-0.5">Monto Total Pagado</span>
+                  <span className="font-bold text-foreground text-base">
+                    {formatPrice(order.total)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground block mb-0.5">Tipo de Pago</span>
+                  <span className="font-medium text-foreground">
+                    Webpay Plus (Débito / Crédito)
+                  </span>
+                  <span className="text-xs text-muted-foreground block">Venta sin cuotas</span>
+                </div>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-border/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                  <span>Transacción aprobada satisfactoriamente por Transbank.</span>
+                </div>
+                <span className="italic">Conserve este comprobante como respaldo de su compra.</span>
               </div>
             </div>
           )}
