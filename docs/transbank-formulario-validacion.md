@@ -34,7 +34,7 @@
 ### Contacto Técnico / Integrador
 - **Nombre:** Agustín Russo / Equipo de Desarrollo NutraBlue
 - **Cargo:** Desarrollador / Líder Técnico
-- **Correo Electrónico:** Info.nutra@gmail.com
+- **Correo Electrónico:** info.nutrablue@gmail.com
 
 ---
 

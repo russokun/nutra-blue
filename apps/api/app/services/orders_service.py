@@ -118,34 +118,15 @@ def validate_and_build_order(order_data: OrderCreate) -> dict:
     # Validate and apply coupon discount
     discount_percent = 0
     if order_data.coupon_code:
-        code_upper = order_data.coupon_code.upper().strip()
-        if supabase_client is None:
-            from app.core.mock_store import MOCK_COUPONS
-            coupon = next((c for c in MOCK_COUPONS if c["code"] == code_upper), None)
-            if coupon:
-                discount_percent = coupon["discount"]
-        else:
-            try:
-                res = supabase_client.from_("coupons").select("*").eq("code", code_upper).execute()
-                if res.data:
-                    coupon = res.data[0]
-                    # Check expiry date
-                    import datetime
-                    expiry_str = coupon.get("expiry")
-                    valid = True
-                    if expiry_str:
-                        # Parse date string
-                        expiry_date = datetime.date.fromisoformat(expiry_str.split("T")[0])
-                        if expiry_date < datetime.date.today():
-                            valid = False
-                    if valid:
-                        discount_percent = coupon["discount"]
-            except Exception:
-                # Fallback to local memory if Supabase has issues or table doesn't exist
-                from app.core.mock_store import MOCK_COUPONS
-                coupon = next((c for c in MOCK_COUPONS if c["code"] == code_upper), None)
-                if coupon:
-                    discount_percent = coupon["discount"]
+        from app.services.coupons_service import validate_coupon_code
+        try:
+            coupon = validate_coupon_code(order_data.coupon_code, email=order_data.email)
+            discount_percent = coupon["discount"]
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.warning("Error inesperado validando cupón %s: %s", order_data.coupon_code, e)
+
 
     if discount_percent > 0:
         discount_amount = int(cart_total * (discount_percent / 100))

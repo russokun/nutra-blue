@@ -131,8 +131,8 @@ const TrackingPage = () => {
   const idCorto = order ? String(order.id).slice(0, 8).toUpperCase() : '';
 
   const whatsappSupportUrl = order
-    ? `https://wa.me/56930000000?text=${encodeURIComponent(`Hola NutraBlue, tengo una consulta sobre el despacho de mi pedido #${idCorto}.`)}`
-    : 'https://wa.me/56930000000?text=Hola%20NutraBlue,%20tengo%20una%20consulta%20sobre%20mi%20envío.';
+    ? `https://wa.me/56974587676?text=${encodeURIComponent(`Hola NutraBlue, tengo una consulta sobre el despacho de mi pedido #${idCorto}.`)}`
+    : 'https://wa.me/56974587676?text=Hola%20NutraBlue,%20tengo%20una%20consulta%20sobre%20mi%20envío.';
 
   return (
     <div className="min-h-screen bg-slate-50/50 flex flex-col selection:bg-primary/20">

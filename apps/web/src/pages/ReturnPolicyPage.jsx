@@ -109,7 +109,7 @@ const ReturnPolicyPage = () => {
                 <h3 className="font-bold text-base text-foreground">Cómo ejercer tu derecho a retracto:</h3>
                 <ul className="list-disc pl-5 space-y-1.5 text-sm text-muted-foreground">
                   <li>
-                    Escríbenos directamente a <a href="mailto:Info.nutra@gmail.com" className="text-primary font-semibold hover:underline">Info.nutra@gmail.com</a> o contáctanos por WhatsApp al <a href="https://wa.me/56993493971" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">+56 9 9349 3971</a> indicando tu número de orden de compra o correo registrado.
+                    Escríbenos directamente a <a href="mailto:info.nutrablue@gmail.com" className="text-primary font-semibold hover:underline">info.nutrablue@gmail.com</a> o contáctanos por WhatsApp al <a href="https://wa.me/56974587676" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">+56 9 7458 7676</a> indicando tu número de orden de compra o correo registrado.
                   </li>
                   <li>Puedes utilizar el mismo medio por el cual realizaste tu compra. No te solicitaremos justificar tu decisión.</li>
                 </ul>
@@ -186,7 +186,7 @@ const ReturnPolicyPage = () => {
                   <strong className="text-foreground">Costos:</strong> Todos los costos de retiro, traslado, despacho o reemplazo asociados a la garantía legal son asumidos íntegramente por NutraBlue.
                 </p>
                 <p>
-                  <strong className="text-foreground">Cómo hacerla efectiva:</strong> Envíanos fotografías claras del producto y de su número de lote / vencimiento a <a href="mailto:Info.nutra@gmail.com" className="text-primary font-semibold hover:underline">Info.nutra@gmail.com</a>. Te responderemos en un plazo máximo de 2 días hábiles.
+                  <strong className="text-foreground">Cómo hacerla efectiva:</strong> Envíanos fotografías claras del producto y de su número de lote / vencimiento a <a href="mailto:info.nutrablue@gmail.com" className="text-primary font-semibold hover:underline">info.nutrablue@gmail.com</a>. Te responderemos en un plazo máximo de 2 días hábiles.
                 </p>
               </div>
             </section>
@@ -198,7 +198,7 @@ const ReturnPolicyPage = () => {
                 <span>3. Producto Dañado o Extraviado en el Transporte</span>
               </h2>
               <p className="text-sm md:text-base leading-relaxed text-slate-700">
-                Te recomendamos revisar tu encomienda al momento de recibirla. Si el paquete presenta daños visibles por el transporte, comunícate con nosotros dentro de los <strong className="text-foreground">5 días corridos posteriores a la entrega</strong> a <a href="mailto:Info.nutra@gmail.com" className="text-primary font-semibold hover:underline">Info.nutra@gmail.com</a> adjuntando fotografías del embalaje. Procederemos a reponer el producto o reembolsar el dinero según tu preferencia, sin ningún costo adicional.
+                Te recomendamos revisar tu encomienda al momento de recibirla. Si el paquete presenta daños visibles por el transporte, comunícate con nosotros dentro de los <strong className="text-foreground">5 días corridos posteriores a la entrega</strong> a <a href="mailto:info.nutrablue@gmail.com" className="text-primary font-semibold hover:underline">info.nutrablue@gmail.com</a> adjuntando fotografías del embalaje. Procederemos a reponer el producto o reembolsar el dinero según tu preferencia, sin ningún costo adicional.
               </p>
               <p className="text-xs text-muted-foreground">
                 Si un envío no llega dentro del plazo comprometido, gestionamos directamente el rastreo ante el courier (Starken, Blue Express o Chilexpress). En caso de extravío confirmado por la empresa logística, se despacha una nueva orden de inmediato o se efectúa el reembolso total.
@@ -242,12 +242,12 @@ const ReturnPolicyPage = () => {
               </div>
               <div className="flex flex-wrap gap-2.5">
                 <Button asChild size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5">
-                  <a href="mailto:Info.nutra@gmail.com">
-                    <Mail className="h-4 w-4" /> Info.nutra@gmail.com
+                  <a href="mailto:info.nutrablue@gmail.com">
+                    <Mail className="h-4 w-4" /> info.nutrablue@gmail.com
                   </a>
                 </Button>
                 <Button asChild size="sm" variant="outline" className="gap-1.5 border-border hover:bg-muted">
-                  <a href="https://wa.me/56993493971" target="_blank" rel="noopener noreferrer">
+                  <a href="https://wa.me/56974587676" target="_blank" rel="noopener noreferrer">
                     <MessageCircle className="h-4 w-4 text-emerald-600" /> WhatsApp
                   </a>
                 </Button>
