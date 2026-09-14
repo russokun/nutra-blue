@@ -22,7 +22,7 @@ CREATE POLICY "Permitir registro público de leads" ON public.leads
 CREATE POLICY "Permitir lectura de leads solo a admins" ON public.leads
     FOR SELECT USING (
         auth.role() = 'service_role' 
-        OR auth.jwt()->>'email' IN ('admin@nutrablue.cl', 'rodrigo@dentameet.net')
+        OR auth.jwt()->>'email' IN ('admin@nutrablue.cl', 'rodrigo@dentameet.net', 'info.nutrablue@gmail.com', 'fuentealba.diplan@gmail.com')
     );
 
 
@@ -46,5 +46,5 @@ CREATE POLICY "Permitir lectura pública de cupones" ON public.coupons
 CREATE POLICY "Permitir control de cupones solo a admins" ON public.coupons
     FOR ALL USING (
         auth.role() = 'service_role' 
-        OR auth.jwt()->>'email' IN ('admin@nutrablue.cl', 'rodrigo@dentameet.net')
+        OR auth.jwt()->>'email' IN ('admin@nutrablue.cl', 'rodrigo@dentameet.net', 'info.nutrablue@gmail.com', 'fuentealba.diplan@gmail.com')
     );

@@ -36,7 +36,14 @@ export const AuthProvider = ({ children }) => {
     setCurrentUser(user);
     setIsAuthenticated(!!user);
     if (user) {
-      const defaultAdmins = ['admin@nutrablue.cl', 'rodrigo@dentameet.net', 'rodrigo@dentameet.cl', 'rohidalgo@alumnos.uai.cl'];
+      const defaultAdmins = [
+        'admin@nutrablue.cl',
+        'rodrigo@dentameet.net',
+        'rodrigo@dentameet.cl',
+        'rohidalgo@alumnos.uai.cl',
+        'info.nutrablue@gmail.com',
+        'fuentealba.diplan@gmail.com'
+      ];
       const envAdmins = (import.meta.env.VITE_ADMIN_EMAILS || '')
         .split(',')
         .map(e => e.trim().toLowerCase())
