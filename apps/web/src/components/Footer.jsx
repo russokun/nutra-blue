@@ -46,7 +46,7 @@ const Footer = ({ minimal = false }) => {
               <Link to="/politica-de-devoluciones" className="hover:text-primary transition-colors duration-200">
                 Devoluciones y Retracto
               </Link>
-              <a href="mailto:Info.nutra@gmail.com" className="hover:text-primary transition-colors duration-200">
+              <a href="mailto:info.nutrablue@gmail.com" className="hover:text-primary transition-colors duration-200">
                 Soporte al Cliente
               </a>
             </div>
@@ -111,7 +111,7 @@ const Footer = ({ minimal = false }) => {
                 <Link to="/politica-de-devoluciones" className="text-sm text-natural-200 hover:text-white transition-colors duration-200">
                   Cambios, Devoluciones y Retracto
                 </Link>
-                <a href="mailto:Info.nutra@gmail.com" className="text-sm text-natural-200 hover:text-white transition-colors duration-200">
+                <a href="mailto:info.nutrablue@gmail.com" className="text-sm text-natural-200 hover:text-white transition-colors duration-200">
                   Contacto & Soporte
                 </a>
               </nav>

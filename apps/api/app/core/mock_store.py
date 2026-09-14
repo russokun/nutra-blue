@@ -16,6 +16,11 @@ MOCK_SUGGESTIONS: list = [
 ]
 
 MOCK_COUPONS: list = [
-    {"id": "c1", "code": "BIENVENIDA15", "discount": 15, "expiry": "2026-12-31", "created_at": "2026-06-01T00:00:00Z"}
+    {"id": "c1", "code": "WELCOME15", "discount": 15, "description": "Bienvenida 15% off", "expiry": "2026-12-31", "first_purchase_only": True},
+    {"id": "c2", "code": "BIENVENIDA15", "discount": 15, "description": "Bienvenida 15% off", "expiry": "2026-12-31", "first_purchase_only": True},
+    {"id": "c3", "code": "NUTRA10", "discount": 10, "description": "Descuento especial 10%", "expiry": "2026-12-31", "first_purchase_only": False},
+    {"id": "c4", "code": "LONGEVIDAD20", "discount": 20, "description": "Longevidad 20% off", "expiry": "2026-12-31", "first_purchase_only": False},
+    {"id": "c5", "code": "BIOHACK", "discount": 12, "description": "Biohackers 12% off", "expiry": "2026-12-31", "first_purchase_only": False},
 ]
+
 

@@ -103,7 +103,8 @@ const CheckoutPage = () => {
     if (!code) return;
     setValidatingCoupon(true);
     try {
-      const res = await fetch(`/hcgi/api/coupons/validate/${code}`);
+      const emailParam = formData.email?.trim() ? `?email=${encodeURIComponent(formData.email.trim())}` : '';
+      const res = await fetch(`/hcgi/api/coupons/validate/${encodeURIComponent(code)}${emailParam}`);
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.detail || errorData.message || 'Cupón no válido');

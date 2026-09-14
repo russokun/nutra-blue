@@ -155,7 +155,7 @@ const PrivacyPolicyPage = () => {
                 </div>
               </div>
               <p className="text-sm text-muted-foreground mt-4">
-                Para hacer valer cualquiera de estos derechos, simplemente envía una solicitud indicando tu RUT y el derecho a ejercer a nuestro correo de contacto oficial: <a href="mailto:Info.nutra@gmail.com" className="text-primary hover:underline font-medium">Info.nutra@gmail.com</a>. Responderemos tu requerimiento en un plazo máximo de 10 días hábiles.
+                Para hacer valer cualquiera de estos derechos, simplemente envía una solicitud indicando tu RUT y el derecho a ejercer a nuestro correo de contacto oficial: <a href="mailto:info.nutrablue@gmail.com" className="text-primary hover:underline font-medium">info.nutrablue@gmail.com</a>. Responderemos tu requerimiento en un plazo máximo de 10 días hábiles.
               </p>
             </section>
 
@@ -194,7 +194,7 @@ const PrivacyPolicyPage = () => {
               ¿Tienes dudas o necesitas aclarar algún punto sobre tus datos?
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Contáctanos escribiendo a <a href="mailto:Info.nutra@gmail.com" className="text-primary hover:underline font-semibold">Info.nutra@gmail.com</a> y responderemos con la mayor brevedad.
+              Contáctanos escribiendo a <a href="mailto:info.nutrablue@gmail.com" className="text-primary hover:underline font-semibold">info.nutrablue@gmail.com</a> y responderemos con la mayor brevedad.
             </p>
           </div>
         </div>

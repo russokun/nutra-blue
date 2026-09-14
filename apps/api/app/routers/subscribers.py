@@ -49,10 +49,18 @@ async def create_subscriber(data: SubscriberCreate, background_tasks: Background
 
 
 async def _notify_n8n(email: str, source: str, webhook_url: str):
-    """Envia el lead a n8n para orquestacion (CRM, segmentacion, etc.)."""
+    """Envia el lead a n8n para orquestacion (CRM, envio de bienvenida, cupones, etc.)."""
     try:
+        payload = {
+            "event": "new_lead_first_purchase",
+            "email": email,
+            "source": source,
+            "coupon_code": "WELCOME15",
+            "discount": 15,
+            "description": "Bienvenida 15% off en primera compra",
+        }
         async with httpx.AsyncClient(timeout=10.0) as client:
-            await client.post(webhook_url, json={"email": email, "source": source})
+            await client.post(webhook_url, json=payload)
     except Exception as e:
         logger.warning("n8n webhook failed for %s: %s", email, e)
 

@@ -199,7 +199,7 @@ const TermsOfServicePage = () => {
               ¿Quieres realizar una devolución o consultar sobre la garantía legal de tu pedido?
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Escríbenos directamente a <a href="mailto:Info.nutra@gmail.com" className="text-primary hover:underline font-semibold">Info.nutra@gmail.com</a> incluyendo tu número de orden y comprobante.
+              Escríbenos directamente a <a href="mailto:info.nutrablue@gmail.com" className="text-primary hover:underline font-semibold">info.nutrablue@gmail.com</a> incluyendo tu número de orden y comprobante.
             </p>
           </div>
         </div>

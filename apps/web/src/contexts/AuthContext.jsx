@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
           const user = JSON.parse(localSessionRaw);
           setCurrentUser(user);
           setIsAuthenticated(true);
-          const adminEmails = ['admin@nutrablue.cl', 'rodrigo@dentameet.net'];
+          const adminEmails = ['admin@nutrablue.cl', 'rodrigo@dentameet.net', 'info.nutrablue@gmail.com'];
           setIsAdmin(adminEmails.includes(user.email.toLowerCase()));
         } catch {
           // ignore
@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('nutra_blue_customer_session', JSON.stringify(sessionUser));
       setCurrentUser(sessionUser);
       setIsAuthenticated(true);
-      const adminEmails = ['admin@nutrablue.cl', 'rodrigo@dentameet.net'];
+      const adminEmails = ['admin@nutrablue.cl', 'rodrigo@dentameet.net', 'info.nutrablue@gmail.com'];
       setIsAdmin(adminEmails.includes(email.toLowerCase()));
       return { user: sessionUser };
     }
@@ -104,7 +104,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('nutra_blue_customer_session', JSON.stringify(sessionUser));
       setCurrentUser(sessionUser);
       setIsAuthenticated(true);
-      const adminEmails = ['admin@nutrablue.cl', 'rodrigo@dentameet.net'];
+      const adminEmails = ['admin@nutrablue.cl', 'rodrigo@dentameet.net', 'info.nutrablue@gmail.com'];
       setIsAdmin(adminEmails.includes(email.toLowerCase()));
       return { user: sessionUser };
     }

@@ -45,8 +45,8 @@ const ContactoPage = () => {
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-slate-900">WhatsApp</h3>
-                  <a href="https://wa.me/56993493971" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-                    +56 9 9349 3971
+                  <a href="https://wa.me/56974587676" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
+                    +56 9 7458 7676
                   </a>
                 </div>
               </div>
@@ -57,8 +57,8 @@ const ContactoPage = () => {
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-slate-900">Correo</h3>
-                  <a href="mailto:Info.nutra@gmail.com" className="text-primary hover:underline font-medium">
-                    Info.nutra@gmail.com
+                  <a href="mailto:info.nutrablue@gmail.com" className="text-primary hover:underline font-medium">
+                    info.nutrablue@gmail.com
                   </a>
                 </div>
               </div>
