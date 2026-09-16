@@ -15,10 +15,12 @@ CREATE TABLE IF NOT EXISTS public.leads (
 ALTER TABLE public.leads ENABLE ROW LEVEL SECURITY;
 
 -- Permitir a usuarios anónimos (visitantes de la tienda) registrar su correo
+DROP POLICY IF EXISTS "Permitir registro público de leads" ON public.leads;
 CREATE POLICY "Permitir registro público de leads" ON public.leads
     FOR INSERT WITH CHECK (true);
 
 -- Permitir solo al administrador leer la base de leads
+DROP POLICY IF EXISTS "Permitir lectura de leads solo a admins" ON public.leads;
 CREATE POLICY "Permitir lectura de leads solo a admins" ON public.leads
     FOR SELECT USING (
         auth.role() = 'service_role' 
@@ -39,12 +41,40 @@ CREATE TABLE IF NOT EXISTS public.coupons (
 ALTER TABLE public.coupons ENABLE ROW LEVEL SECURITY;
 
 -- Permitir a cualquiera validar cupones en el checkout (lectura)
+DROP POLICY IF EXISTS "Permitir lectura pública de cupones" ON public.coupons;
 CREATE POLICY "Permitir lectura pública de cupones" ON public.coupons
     FOR SELECT USING (true);
 
 -- Permitir control total sobre cupones solo a administradores
+DROP POLICY IF EXISTS "Permitir control de cupones solo a admins" ON public.coupons;
 CREATE POLICY "Permitir control de cupones solo a admins" ON public.coupons
     FOR ALL USING (
         auth.role() = 'service_role' 
         OR auth.jwt()->>'email' IN ('admin@nutrablue.cl', 'rodrigo@dentameet.net', 'info.nutrablue@gmail.com', 'fuentealba.diplan@gmail.com')
     );
+
+
+-- 3. Producto de prueba oculto ($50 CLP) para validación en producción de Transbank Webpay Plus
+-- Este producto permanece oculto del catálogo de clientes y solo se visualiza con ?prueba=1
+INSERT INTO public.products (
+    name,
+    price,
+    stock,
+    category,
+    image_url,
+    benefits,
+    certifications,
+    is_hidden
+) VALUES (
+    'Producto de Prueba Transbank',
+    50,
+    999,
+    'Alimentación Diaria',
+    '/logo.png',
+    '["Producto oculto para validación de cobro real Transbank ($50 CLP)"]'::jsonb,
+    '[]'::jsonb,
+    true
+)
+ON CONFLICT (name) DO UPDATE 
+SET price = 50, stock = 999, is_hidden = true;
+
