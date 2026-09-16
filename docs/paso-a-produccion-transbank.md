@@ -22,46 +22,48 @@ Procedimiento operativo para recibir la API Key de Transbank, configurar el ento
 
 En la plataforma donde corre la API de backend (Vercel, Railway, Render o VPS), actualizar las siguientes variables de entorno:
 
-| Variable | Valor en Producción | Explicación |
+| Variable | Valor en Producción | Explicación / Nomenclatura Transbank |
 |---|---|---|
-| `WEBPAY_COMMERCE_CODE` | `5970XXXXXXXX` | El código de 12 dígitos de producción entregado por Transbank. |
-| `WEBPAY_API_KEY` | *(API Key de Producción)* | La llave secreta de producción entregada por Transbank. |
+| `WEBPAY_COMMERCE_CODE` o `TBK_API_KEY_ID` | `597053097527` | Código de Comercio productivo entregado por Transbank (`Tbk-Api-Key-Id`). |
+| `WEBPAY_API_KEY` o `TBK_API_KEY_SECRET` | `c0ebb6a7-d53f-4d3a-bf7f-76168e708729` | Llave Secreta productiva entregada por Transbank (`Tbk-Api-Key-Secret`). |
 | `PAYMENT_PROVIDER` | `transbank` | Activa Transbank Webpay Plus como pasarela predeterminada. |
-| `ENVIRONMENT` | `production` | Modo producción activo. El backend verifica automáticamente que las credenciales sean válidas. |
+| `ENVIRONMENT` | `production` | Modo producción activo. |
 | `PUBLIC_API_URL` | `https://api.nutrablue.cl` | URL pública donde Transbank envía el retorno del pago. |
 | `PUBLIC_WEB_URL` | `https://nutrablue.cl` | URL de la tienda para redirigir al cliente tras el pago. |
 
 > [!NOTE]
-> La aplicación cuenta con un **guard de seguridad estricto**: si `ENVIRONMENT=production` y `WEBPAY_COMMERCE_CODE` está vacío o sigue con el valor de prueba (`597055555532`), el backend levantará un error de configuración impidiendo iniciar pagos ficticios en producción.
+> La aplicación cuenta con un **guard de seguridad estricto**: si `ENVIRONMENT=production` y el código de comercio está vacío o sigue con el valor de integración (`597055555532`), el backend levantará un error de configuración impidiendo iniciar pagos ficticios en producción.
 
 ---
 
-## 3. Realizar la Primera Compra de Prueba Real ($1.000)
+## 3. Realizar la Compra de Validación Real ($50 CLP)
 
-Al igual que en Mercado Pago, Transbank no permite transacciones de $0. Se utiliza el mecanismo de **producto oculto de $1.000** ya implementado en NutraBlue:
+Transbank solicita explícitamente realizar una transacción con tarjeta real (débito o crédito) por un monto de **$50 CLP** para validar el correcto funcionamiento antes de dar por cerrada la puesta en marcha:
 
-1. **Verificar el Producto Oculto:**
-   - En el panel de administración (`https://nutrablue.cl/admin`), ir a **Productos**.
-   - Asegurarse de tener un producto con precio **$1.000**, stock disponible y la casilla **«Ocultar del catálogo»** marcada.
+1. **Habilitar el Producto de Prueba ($50):**
+   - El código ya cuenta con el producto de prueba configurado a **$50 CLP** y marcado como **«Oculto del catálogo»** (`is_hidden: true`).
+   - En Supabase (si aplica), ejecutar la sentencia en `schema_updates.sql` o verificar desde el panel de administración (`https://nutrablue.cl/admin`) en **Productos**.
 2. **Activar Modo Prueba en el Navegador:**
    - Abrir en el navegador:
      ```text
      https://nutrablue.cl/shop?prueba=1
      ```
-   - Aparecerá la barra superior naranja indicando modo prueba.
-3. **Ejecutar el Checkout con Webpay:**
-   - Agregar el producto de prueba al carrito e ir a `/checkout`.
+   - Aparecerá la barra superior naranja indicando que el modo prueba está activo.
+3. **Ejecutar el Checkout con Webpay Plus:**
+   - Agregar el producto de prueba ($50) al carrito e ir a `/checkout`.
    - Seleccionar **Webpay Plus (Transbank)**.
-   - Al presionar *Confirmar y Pagar*, el sistema redirigirá al portal seguro de Webpay (`webpay3g.transbank.cl` en producción).
-   - Pagar con una tarjeta de débito (Redcompra) o crédito real de $1.000.
+   - Presionar *Confirmar y Pagar*. El sistema redirigirá al portal seguro de Transbank en producción (`webpay3g.transbank.cl`).
+   - Pagar con una tarjeta de débito (Redcompra) o crédito real de $50 CLP.
 4. **Verificar la Pantalla de Éxito (Voucher Webpay):**
    - Transbank redirige a `https://nutrablue.cl/order-confirmation/{order_id}`.
    - Debe desplegarse el recuadro verde de **Voucher Oficial de Webpay Plus**:
      - Comercio: Nutra Blue
      - Orden de Compra
      - Código de Autorización real emitido por Transbank
-     - Fecha, hora y monto total ($1.000)
+     - Fecha, hora y monto total ($50 CLP)
      - Botón de imprimir comprobante
+
+Una vez completada con éxito esta transacción de $50, la tienda queda 100% operativa y habilitada para recibir ventas reales.
 
 ---
 

@@ -204,7 +204,7 @@ def test_un_producto_oculto_se_puede_comprar():
 
     assert respuesta.status_code == 200, respuesta.text
     orden = respuesta.json()
-    assert orden["total"] == 1000
+    assert orden["total"] == 50
     assert orden["shipping_cost"] == 0
 
     # Y la pasarela tiene que aceptar iniciar el pago por ese monto.

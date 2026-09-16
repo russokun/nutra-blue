@@ -53,3 +53,28 @@ CREATE POLICY "Permitir control de cupones solo a admins" ON public.coupons
         OR auth.jwt()->>'email' IN ('admin@nutrablue.cl', 'rodrigo@dentameet.net', 'info.nutrablue@gmail.com', 'fuentealba.diplan@gmail.com')
     );
 
+
+-- 3. Producto de prueba oculto ($50 CLP) para validación en producción de Transbank Webpay Plus
+-- Este producto permanece oculto del catálogo de clientes y solo se visualiza con ?prueba=1
+INSERT INTO public.products (
+    name,
+    price,
+    stock,
+    category,
+    image_url,
+    benefits,
+    certifications,
+    is_hidden
+) VALUES (
+    'Producto de Prueba Transbank',
+    50,
+    999,
+    'Alimentación Diaria',
+    '/logo.png',
+    '["Producto oculto para validación de cobro real Transbank ($50 CLP)"]'::jsonb,
+    '[]'::jsonb,
+    true
+)
+ON CONFLICT (name) DO UPDATE 
+SET price = 50, stock = 999, is_hidden = true;
+

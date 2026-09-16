@@ -84,8 +84,18 @@ class Settings(BaseSettings):
     public_web_url_raw: str = _envvar("PUBLIC_WEB_URL", "")
 
     # Transbank / Webpay Credentials (Default is sandbox integration)
-    webpay_commerce_code: str = _envvar("WEBPAY_COMMERCE_CODE", "597055555532")
-    webpay_api_key: str = _envvar("WEBPAY_API_KEY", "")
+    # Soporta tanto WEBPAY_COMMERCE_CODE / WEBPAY_API_KEY como la nomenclatura oficial
+    # de Transbank: TBK_API_KEY_ID (Commerce Code) y TBK_API_KEY_SECRET (API Key Secreta).
+    webpay_commerce_code: str = (
+        _envvar("WEBPAY_COMMERCE_CODE")
+        or _envvar("TBK_API_KEY_ID")
+        or "597055555532"
+    )
+    webpay_api_key: str = (
+        _envvar("WEBPAY_API_KEY")
+        or _envvar("TBK_API_KEY_SECRET")
+        or ""
+    )
 
     # n8n Webhooks
     n8n_subscriber_webhook: str = os.getenv("N8N_SUBSCRIBER_WEBHOOK", "")

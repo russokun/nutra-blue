@@ -116,16 +116,16 @@ MOCK_PRODUCTS = [
         "certifications": ["Orgánico", "Liofilizado"]
     },
     {
-        # Producto oculto de ejemplo, para poder probar el modo prueba en desarrollo sin
-        # tener que crear uno a mano. En produccion el de verdad se crea desde el panel.
+        # Producto oculto de prueba para validar el cobro real en produccion (ej. Transbank $50 CLP).
+        # Visible únicamente al activar el modo prueba mediante `?prueba=1`.
         "id": "producto-de-prueba",
         "name": "Producto de Prueba",
-        "price": 1000,
-        "stock": 5,
+        "price": 50,
+        "stock": 999,
         "category": "Alimentación Diaria",
         "is_hidden": True,
         "image_url": "/logo.png",
-        "benefits": ["Solo para probar el flujo de compra"],
+        "benefits": ["Solo para validar cobro real de $50 en producción"],
         "certifications": []
     }
 ]
