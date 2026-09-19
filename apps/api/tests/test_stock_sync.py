@@ -17,7 +17,7 @@ client = TestClient(app)
 
 
 async def override_auth():
-    return {"id": "test-admin-id", "email": "admin@nutrablue.cl"}
+    return {"id": "test-admin-id", "email": "fuentealba.diplan@gmail.com"}
 
 
 # Estructura actual de la planilla: titulo, cabecera principal (con "Inventario"),

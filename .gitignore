@@ -19,7 +19,7 @@ build/
 !.env.example
 apps/api/.env
 apps/web/.env
-apps/admin/.env.example
+apps/admin/.env
 
 # IDE
 .idea/

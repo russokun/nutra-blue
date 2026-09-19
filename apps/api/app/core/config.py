@@ -32,7 +32,12 @@ class Settings(BaseSettings):
     @property
     def admin_emails(self) -> list[str]:
         # Permite fallback a correos especificos de administracion si la variable no esta definida
-        default_admins = ["admin@nutrablue.cl", "rodrigo@dentameet.net", "rodrigo@dentameet.cl", "rohidalgo@alumnos.uai.cl", "info.nutrablue@gmail.com"]
+        # Unicos correos con acceso al panel de administracion.
+        default_admins = [
+            "fuentealba.diplan@gmail.com",
+            "monsesantibanez.f@gmail.com",
+            "f.santibanezfu@gmail.com",
+        ]
         from_env = [
             e.strip().lower()
             for e in self.admin_emails_raw.split(",")

@@ -4,7 +4,18 @@ import { getAccessToken } from '@/lib/authClient';
 
 export const AuthContext = createContext();
 
-const ALLOW_MOCK_AUTH = import.meta.env.VITE_ALLOW_MOCK_AUTH === 'true';
+// El acceso mock solo existe en builds de desarrollo. En un build de produccion
+// queda desactivado aunque VITE_ALLOW_MOCK_AUTH venga en 'true' por error.
+const ALLOW_MOCK_AUTH =
+  import.meta.env.DEV && import.meta.env.VITE_ALLOW_MOCK_AUTH === 'true';
+
+// Unica lista de correos con acceso al panel. Cualquier otro correo queda fuera:
+// se valida ademas contra ADMIN_EMAILS de la API en /auth/me.
+export const ADMIN_EMAILS = [
+  'fuentealba.diplan@gmail.com',
+  'monsesantibanez.f@gmail.com',
+  'f.santibanezfu@gmail.com',
+];
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -36,7 +47,7 @@ export const AuthProvider = ({ children }) => {
     setCurrentUser(user);
     setIsAuthenticated(!!user);
     if (user) {
-      const defaultAdmins = ['admin@nutrablue.cl', 'rodrigo@dentameet.net', 'rodrigo@dentameet.cl', 'rohidalgo@alumnos.uai.cl'];
+      const defaultAdmins = ADMIN_EMAILS;
       const envAdmins = (import.meta.env.VITE_ADMIN_EMAILS || '')
         .split(',')
         .map(e => e.trim().toLowerCase())
@@ -60,7 +71,7 @@ export const AuthProvider = ({ children }) => {
       if (ALLOW_MOCK_AUTH) {
         const mockToken = localStorage.getItem('sb-auth-token');
         if (mockToken && mockToken.startsWith('mock-')) {
-          setCurrentUser({ email: 'admin@nutrablue.cl', id: 'mock-admin-id' });
+          setCurrentUser({ email: 'fuentealba.diplan@gmail.com', id: 'mock-admin-id' });
           setIsAuthenticated(true);
           setIsAdmin(true);
         }
@@ -83,6 +94,9 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     if (!supabase) {
       if (!ALLOW_MOCK_AUTH) throw new Error('Autenticación no disponible. Configura Supabase.');
+      if (!ADMIN_EMAILS.includes((email || '').trim().toLowerCase())) {
+        throw new Error('Este correo no tiene acceso al panel de administración.');
+      }
       const user = { email, id: 'mock-admin-id' };
       setCurrentUser(user);
       setIsAuthenticated(true);
@@ -95,15 +109,10 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
-  const register = async (email, password, name) => {
-    if (!supabase) throw new Error('Autenticación no disponible. Configura Supabase.');
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: name } },
-    });
-    if (error) throw error;
-    return data;
+  // No se permite auto-registro en el panel: las cuentas de administracion se
+  // crean a mano en Supabase y deben estar en ADMIN_EMAILS.
+  const register = async () => {
+    throw new Error('El registro está deshabilitado. Las cuentas de administración se crean desde Supabase.');
   };
 
   const logout = async () => {

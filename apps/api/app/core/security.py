@@ -24,7 +24,7 @@ async def get_current_user(authorization: Optional[str] = Header(None)) -> Optio
             if "mock" in token:
                 return {
                     "id": "mock-admin-id",
-                    "email": "admin@nutrablue.cl",
+                    "email": "fuentealba.diplan@gmail.com",
                 }
         return None
 
