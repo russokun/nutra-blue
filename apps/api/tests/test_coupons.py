@@ -68,20 +68,27 @@ def test_validate_coupon_first_purchase_existing_customer_rejected():
         MOCK_ORDERS.pop(mock_order_id, None)
 
 
-def test_n8n_webhook_payload_enriched():
-    """El webhook a n8n debe dispararse si la URL está configurada."""
-    with patch("app.routers.subscribers.send_welcome_email"), \
-         patch("app.routers.subscribers.settings") as mock_settings, \
-         patch("app.routers.subscribers._notify_n8n") as mock_n8n:
-        mock_settings.n8n_subscriber_webhook = "https://n8n.example.com/webhook/test"
-        response = client.post(
-            "/subscribers",
-            json={"email": "lead_nuevo@test.com", "source": "Pop-up Magnet"}
-        )
-        assert response.status_code == 201
-        assert mock_n8n.called
-        args, _ = mock_n8n.call_args
-        assert args[0] == "lead_nuevo@test.com"
-        assert args[1] == "Pop-up Magnet"
-        assert args[2] == "https://n8n.example.com/webhook/test"
+def test_payload_del_lead_lleva_cupon_y_descuento():
+    """El payload que viaja a la planilla y a n8n incluye el cupon de bienvenida."""
+    from app.core.config import settings
+    from app.services.leads_sheet import build_lead_payload
 
+    payload = build_lead_payload("lead_nuevo@test.com", "Pop-up Magnet")
+
+    assert payload["email"] == "lead_nuevo@test.com"
+    assert payload["source"] == "Pop-up Magnet"
+    assert payload["coupon_code"] == settings.welcome_coupon_code
+    assert payload["discount"] == settings.welcome_coupon_discount
+    assert payload["date"]
+
+
+def test_el_cupon_de_bienvenida_es_valido_en_el_checkout():
+    """El codigo que se manda por email tiene que validar contra /coupons."""
+    from app.core.config import settings
+
+    response = client.get(f"/coupons/validate/{settings.welcome_coupon_code}")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["valid"] is True
+    assert data["discount"] == settings.welcome_coupon_discount
+    assert data["first_purchase_only"] is True

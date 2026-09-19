@@ -1,9 +1,12 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, BackgroundTasks, HTTPException
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 import uuid
 import datetime
+from app.core.config import settings
 from app.database.supabase import supabase_client
+from app.services.email_service import send_welcome_email
+from app.services.leads_sheet import append_lead_to_sheet, notify_n8n
 
 router = APIRouter(prefix="", tags=["Public"])
 
@@ -16,22 +19,40 @@ class SuggestionCreate(BaseModel):
     product_name: Optional[str] = None  # alias principal visible en admin
     status: Optional[str] = "pendiente"
 
+@router.get("/welcome-coupon")
+async def get_welcome_coupon():
+    """Cupon de bienvenida vigente, para que la tienda muestre el mismo porcentaje
+    que va en el email del suscriptor sin tener que hardcodearlo."""
+    return {
+        "code": settings.welcome_coupon_code,
+        "discount": settings.welcome_coupon_discount,
+    }
+
+
 @router.post("/leads")
-async def create_lead(lead: LeadCreate):
+async def create_lead(lead: LeadCreate, background_tasks: BackgroundTasks):
+    """Alta de lead directa. Dispara el mismo email + planilla + n8n que
+    /subscribers, para que un lead que entre por aca no se quede sin su cupon."""
+    email_clean = str(lead.email).lower().strip()
+    source = (lead.source or "Web").strip() or "Web"
+    background_tasks.add_task(send_welcome_email, email_clean)
+    background_tasks.add_task(append_lead_to_sheet, email_clean, source)
+    background_tasks.add_task(notify_n8n, email_clean, source)
+
     if supabase_client is None:
         from app.core.mock_store import MOCK_LEADS
         new_lead = {
             "id": str(uuid.uuid4()),
-            "email": lead.email,
-            "source": lead.source,
+            "email": email_clean,
+            "source": source,
             "created_at": datetime.datetime.now().isoformat()
         }
         MOCK_LEADS.append(new_lead)
         return new_lead
     try:
         res = supabase_client.from_("leads").insert({
-            "email": lead.email,
-            "source": lead.source
+            "email": email_clean,
+            "source": source
         }).execute()
         if not res.data:
             raise Exception("No data returned")
@@ -41,8 +62,8 @@ async def create_lead(lead: LeadCreate):
         from app.core.mock_store import MOCK_LEADS
         new_lead = {
             "id": str(uuid.uuid4()),
-            "email": lead.email,
-            "source": lead.source,
+            "email": email_clean,
+            "source": source,
             "created_at": datetime.datetime.now().isoformat()
         }
         MOCK_LEADS.append(new_lead)

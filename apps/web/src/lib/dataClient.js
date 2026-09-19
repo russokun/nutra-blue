@@ -16,6 +16,8 @@ const mapCreatedTimestamp = (item) => {
 
 const API_BASE = '/hcgi/api';
 
+export const WELCOME_COUPON_FALLBACK = { code: 'WELCOME15', discount: 15 };
+
 async function fetchFromApi(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, options);
   if (!res.ok) {
@@ -227,6 +229,18 @@ const dataClient = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, source })
     });
+  },
+  // Cupon de bienvenida vigente. El porcentaje lo define NutraBlue en la API
+  // (WELCOME_COUPON_DISCOUNT); el fallback evita que la UI quede vacia si la
+  // API no responde.
+  getWelcomeCoupon: async () => {
+    try {
+      const data = await fetchFromApi('/welcome-coupon');
+      if (data && data.discount) return data;
+    } catch (e) {
+      console.warn('No se pudo leer el cupon de bienvenida:', e);
+    }
+    return WELCOME_COUPON_FALLBACK;
   },
 };
 

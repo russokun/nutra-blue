@@ -7,7 +7,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import OrlaBotanica from '@/components/botanica/OrlaBotanica';
 import { Button } from '@/components/ui/button';
-import dataClient from '@/lib/dataClient';
+import dataClient, { WELCOME_COUPON_FALLBACK } from '@/lib/dataClient';
 import { useCart } from '@/hooks/useCart';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -29,6 +29,8 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const [activeArticle, setActiveArticle] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
+  // El porcentaje lo define NutraBlue en la API; aca solo se muestra.
+  const [welcomeCoupon, setWelcomeCoupon] = useState(WELCOME_COUPON_FALLBACK);
   const [popupEmail, setPopupEmail] = useState('');
   const [heroProducts, setHeroProducts] = useState([]);
   const [loadingHero, setLoadingHero] = useState(true);
@@ -106,6 +108,8 @@ const HomePage = () => {
     };
     document.addEventListener('mouseleave', handleMouseLeave);
 
+    dataClient.getWelcomeCoupon().then(setWelcomeCoupon).catch(() => {});
+
     return () => {
       clearTimeout(timer);
       document.removeEventListener('mouseleave', handleMouseLeave);
@@ -130,7 +134,7 @@ const HomePage = () => {
     
     localStorage.setItem('nutra_blue_popup_dismissed_at', Date.now().toString());
     setShowPopup(false);
-    toast.success('¡Excelente! Código de 15% de descuento enviado a tu correo.');
+    toast.success(`¡Excelente! Código de ${welcomeCoupon.discount}% de descuento enviado a tu correo.`);
   };
 
   const handleClosePopup = () => {
@@ -773,7 +777,7 @@ const HomePage = () => {
                     Optimiza tu rendimiento desde hoy
                   </h3>
                   <p className="text-sm text-slate-300 leading-relaxed max-w-md mx-auto">
-                    Suscríbete y desbloquea un <strong className="text-accent">15% de descuento</strong> en tu primera compra. Además, recibe nuestras guías de optimización biológica directo en tu bandeja de entrada.
+                    Suscríbete y desbloquea un <strong className="text-accent">{welcomeCoupon.discount}% de descuento</strong> en tu primera compra. Además, recibe nuestras guías de optimización biológica directo en tu bandeja de entrada.
                   </p>
                 </div>
 
