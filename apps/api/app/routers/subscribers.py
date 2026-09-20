@@ -1,11 +1,13 @@
-"""Endpoint de suscriptores — dispara email de bienvenida via n8n."""
-from fastapi import APIRouter, HTTPException, BackgroundTasks
-from pydantic import BaseModel, EmailStr
-import httpx
+"""Endpoint de suscriptores: guarda el lead y le manda su cupon de bienvenida."""
 import logging
+
+from fastapi import APIRouter, BackgroundTasks
+from pydantic import BaseModel, EmailStr
+
 from app.core.config import settings
 from app.database.supabase import supabase_client
 from app.services.email_service import send_welcome_email
+from app.services.leads_sheet import append_lead_to_sheet, notify_n8n
 
 router = APIRouter(prefix="/subscribers", tags=["Subscribers"])
 logger = logging.getLogger(__name__)
@@ -16,51 +18,56 @@ class SubscriberCreate(BaseModel):
     source: str = "website"
 
 
+def _persist_lead(email: str, source: str) -> bool:
+    """Guarda el lead en Supabase. Es la fuente de verdad del panel."""
+    if supabase_client is None:
+        logger.warning("Supabase no configurado: el lead %s no se persiste", email)
+        return False
+    try:
+        supabase_client.from_("leads").upsert(
+            {"email": email, "source": source},
+            on_conflict="email",
+        ).execute()
+        return True
+    except Exception as e:  # noqa: BLE001 - la suscripcion no debe fallar por esto
+        logger.error("No se pudo guardar el lead %s en Supabase: %s", email, e)
+        return False
+
+
 @router.post("", status_code=201)
 async def create_subscriber(data: SubscriberCreate, background_tasks: BackgroundTasks):
     """
-    Registra un nuevo suscriptor y dispara:
-    1. Guardado en base de datos Supabase (tabla leads).
-    2. Email de bienvenida con codigo WELCOME15 (via Resend directo).
-    3. Webhook a n8n para enriquecer el lead en el CRM o Google Sheets.
+    Registra un suscriptor del pop-up del home o del formulario del footer.
+
+    El lead se replica en cuatro destinos, todos independientes entre si para que
+    la caida de uno no se lleve al resto:
+      1. Tabla `leads` de Supabase (lo que ve el panel de administracion).
+      2. Email de bienvenida con el cupon de descuento (Resend).
+      3. Planilla de Google Sheets (Apps Script), si esta configurada.
+      4. Webhook de n8n, si esta configurado.
+
+    Siempre responde 201: el visitante no tiene por que enterarse de un problema
+    en un destino interno, y el lead queda registrado en al menos uno de ellos.
     """
     email_clean = data.email.lower().strip()
+    source = (data.source or "website").strip() or "website"
 
-    # 1. Guardar en Supabase si está disponible
-    if supabase_client is not None:
-        try:
-            supabase_client.from_("leads").upsert(
-                {"email": email_clean, "source": data.source},
-                on_conflict="email"
-            ).execute()
-        except Exception as e:
-            logger.warning("Could not persist lead in Supabase: %s", e)
+    persisted = _persist_lead(email_clean, source)
 
-    # 2. Email de bienvenida en background (no bloquea la respuesta)
+    # Los envios salen en background para no hacer esperar al formulario.
     background_tasks.add_task(send_welcome_email, email_clean)
+    background_tasks.add_task(append_lead_to_sheet, email_clean, source)
+    background_tasks.add_task(notify_n8n, email_clean, source)
 
-    # 3. Notificar a n8n si esta configurado
-    n8n_webhook = getattr(settings, "n8n_subscriber_webhook", "")
-    if n8n_webhook:
-        background_tasks.add_task(_notify_n8n, email_clean, data.source, n8n_webhook)
-
-    logger.info("New subscriber registered: %s from %s", email_clean, data.source)
-    return {"success": True, "message": "Suscripcion registrada correctamente"}
-
-
-async def _notify_n8n(email: str, source: str, webhook_url: str):
-    """Envia el lead a n8n para orquestacion (CRM, envio de bienvenida, cupones, etc.)."""
-    try:
-        payload = {
-            "event": "new_lead_first_purchase",
-            "email": email,
-            "source": source,
-            "coupon_code": "WELCOME15",
-            "discount": 15,
-            "description": "Bienvenida 15% off en primera compra",
-        }
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            await client.post(webhook_url, json=payload)
-    except Exception as e:
-        logger.warning("n8n webhook failed for %s: %s", email, e)
-
+    logger.info(
+        "Nuevo suscriptor: %s desde %s (persistido en Supabase: %s)",
+        email_clean,
+        source,
+        persisted,
+    )
+    return {
+        "success": True,
+        "message": "Suscripcion registrada correctamente",
+        "coupon_code": settings.welcome_coupon_code,
+        "discount": settings.welcome_coupon_discount,
+    }

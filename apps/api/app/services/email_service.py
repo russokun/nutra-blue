@@ -404,10 +404,17 @@ async def send_shipping_notification(order: dict) -> bool:
 
 async def send_welcome_email(to: str) -> bool:
     """
-    Envia email de bienvenida con codigo de descuento WELCOME15.
-    Se dispara al registrar un nuevo suscriptor desde el pop-up.
+    Envia el email de bienvenida con el cupon de descuento del suscriptor.
+    El codigo y el porcentaje salen de la configuracion (WELCOME_COUPON_CODE /
+    WELCOME_COUPON_DISCOUNT), asi NutraBlue puede cambiar la oferta sin tocar
+    el HTML ni el resto del flujo.
+    Se dispara al registrar un nuevo suscriptor desde el pop-up o el footer.
     """
-    html = """
+    coupon = settings.welcome_coupon_code
+    discount = settings.welcome_coupon_discount
+    shop_url = f"{settings.public_web_url}/shop"
+
+    html = f"""
     <!DOCTYPE html>
     <html>
     <head>
@@ -430,9 +437,9 @@ async def send_welcome_email(to: str) -> bool:
                     <div style="background: linear-gradient(135deg, #0369a1 0%, #0284c7 50%, #38bdf8 100%); border-radius: 16px; padding: 32px; text-align: center;">
                         <p style="color: #bae6fd; font-size: 13px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;">Tu codigo exclusivo</p>
                         <div style="background: rgba(255,255,255,0.15); border: 2px dashed rgba(255,255,255,0.5); border-radius: 12px; padding: 16px 24px; display: inline-block; margin: 8px 0;">
-                            <span style="color: #ffffff; font-size: 36px; font-weight: 900; letter-spacing: 0.1em; font-family: monospace;">WELCOME15</span>
+                            <span style="color: #ffffff; font-size: 36px; font-weight: 900; letter-spacing: 0.1em; font-family: monospace;">{coupon}</span>
                         </div>
-                        <p style="color: #bae6fd; font-size: 22px; font-weight: 700; margin: 12px 0 0 0;">15% de descuento</p>
+                        <p style="color: #bae6fd; font-size: 22px; font-weight: 700; margin: 12px 0 0 0;">{discount}% de descuento</p>
                         <p style="color: #93c5fd; font-size: 13px; margin: 4px 0 0 0;">en tu primera compra</p>
                     </div>
                 </td>
@@ -442,7 +449,7 @@ async def send_welcome_email(to: str) -> bool:
                 <td style="padding: 32px;">
                     <h2 style="color: #f1f5f9; font-size: 22px; margin: 0 0 12px 0; font-weight: 700;">Bienvenido a la comunidad Nutra Blue</h2>
                     <p style="color: #94a3b8; font-size: 15px; line-height: 1.7; margin: 0 0 24px 0;">
-                        Eres parte de +2.000 personas que ya optimizan su biologia con ciencia aplicada. Tu codigo <strong style="color: #38bdf8;">WELCOME15</strong> te da 15% de descuento en tu primera compra.
+                        Eres parte de +2.000 personas que ya optimizan su biologia con ciencia aplicada. Tu codigo <strong style="color: #38bdf8;">{coupon}</strong> te da {discount}% de descuento en tu primera compra.
                     </p>
                     <!-- Benefits -->
                     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 28px;">
@@ -467,7 +474,7 @@ async def send_welcome_email(to: str) -> bool:
                     </table>
                     <!-- CTA -->
                     <div style="text-align: center;">
-                        <a href="https://nutrablue-test.vercel.app/shop" style="display: inline-block; background: linear-gradient(135deg, #0284c7, #38bdf8); color: #ffffff; font-weight: 700; font-size: 16px; padding: 16px 40px; border-radius: 12px; text-decoration: none; letter-spacing: 0.02em;">
+                        <a href="{shop_url}" style="display: inline-block; background: linear-gradient(135deg, #0284c7, #38bdf8); color: #ffffff; font-weight: 700; font-size: 16px; padding: 16px 40px; border-radius: 12px; text-decoration: none; letter-spacing: 0.02em;">
                             Explorar Productos &rarr;
                         </a>
                     </div>
@@ -486,7 +493,7 @@ async def send_welcome_email(to: str) -> bool:
     """
     return await send_email(
         to=to,
-        subject="Tu codigo WELCOME15 esta aqui — 15% de descuento en Nutra Blue 🌿",
+        subject=f"Tu codigo {coupon} esta aqui — {discount}% de descuento en Nutra Blue 🌿",
         html=html,
     )
 

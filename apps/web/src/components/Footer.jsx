@@ -15,8 +15,13 @@ const Footer = ({ minimal = false }) => {
     if (!email) return;
     setSubmitting(true);
     try {
-      await dataClient.subscribeLead(email, 'Footer Newsletter');
-      toast.success('¡Gracias por suscribirte a NutraBlue! Te enviamos tu descuento de bienvenida al correo.');
+      const res = await dataClient.subscribeLead(email, 'Footer Newsletter');
+      const discount = res?.discount;
+      toast.success(
+        discount
+          ? `¡Gracias por suscribirte a NutraBlue! Te enviamos tu ${discount}% de descuento al correo.`
+          : '¡Gracias por suscribirte a NutraBlue! Te enviamos tu descuento de bienvenida al correo.'
+      );
       setEmail('');
     } catch (err) {
       console.warn('Subscription error:', err);

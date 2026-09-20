@@ -3,6 +3,7 @@ import logging
 import datetime
 from typing import Optional
 from fastapi import HTTPException
+from app.core.config import settings
 from app.database.supabase import supabase_client
 
 logger = logging.getLogger(__name__)
@@ -43,6 +44,19 @@ DEFAULT_COUPONS: dict = {
         "active": True,
         "first_purchase_only": False,
     },
+}
+
+# El cupon de bienvenida que se manda a cada suscriptor lo define NutraBlue por
+# configuracion (WELCOME_COUPON_CODE / WELCOME_COUPON_DISCOUNT). Se refleja aca para
+# que el codigo del email siempre sea valido en el checkout, aunque cambie el
+# porcentaje o el nombre del cupon.
+WELCOME_COUPON_CODE = settings.welcome_coupon_code.strip().upper()
+DEFAULT_COUPONS[WELCOME_COUPON_CODE] = {
+    "code": WELCOME_COUPON_CODE,
+    "discount": settings.welcome_coupon_discount,
+    "description": f"Bienvenida {settings.welcome_coupon_discount}% off en primera compra",
+    "active": True,
+    "first_purchase_only": True,
 }
 
 
@@ -117,7 +131,12 @@ def validate_coupon_code(code: str, email: Optional[str] = None) -> dict:
                     "discount": int(row.get("discount", 0)),
                     "description": row.get("description") or f"Descuento {row.get('discount')}%",
                     "active": row.get("active", True),
-                    "first_purchase_only": bool(row.get("first_purchase_only", normalized in ("WELCOME15", "BIENVENIDA15"))),
+                    "first_purchase_only": bool(
+                        row.get(
+                            "first_purchase_only",
+                            normalized in (WELCOME_COUPON_CODE, "WELCOME15", "BIENVENIDA15"),
+                        )
+                    ),
                 }
         except HTTPException:
             raise

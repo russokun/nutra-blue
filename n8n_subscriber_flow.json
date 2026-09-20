@@ -52,7 +52,10 @@
           "id": "resend-auth-key",
           "name": "Resend API Headers"
         }
-      }
+      },
+      "disabled": true,
+      "notes": "DESACTIVADO a proposito: el email de bienvenida lo envia la API (send_welcome_email). Activar solo si se decide que n8n se haga cargo del correo, y en ese caso apagar EMAIL_ENABLED en la API.",
+      "notesInFlow": true
     },
     {
       "parameters": {
@@ -70,9 +73,11 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
+            "Fecha": "={{ $json.body.date || $now }}",
             "Email": "={{ $json.body.email }}",
             "Origen": "={{ $json.body.source }}",
-            "Fecha": "={{ $today }}"
+            "Cupon": "={{ $json.body.coupon_code }}",
+            "Descuento": "={{ $json.body.discount }}"
           },
           "matchingColumns": []
         },
@@ -91,7 +96,9 @@
           "id": "google-sheets-oauth-id",
           "name": "Google Sheets"
         }
-      }
+      },
+      "notes": "Columnas alineadas con el Apps Script (apps/api/scripts/google_apps_script_leads.gs): Fecha, Email, Origen, Cupon, Descuento.",
+      "notesInFlow": true
     }
   ],
   "connections": {

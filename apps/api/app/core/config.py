@@ -98,6 +98,19 @@ class Settings(BaseSettings):
     # n8n Webhooks
     n8n_subscriber_webhook: str = os.getenv("N8N_SUBSCRIBER_WEBHOOK", "")
 
+    # Planilla de leads: URL del Web App de Google Apps Script que agrega la fila.
+    # Es la via directa a Google Sheets y no depende de que n8n este levantado.
+    # Ver docs/flujo-n8n-suscriptores.md para el script y el despliegue.
+    google_sheets_leads_webhook: str = os.getenv("GOOGLE_SHEETS_LEADS_WEBHOOK", "")
+    # Token opcional que el Apps Script valida antes de escribir en la planilla.
+    google_sheets_leads_token: str = os.getenv("GOOGLE_SHEETS_LEADS_TOKEN", "")
+
+    # Cupon de bienvenida que recibe cada nuevo suscriptor. El porcentaje lo define
+    # NutraBlue; cambiarlo aca lo cambia en el email, en el webhook y en la validacion
+    # del checkout de una sola vez.
+    welcome_coupon_code: str = os.getenv("WELCOME_COUPON_CODE", "WELCOME15")
+    welcome_coupon_discount: int = int(os.getenv("WELCOME_COUPON_DISCOUNT", "15"))
+
     # Cloudflare R2 Credentials
     r2_account_id: str = _envvar("R2_ACCOUNT_ID", "")
     r2_access_key_id: str = _envvar("R2_ACCESS_KEY_ID", "")
