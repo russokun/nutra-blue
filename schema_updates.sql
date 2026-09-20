@@ -24,7 +24,7 @@ DROP POLICY IF EXISTS "Permitir lectura de leads solo a admins" ON public.leads;
 CREATE POLICY "Permitir lectura de leads solo a admins" ON public.leads
     FOR SELECT USING (
         auth.role() = 'service_role' 
-        OR auth.jwt()->>'email' IN ('admin@nutrablue.cl', 'rodrigo@dentameet.net', 'info.nutrablue@gmail.com', 'fuentealba.diplan@gmail.com')
+        OR auth.jwt()->>'email' IN ('fuentealba.diplan@gmail.com', 'monsesantibanez.f@gmail.com', 'f.santibanezfu@gmail.com')
     );
 
 
@@ -50,7 +50,7 @@ DROP POLICY IF EXISTS "Permitir control de cupones solo a admins" ON public.coup
 CREATE POLICY "Permitir control de cupones solo a admins" ON public.coupons
     FOR ALL USING (
         auth.role() = 'service_role' 
-        OR auth.jwt()->>'email' IN ('admin@nutrablue.cl', 'rodrigo@dentameet.net', 'info.nutrablue@gmail.com', 'fuentealba.diplan@gmail.com')
+        OR auth.jwt()->>'email' IN ('fuentealba.diplan@gmail.com', 'monsesantibanez.f@gmail.com', 'f.santibanezfu@gmail.com')
     );
 
 

@@ -4,6 +4,14 @@ import { getAccessToken } from '@/lib/authClient';
 
 export const AuthContext = createContext();
 
+// Unica lista de correos con permisos de administracion. Debe coincidir con
+// ADMIN_EMAILS de la API (apps/api/app/core/config.py) y con el panel admin.
+export const ADMIN_EMAILS = [
+  'fuentealba.diplan@gmail.com',
+  'monsesantibanez.f@gmail.com',
+  'f.santibanezfu@gmail.com',
+];
+
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -49,8 +57,7 @@ export const AuthProvider = ({ children }) => {
           const user = JSON.parse(localSessionRaw);
           setCurrentUser(user);
           setIsAuthenticated(true);
-          const adminEmails = ['admin@nutrablue.cl', 'rodrigo@dentameet.net', 'info.nutrablue@gmail.com', 'fuentealba.diplan@gmail.com'];
-          setIsAdmin(adminEmails.includes(user.email.toLowerCase()));
+          setIsAdmin(ADMIN_EMAILS.includes(user.email.toLowerCase()));
         } catch {
           // ignore
         }
@@ -81,8 +88,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('nutra_blue_customer_session', JSON.stringify(sessionUser));
       setCurrentUser(sessionUser);
       setIsAuthenticated(true);
-      const adminEmails = ['admin@nutrablue.cl', 'rodrigo@dentameet.net', 'info.nutrablue@gmail.com', 'fuentealba.diplan@gmail.com'];
-      setIsAdmin(adminEmails.includes(email.toLowerCase()));
+      setIsAdmin(ADMIN_EMAILS.includes(email.toLowerCase()));
       return { user: sessionUser };
     }
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -104,8 +110,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('nutra_blue_customer_session', JSON.stringify(sessionUser));
       setCurrentUser(sessionUser);
       setIsAuthenticated(true);
-      const adminEmails = ['admin@nutrablue.cl', 'rodrigo@dentameet.net', 'info.nutrablue@gmail.com', 'fuentealba.diplan@gmail.com'];
-      setIsAdmin(adminEmails.includes(email.toLowerCase()));
+      setIsAdmin(ADMIN_EMAILS.includes(email.toLowerCase()));
       return { user: sessionUser };
     }
     const { data, error } = await supabase.auth.signUp({

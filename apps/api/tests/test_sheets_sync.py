@@ -6,7 +6,7 @@ from unittest.mock import patch, MagicMock
 client = TestClient(app)
 
 async def override_verify_admin_or_internal_key():
-    return {"id": "test-admin-id", "email": "admin@nutrablue.cl"}
+    return {"id": "test-admin-id", "email": "fuentealba.diplan@gmail.com"}
 
 def test_sync_products_sheets_success():
     # Override authentication dependency for this test

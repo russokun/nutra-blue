@@ -13,8 +13,8 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, authAvailable } = useAuth();
-  const [email, setEmail] = useState(ALLOW_MOCK_AUTH ? 'admin@nutrablue.cl' : '');
-  const [password, setPassword] = useState(ALLOW_MOCK_AUTH ? 'admin123' : '');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const from = location.state?.from || '/';
@@ -27,7 +27,7 @@ const LoginPage = () => {
     }
     setLoading(true);
     try {
-      await login(email.trim() || 'admin@nutrablue.cl', password || 'admin123');
+      await login(email.trim(), password);
       toast.success('Sesión iniciada correctamente');
       navigate(from, { replace: true });
     } catch (err) {
