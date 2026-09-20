@@ -67,13 +67,14 @@ const SectionCarousel = ({ products }) => {
 
                 <Link to={`/product/${product.id}`} className="block flex-grow flex flex-col text-left h-full">
                   {/* Image Container */}
-                  <div className="relative w-full h-44 flex items-center justify-center bg-muted/30 rounded-xl overflow-hidden mb-4 group-hover:bg-muted/50 transition-colors duration-300">
+                  {/* h-56 y no h-44: las fotos son cuadradas (1024x1024) y en una caja tan
+                      apaisada object-cover les cortaba la parte de arriba del envase. */}
+                  <div className="relative w-full h-56 overflow-hidden bg-muted rounded-xl mb-4">
                     <img
                       src={product.image_url || "/logo.png"}
                       alt={product.name}
                       loading="lazy"
-                      className="max-h-36 object-contain transition-transform duration-500 group-hover:scale-105"
-                      style={{ width: 'auto', height: '144px' }}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   </div>
 
