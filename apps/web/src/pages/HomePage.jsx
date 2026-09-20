@@ -356,14 +356,14 @@ const HomePage = () => {
                       <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between h-full min-h-[490px] text-center relative overflow-hidden group">
                         
                         <Link to={`/product/${product.id}`} className="block flex-grow flex flex-col text-left h-full">
-                          {/* Image Container with Fixed Dimensions (30% Larger: h-60 / 240px) */}
-                          <div className="relative w-full h-60 flex items-center justify-center bg-slate-50 rounded-xl overflow-hidden mb-4">
+                          {/* La imagen llena la caja y se recorta, igual que en la tienda:
+                              con object-contain quedaba flotando en el centro con margenes. */}
+                          <div className="relative w-full h-60 overflow-hidden bg-muted rounded-xl mb-4">
                             <img
                               src={product.image_url}
                               alt={product.name}
                               loading="lazy"
-                              className="max-h-52 object-contain transition-transform duration-500 group-hover:scale-105"
-                              style={{ width: 'auto', height: '208px' }}
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                             />
                             <ProductTags product={product} variant="overlay" />
                           </div>
