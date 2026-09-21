@@ -70,7 +70,14 @@ const CheckoutPage = () => {
   // nueva: sin esto tendría que volver a escribir sus datos completos para reintentar,
   // que es donde se pierden las ventas. Se guarda en sessionStorage (no localStorage):
   // son datos personales y se van al cerrar la pestaña.
-  const CLAVE_BORRADOR = 'nutra_blue_checkout_borrador';
+  // Nombre visible de cada pasarela. El boton de pago tenia 'Mercado Pago'
+// hardcodeado y contradecia a Webpay cuando el cliente elegia Webpay.
+const NOMBRE_PASARELA = {
+  mercadopago: 'Mercado Pago',
+  transbank: 'Webpay Plus',
+};
+
+const CLAVE_BORRADOR = 'nutra_blue_checkout_borrador';
 
   const leerBorrador = () => {
     try {
@@ -681,9 +688,10 @@ const CheckoutPage = () => {
                 <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
                   <h2 className="text-xl font-semibold text-card-foreground mb-6">Método de Pago</h2>
                   {/*
-                    Por ahora Mercado Pago es la unica pasarela habilitada. Webpay y Flow
-                    siguen implementados en el backend (app/core/payments/): para volver a
-                    ofrecerlos hay que reponer sus <label> aca y verificar sus credenciales.
+                    Mercado Pago y Webpay Plus estan habilitados. El backend respeta la
+                    que se manda en `gateway`, asi que agregar una pasarela aca es reponer
+                    su <label> y su entrada en NOMBRE_PASARELA. Flow sigue implementado en
+                    app/core/payments/ pero sin credenciales verificadas.
                   */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Mercado Pago */}
@@ -850,7 +858,7 @@ const CheckoutPage = () => {
                     className="w-full mt-6 transition-all duration-200 active:scale-[0.98] font-bold text-white py-6"
                     size="lg"
                   >
-                    {loading ? 'Procesando...' : 'Pagar con Mercado Pago'}
+                    {loading ? 'Procesando...' : `Pagar con ${NOMBRE_PASARELA[paymentMethod] || 'la pasarela seleccionada'}`}
                   </Button>
                 </div>
               </div>
