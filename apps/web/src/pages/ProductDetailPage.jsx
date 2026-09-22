@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from '@/components/Meta';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Minus, Plus, ShoppingCart, CheckCircle2, ZoomIn, ShieldCheck } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, CheckCircle2, ZoomIn, ShieldCheck, MapPin } from 'lucide-react';
 import dataClient from '@/lib/dataClient';
 import { useCart } from '@/hooks/useCart';
 import Header from '@/components/Header';
@@ -162,11 +162,10 @@ const ProductDetailPage = () => {
     icons: product.benefits && product.benefits.length > 0
       ? product.benefits.map((b) => {
           // Los beneficios importados desde la ficha de Google Docs son texto corrido.
-          // Solo se separa el primer token cuando es de verdad un emoji; si no, el
-          // beneficio entero es el texto (antes "Diversas investigaciones…" quedaba
-          // con "Diversas" renderizado como si fuera el ícono).
+          // Si vienen precedidos de un emoji (formato antiguo), se descarta y solo se
+          // conserva el texto: el ícono de la tarjeta es siempre el mismo (CheckCircle2).
           const match = b.match(/^(\p{Extended_Pictographic}️?)\s+(.+)$/u);
-          return match ? { emoji: match[1], text: match[2] } : { emoji: "🌱", text: b };
+          return { text: match ? match[2] : b };
         })
       : staticDetails.icons,
   };
@@ -394,7 +393,7 @@ const ProductDetailPage = () => {
                           hasLongBenefits ? 'flex items-start gap-3 p-4' : 'flex flex-col items-center text-center p-4'
                         }`}
                       >
-                        <span className={hasLongBenefits ? 'text-2xl shrink-0' : 'text-3xl mb-2.5'}>{item.emoji}</span>
+                        <CheckCircle2 className={hasLongBenefits ? 'h-6 w-6 shrink-0 text-primary' : 'h-8 w-8 mb-2.5 text-primary'} />
                         <span className={`font-semibold text-foreground ${hasLongBenefits ? 'text-sm leading-relaxed font-normal text-muted-foreground' : 'text-xs leading-tight'}`}>
                           {item.text}
                         </span>
@@ -405,7 +404,9 @@ const ProductDetailPage = () => {
 
                 {/* 2. Origen y Trazabilidad (Transparencia) */}
                 <div className="bg-gradient-to-r from-primary/5 via-accent/5 to-transparent p-6 rounded-2xl border border-primary/10 flex flex-col md:flex-row gap-4 items-center">
-                  <div className="text-4xl bg-background p-3 rounded-xl border border-border/20 shadow-sm">🗺️</div>
+                  <div className="bg-background p-3 rounded-xl border border-border/20 shadow-sm">
+                    <MapPin className="h-8 w-8 text-primary" />
+                  </div>
                   <div>
                     <h4 className="text-sm font-bold uppercase tracking-wider text-primary mb-1">Origen y Trazabilidad</h4>
                     <p className="text-muted-foreground text-sm leading-relaxed">{extraDetails.origin}</p>

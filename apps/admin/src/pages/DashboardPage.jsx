@@ -18,7 +18,10 @@ import {
   RefreshCw,
   Truck,
   Eye,
-  ExternalLink
+  ExternalLink,
+  MapPin,
+  User,
+  Pencil
 } from 'lucide-react';
 import { COURIER_LABELS, getCourierName, getTrackingUrl } from '@nutrablue/shared';
 import OrderDetailModal from '@/components/OrderDetailModal';
@@ -455,11 +458,12 @@ const DashboardPage = () => {
                       </span>
                     </div>
                     <div className="text-muted-foreground text-[11px] flex items-center gap-1">
-                      <span>📍</span>
+                      <MapPin className="h-3 w-3 shrink-0" />
                       <span className="truncate">{dest}</span>
                     </div>
-                    <div className="text-[11px] font-medium text-emerald-800 dark:text-emerald-300">
-                      📦 {courierPref}
+                    <div className="text-[11px] font-medium text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
+                      <Truck className="h-3 w-3 shrink-0" />
+                      {courierPref}
                     </div>
                   </div>
 
@@ -834,9 +838,9 @@ const DashboardPage = () => {
                   <button
                     type="button"
                     onClick={() => setManualOrderId(!manualOrderId)}
-                    className="text-xs text-primary hover:underline font-medium"
+                    className="text-xs text-primary hover:underline font-medium inline-flex items-center gap-1"
                   >
-                    {manualOrderId ? '← Seleccionar de la lista' : '✏️ Ingresar ID a mano'}
+                    {manualOrderId ? '← Seleccionar de la lista' : (<><Pencil className="h-3 w-3" /> Ingresar ID a mano</>)}
                   </button>
                 </div>
 
@@ -883,11 +887,12 @@ const DashboardPage = () => {
                 return (
                   <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 text-xs space-y-1.5 animate-in fade-in">
                     <div className="flex justify-between items-center font-semibold text-foreground">
-                      <span>👤 {selected.customer_name}</span>
+                      <span className="inline-flex items-center gap-1"><User className="h-3.5 w-3.5" /> {selected.customer_name}</span>
                       <span className="font-mono text-[10px] text-primary">#{selected.id.slice(0, 8).toUpperCase()}</span>
                     </div>
-                    <div className="text-muted-foreground text-[11px]">
-                      📍 {[selected.address, selected.city, selected.region].filter(Boolean).join(', ')}
+                    <div className="text-muted-foreground text-[11px] flex items-center gap-1">
+                      <MapPin className="h-3 w-3 shrink-0" />
+                      {[selected.address, selected.city, selected.region].filter(Boolean).join(', ')}
                     </div>
                     <div className="flex flex-wrap justify-between text-[11px] text-muted-foreground pt-1 border-t border-primary/10 gap-1">
                       <span>Entrega: <strong className="text-foreground">{selected.delivery_method === 'retiro_courier' ? `Retiro (${selected.courier || 'courier'})` : 'A domicilio'}</strong></span>

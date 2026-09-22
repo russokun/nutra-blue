@@ -356,8 +356,8 @@ const TrackingPage = () => {
                         </div>
                         <p className="text-xs text-sky-200/80 mt-2">
                           {order.shipping_payment === 'pagado'
-                            ? '✅ Envío pagado por NutraBlue (sin cobros al recibir)'
-                            : '📦 Modalidad: Flete por pagar al momento de la entrega'}
+                            ? 'Envío pagado por NutraBlue (sin cobros al recibir)'
+                            : 'Modalidad: Flete por pagar al momento de la entrega'}
                         </p>
                       </div>
 

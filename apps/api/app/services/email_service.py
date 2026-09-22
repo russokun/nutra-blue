@@ -66,7 +66,7 @@ async def send_order_confirmation(order: dict) -> bool:
     if order.get("is_company"):
         billing_html = f"""
         <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
-            <p style="color: #0f172a; font-size: 14px; font-weight: 700; margin: 0 0 10px 0;">📋 Datos de Facturación Registrados</p>
+            <p style="color: #0f172a; font-size: 14px; font-weight: 700; margin: 0 0 10px 0;">Datos de Facturación Registrados</p>
             <table width="100%" style="font-size: 13px; color: #475569;">
                 <tr><td style="color: #64748b; padding-bottom: 4px;">Razón Social:</td><td style="text-align: right; font-weight: 600; color: #0f172a;">{order.get('business_name', '')}</td></tr>
                 <tr><td style="color: #64748b; padding-bottom: 4px;">RUT Empresa:</td><td style="text-align: right; font-family: monospace; font-weight: 600; color: #0f172a;">{order.get('tax_id', '')}</td></tr>
@@ -91,7 +91,7 @@ async def send_order_confirmation(order: dict) -> bool:
             <!-- Header -->
             <tr>
                 <td style="background-color: #0c1e35; padding: 32px 24px; text-align: center;">
-                    <h1 style="color: #38bdf8; font-family: 'Playfair Display', Georgia, serif; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.02em;">Nutra Blue <span style="font-size: 20px;">🌿</span></h1>
+                    <h1 style="color: #38bdf8; font-family: 'Playfair Display', Georgia, serif; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.02em;">Nutra Blue</h1>
                     <p style="color: #94a3b8; margin: 8px 0 0 0; font-size: 12px; text-transform: uppercase; tracking-wider: 0.1em; font-weight: 600;">Nutrición Científica & Longevidad</p>
                 </td>
             </tr>
@@ -185,7 +185,7 @@ async def send_payment_confirmation(order: dict) -> bool:
     if order.get("is_company"):
         billing_html = f"""
         <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
-            <p style="color: #0f172a; font-size: 14px; font-weight: 700; margin: 0 0 10px 0;">📋 Datos de Facturación Registrados</p>
+            <p style="color: #0f172a; font-size: 14px; font-weight: 700; margin: 0 0 10px 0;">Datos de Facturación Registrados</p>
             <table width="100%" style="font-size: 13px; color: #475569;">
                 <tr><td style="color: #64748b; padding-bottom: 4px;">Razón Social:</td><td style="text-align: right; font-weight: 600; color: #0f172a;">{order.get('business_name', '')}</td></tr>
                 <tr><td style="color: #64748b; padding-bottom: 4px;">RUT Empresa:</td><td style="text-align: right; font-family: monospace; font-weight: 600; color: #0f172a;">{order.get('tax_id', '')}</td></tr>
@@ -209,7 +209,7 @@ async def send_payment_confirmation(order: dict) -> bool:
             <!-- Header -->
             <tr>
                 <td style="background-color: #0c1e35; padding: 32px 24px; text-align: center;">
-                    <h1 style="color: #38bdf8; font-family: 'Playfair Display', Georgia, serif; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.02em;">Nutra Blue <span style="font-size: 20px;">🌿</span></h1>
+                    <h1 style="color: #38bdf8; font-family: 'Playfair Display', Georgia, serif; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.02em;">Nutra Blue</h1>
                     <p style="color: #94a3b8; margin: 8px 0 0 0; font-size: 12px; text-transform: uppercase; tracking-wider: 0.1em; font-weight: 600;">Nutrición Científica & Longevidad</p>
                 </td>
             </tr>
@@ -217,7 +217,7 @@ async def send_payment_confirmation(order: dict) -> bool:
             <tr>
                 <td style="padding: 32px 24px;">
                     <div style="text-align: center; margin-bottom: 24px;">
-                        <span style="font-size: 48px;">✅</span>
+                        <span style="display: inline-block; width: 48px; height: 48px; line-height: 48px; border-radius: 50%; background-color: #22c55e; color: #ffffff; font-size: 24px; font-weight: 700;">&#10003;</span>
                         <h2 style="color: #0f172a; margin: 12px 0 4px 0; font-size: 22px; font-weight: 700;">¡Pago Confirmado!</h2>
                         <p style="color: #64748b; margin: 0; font-size: 14px;">Hemos recibido exitosamente el pago de tu orden</p>
                     </div>
@@ -316,7 +316,7 @@ async def send_shipping_notification(order: dict) -> bool:
         tracking_button_html = f"""
         <div style="text-align: center; margin: 28px 0 20px 0;">
             <a href="{tracking_url}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; text-decoration: none; font-weight: 700; font-size: 15px; padding: 14px 32px; border-radius: 12px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35); letter-spacing: 0.01em;">
-                📦 Rastrear Envío en {empresa} &rarr;
+                Rastrear Envío en {empresa} &rarr;
             </a>
         </div>
         """
@@ -333,15 +333,14 @@ async def send_shipping_notification(order: dict) -> bool:
         <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0;">
             <tr>
                 <td style="background-color: #0c1e35; padding: 32px 24px; text-align: center;">
-                    <h1 style="color: #38bdf8; font-family: 'Playfair Display', Georgia, serif; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.02em;">Nutra Blue <span style="font-size: 20px;">🌿</span></h1>
+                    <h1 style="color: #38bdf8; font-family: 'Playfair Display', Georgia, serif; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.02em;">Nutra Blue</h1>
                     <p style="color: #94a3b8; margin: 8px 0 0 0; font-size: 12px; text-transform: uppercase; font-weight: 600;">Nutrición Científica &amp; Longevidad</p>
                 </td>
             </tr>
             <tr>
                 <td style="padding: 32px 24px;">
                     <div style="text-align: center; margin-bottom: 24px;">
-                        <span style="font-size: 48px;">📦</span>
-                        <h2 style="color: #0f172a; margin: 12px 0 4px 0; font-size: 22px; font-weight: 700;">¡Tu pedido va en camino!</h2>
+                        <h2 style="color: #0f172a; margin: 0 0 4px 0; font-size: 22px; font-weight: 700;">¡Tu pedido va en camino!</h2>
                         <p style="color: #64748b; margin: 0; font-size: 14px;">Ya fue entregado a la empresa de transporte</p>
                     </div>
 
@@ -376,7 +375,7 @@ async def send_shipping_notification(order: dict) -> bool:
 
                     <!-- Anti-anxiety tip -->
                     <div style="background-color: #f8fafc; border-left: 4px solid #0284c7; border-radius: 4px 8px 8px 4px; padding: 12px 16px; margin: 20px 0; font-size: 13px; color: #475569; line-height: 1.5;">
-                        💡 <strong>Nota sobre la actualización:</strong> Las empresas de transporte pueden demorar entre <strong>1 y 3 horas</strong> en sincronizar el código en sus plataformas web una vez admitido el paquete. Si aún no registra movimientos, dale unas horas.
+                        <strong>Nota sobre la actualización:</strong> Las empresas de transporte pueden demorar entre <strong>1 y 3 horas</strong> en sincronizar el código en sus plataformas web una vez admitido el paquete. Si aún no registra movimientos, dale unas horas.
                     </div>
 
                     <p style="color: #64748b; font-size: 13px; line-height: 1.6; margin: 20px 0 0 0; text-align: center;">
@@ -427,7 +426,7 @@ async def send_welcome_email(to: str) -> bool:
             <!-- Header -->
             <tr>
                 <td style="padding: 40px 32px 24px 32px; text-align: center;">
-                    <h1 style="color: #38bdf8; font-size: 32px; margin: 0; font-weight: 800; letter-spacing: -0.02em;">Nutra Blue 🌿</h1>
+                    <h1 style="color: #38bdf8; font-size: 32px; margin: 0; font-weight: 800; letter-spacing: -0.02em;">Nutra Blue</h1>
                     <p style="color: #64748b; margin: 8px 0 0 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em;">Nutricion Cientifica & Longevidad</p>
                 </td>
             </tr>
@@ -455,19 +454,19 @@ async def send_welcome_email(to: str) -> bool:
                     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 28px;">
                         <tr>
                             <td style="padding: 10px 0; border-bottom: 1px solid #1e3a5f;">
-                                <span style="color: #38bdf8; font-size: 16px;">⚡</span>
+                                <span style="color: #38bdf8; font-size: 16px;">&#10003;</span>
                                 <span style="color: #cbd5e1; font-size: 14px; margin-left: 10px;">Formulas con adaptogenos de alta biodisponibilidad</span>
                             </td>
                         </tr>
                         <tr>
                             <td style="padding: 10px 0; border-bottom: 1px solid #1e3a5f;">
-                                <span style="color: #38bdf8; font-size: 16px;">🧬</span>
+                                <span style="color: #38bdf8; font-size: 16px;">&#10003;</span>
                                 <span style="color: #cbd5e1; font-size: 14px; margin-left: 10px;">Ingredientes testeados por laboratorios independientes</span>
                             </td>
                         </tr>
                         <tr>
                             <td style="padding: 10px 0;">
-                                <span style="color: #38bdf8; font-size: 16px;">📦</span>
+                                <span style="color: #38bdf8; font-size: 16px;">&#10003;</span>
                                 <span style="color: #cbd5e1; font-size: 14px; margin-left: 10px;">Envio gratis en compras sobre $50.000</span>
                             </td>
                         </tr>
@@ -493,7 +492,7 @@ async def send_welcome_email(to: str) -> bool:
     """
     return await send_email(
         to=to,
-        subject=f"Tu codigo {coupon} esta aqui — {discount}% de descuento en Nutra Blue 🌿",
+        subject=f"Tu codigo {coupon} esta aqui — {discount}% de descuento en Nutra Blue",
         html=html,
     )
 

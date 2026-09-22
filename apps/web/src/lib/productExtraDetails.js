@@ -5,10 +5,10 @@ const productDetailsMap = {
   "calm & focus": {
     origin: "Cultivado en el Valle de Limarí, Región de Coquimbo, Chile. Cosechado a mano por agricultores locales en condiciones ecológicas ideales.",
     icons: [
-      { emoji: "🌾", text: "100% Orgánico" },
-      { emoji: "🧠", text: "Enfoque Mental" },
-      { emoji: "🌱", text: "Vegano" },
-      { emoji: "🛡️", text: "Sin Aditivos" }
+      { text: "100% Orgánico" },
+      { text: "Enfoque Mental" },
+      { text: "Vegano" },
+      { text: "Sin Aditivos" }
     ],
     technical: {
       ingredients: "Extracto concentrado de hongo Melena de León (Hericium erinaceus) orgánico (cuerpo fructífero) y polvo concentrado de adaptógenos naturales.",
@@ -20,10 +20,10 @@ const productDetailsMap = {
   "dark cacao": {
     origin: "Granos de cacao criollo orgánicos cultivados de forma sostenible en cooperativas agrícolas de San Martín, en la Amazonía Peruana.",
     icons: [
-      { emoji: "🍫", text: "Cacao Ceremonial" },
-      { emoji: "⚡", text: "Energía Natural" },
-      { emoji: "🤝", text: "Comercio Justo" },
-      { emoji: "🤎", text: "100% Cacao Puro" }
+      { text: "Cacao Ceremonial" },
+      { text: "Energía Natural" },
+      { text: "Comercio Justo" },
+      { text: "100% Cacao Puro" }
     ],
     technical: {
       ingredients: "Granos de cacao 100% orgánicos, fermentados, secados al sol y finamente molidos en frío para preservar sus nutrientes y antioxidantes.",
@@ -35,10 +35,10 @@ const productDetailsMap = {
   "spirulina premium powder": {
     origin: "Cultivada en estanques de agua mineral pura de napas subterráneas en el Desierto de Atacama, Chile, con alta radiación solar que potencia sus propiedades.",
     icons: [
-      { emoji: "🦠", text: "Proteína Completa" },
-      { emoji: "🟢", text: "Superalimento" },
-      { emoji: "🛡️", text: "Desintoxicante" },
-      { emoji: "🌱", text: "Fácil Absorción" }
+      { text: "Proteína Completa" },
+      { text: "Superalimento" },
+      { text: "Desintoxicante" },
+      { text: "Fácil Absorción" }
     ],
     technical: {
       ingredients: "100% Alga Espirulina (Arthrospira platensis) pura deshidratada y pulverizada, libre de excipientes y pesticidas.",
@@ -50,10 +50,10 @@ const productDetailsMap = {
   "chlorella premium powder": {
     origin: "Cultivada en un entorno ecológico protegido de alta radiación solar en la pampa del Tamarugal, norte de Chile.",
     icons: [
-      { emoji: "♻️", text: "Clorofila Pura" },
-      { emoji: "🧼", text: "Detox Celular" },
-      { emoji: "🩺", text: "Apoyo Inmune" },
-      { emoji: "🌾", text: "Libre de Gluten" }
+      { text: "Clorofila Pura" },
+      { text: "Detox Celular" },
+      { text: "Apoyo Inmune" },
+      { text: "Libre de Gluten" }
     ],
     technical: {
       ingredients: "100% Alga Chlorella de pared celular rota mediante proceso mecánico para garantizar la máxima biodisponibilidad y absorción digestiva.",
@@ -65,10 +65,10 @@ const productDetailsMap = {
   "matcha ritual": {
     origin: "Hojas de té verde Tencha cultivadas a la sombra, cosechadas a mano e importadas directamente de la prefectura histórica de Uji, Kioto, Japón.",
     icons: [
-      { emoji: "🍵", text: "Grado Ceremonial" },
-      { emoji: "⚡", text: "L-Teanina Activa" },
-      { emoji: "🧠", text: "Enfoque Calmo" },
-      { emoji: "💚", text: "Antioxidantes" }
+      { text: "Grado Ceremonial" },
+      { text: "L-Teanina Activa" },
+      { text: "Enfoque Calmo" },
+      { text: "Antioxidantes" }
     ],
     technical: {
       ingredients: "Té verde Matcha (Camellia sinensis) 100% orgánico de calidad ceremonial premium, molido en piedra de granito.",
@@ -80,10 +80,10 @@ const productDetailsMap = {
   "black garlic": {
     origin: "Ajos morados seleccionados sembrados en el Valle de Colchagua, Chile. Madurados lentamente a humedad y temperatura controladas por 90 días.",
     icons: [
-      { emoji: "🧄", text: "Madurado 90 Días" },
-      { emoji: "❤️", text: "Salud Cardiovascular" },
-      { emoji: "🩹", text: "Antioxidante" },
-      { emoji: "😋", text: "Sabor Dulce Umami" }
+      { text: "Madurado 90 Días" },
+      { text: "Salud Cardiovascular" },
+      { text: "Antioxidante" },
+      { text: "Sabor Dulce Umami" }
     ],
     technical: {
       ingredients: "Dientes de Ajo Negro entero (Allium sativum) 100% natural, sin aditivos, conservantes ni sal añadida.",
@@ -95,10 +95,10 @@ const productDetailsMap = {
   "walnut & almond mix": {
     origin: "Nueces Chandler y Almendras Nonpareil cosechadas en huertos sustentables de los valles de la Región Metropolitana, Chile.",
     icons: [
-      { emoji: "🌰", text: "Omega 3 y 6" },
-      { emoji: "🔋", text: "Grasas Saludables" },
-      { emoji: "⚡", text: "Energía Sostenida" },
-      { emoji: "🌾", text: "Sin Sal Añadida" }
+      { text: "Omega 3 y 6" },
+      { text: "Grasas Saludables" },
+      { text: "Energía Sostenida" },
+      { text: "Sin Sal Añadida" }
     ],
     technical: {
       ingredients: "Nueces mariposa orgánicas seleccionadas (50%), almendras enteras tostadas naturalmente sin sal ni aceites añadidos (50%).",
@@ -110,10 +110,10 @@ const productDetailsMap = {
   "reishi mushroom tea": {
     origin: "Hongos Reishi recolectados de forma sustentable en los bosques nativos de la selva valdiviana, Región de Los Ríos, Chile.",
     icons: [
-      { emoji: "🍄", text: "Hongo Reishi Puro" },
-      { emoji: "🧘", text: "Calma y Relajación" },
-      { emoji: "💤", text: "Sueño Reparador" },
-      { emoji: "🛡️", text: "Adaptógeno Natural" }
+      { text: "Hongo Reishi Puro" },
+      { text: "Calma y Relajación" },
+      { text: "Sueño Reparador" },
+      { text: "Adaptógeno Natural" }
     ],
     technical: {
       ingredients: "Cuerpo fructífero de Hongo Reishi (Ganoderma lucidum) orgánico, cortado en láminas y deshidratado a baja temperatura.",
@@ -125,10 +125,10 @@ const productDetailsMap = {
   "golden turmeric & black pepper blend": {
     origin: "Cúrcuma longa cosechada en campos orgánicos del Valle de Elqui y mezclada con pimienta negra molida del mismo origen.",
     icons: [
-      { emoji: "🟡", text: "Cúrcuma + Pimienta" },
-      { emoji: "🩹", text: "Antiinflamatorio" },
-      { emoji: "🧬", text: "Alta Absorción" },
-      { emoji: "🩺", text: "Salud Digestiva" }
+      { text: "Cúrcuma + Pimienta" },
+      { text: "Antiinflamatorio" },
+      { text: "Alta Absorción" },
+      { text: "Salud Digestiva" }
     ],
     technical: {
       ingredients: "Cúrcuma orgánica en polvo (95%), Pimienta negra orgánica molida (5%). La piperina de la pimienta aumenta la absorción de la curcumina en un 2000%.",
@@ -140,10 +140,10 @@ const productDetailsMap = {
   "maca powder": {
     origin: "Raíces de Maca (Amarilla, Negra y Roja) cultivadas orgánicamente a más de 4.000 metros de altura en la meseta andina de Junín, Perú.",
     icons: [
-      { emoji: "🪵", text: "Maca Andina Orgánica" },
-      { emoji: "⚡", text: "Vitalidad y Vigor" },
-      { emoji: "⚖️", text: "Balance Hormonal" },
-      { emoji: "🌱", text: "Energía sin Cafeína" }
+      { text: "Maca Andina Orgánica" },
+      { text: "Vitalidad y Vigor" },
+      { text: "Balance Hormonal" },
+      { text: "Energía sin Cafeína" }
     ],
     technical: {
       ingredients: "Maca pura seleccionada deshidratada y micropulverizada de calidad premium.",
@@ -155,10 +155,10 @@ const productDetailsMap = {
   "mixed berries powder": {
     origin: "Bayas silvestres del sur de Chile (Maqui de la Araucanía, Murta de Los Lagos y Frambuesa de Maule), liofilizadas en frío.",
     icons: [
-      { emoji: "🫐", text: "Antioxidantes Nativos" },
-      { emoji: "🩹", text: "Antienvejecimiento" },
-      { emoji: "❄️", text: "Liofilizado al Vacío" },
-      { emoji: "🧬", text: "Rico en Vitamina C" }
+      { text: "Antioxidantes Nativos" },
+      { text: "Antienvejecimiento" },
+      { text: "Liofilizado al Vacío" },
+      { text: "Rico en Vitamina C" }
     ],
     technical: {
       ingredients: "Maqui silvestre liofilizado en polvo, Murta silvestre liofilizada en polvo, Frambuesa orgánica liofilizada en polvo.",
@@ -172,10 +172,10 @@ const productDetailsMap = {
 const defaultDetails = {
   origin: "Producto de origen natural y sustentable, cultivado respetando el medio ambiente y cosechado bajo estándares de comercio justo.",
   icons: [
-    { emoji: "🌱", text: "100% Natural" },
-    { emoji: "🛡️", text: "Calidad Premium" },
-    { emoji: "🤝", text: "Comercio Justo" },
-    { emoji: "🌾", text: "Libre de Aditivos" }
+    { text: "100% Natural" },
+    { text: "Calidad Premium" },
+    { text: "Comercio Justo" },
+    { text: "Libre de Aditivos" }
   ],
   technical: {
     ingredients: "Ingredientes naturales puros de la más alta calidad, seleccionados y procesados bajo normas sanitarias estrictas.",

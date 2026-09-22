@@ -41,9 +41,9 @@ const armarEnlaceWhatsApp = (order) => {
 
   let mensaje = '';
   if (codigo) {
-    mensaje = `¡Hola ${order.customer_name || ''}! 🌿 Te escribimos de NutraBlue para contarte que tu pedido #${idCorto} ya fue despachado a través de ${empresa}.\n\n📦 Código de seguimiento: ${codigo}\n🔗 Puedes rastrearlo directamente aquí: ${urlTracking || 'https://nutrablue.cl/seguimiento'}\n\n¡Muchas gracias por tu compra!`;
+    mensaje = `¡Hola ${order.customer_name || ''}! Te escribimos de NutraBlue para contarte que tu pedido #${idCorto} ya fue despachado a través de ${empresa}.\n\nCódigo de seguimiento: ${codigo}\nPuedes rastrearlo directamente aquí: ${urlTracking || 'https://nutrablue.cl/seguimiento'}\n\n¡Muchas gracias por tu compra!`;
   } else {
-    mensaje = `¡Hola ${order.customer_name || ''}! 🌿 Te escribimos de NutraBlue respecto a tu pedido #${idCorto}.`;
+    mensaje = `¡Hola ${order.customer_name || ''}! Te escribimos de NutraBlue respecto a tu pedido #${idCorto}.`;
   }
 
   return `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Paperclip } from 'lucide-react';
 import { useAnimatedText } from '@/hooks/use-animated-text';
 import { useIntegratedAi } from '@/hooks/use-integrated-ai';
 
@@ -163,7 +164,7 @@ export default function IntegratedAiChat() {
 						disabled={isStreaming || isLoadingHistory || selectedImages.length >= MAX_IMAGES}
 						title="Upload images"
 					>
-						📎
+						<Paperclip className="h-4 w-4" />
 					</button>
 					<input
 						type="text"

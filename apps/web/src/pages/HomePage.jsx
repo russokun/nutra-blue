@@ -246,22 +246,18 @@ const HomePage = () => {
               {/* Copy 1 */}
               <div className="flex items-center gap-12">
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">⚡</span>
                   <span>Envío Rápido</span>
                 </div>
                 <span className="text-white/20">|</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">🛡️</span>
                   <span>Calidad Premium (Ingredientes testeados)</span>
                 </div>
                 <span className="text-white/20">|</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">🧪</span>
                   <span>Fórmulas de Nutrición Avanzada</span>
                 </div>
                 <span className="text-white/20">|</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">📦</span>
                   <span>Envío Gratis sobre $50.000</span>
                 </div>
                 <span className="text-white/20">|</span>
@@ -270,22 +266,18 @@ const HomePage = () => {
               {/* Copy 2 */}
               <div className="flex items-center gap-12">
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">⚡</span>
                   <span>Envío Rápido</span>
                 </div>
                 <span className="text-white/20">|</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">🛡️</span>
                   <span>Calidad Premium (Ingredientes testeados)</span>
                 </div>
                 <span className="text-white/20">|</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">🧪</span>
                   <span>Fórmulas de Nutrición Avanzada</span>
                 </div>
                 <span className="text-white/20">|</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">📦</span>
                   <span>Envío Gratis sobre $50.000</span>
                 </div>
                 <span className="text-white/20">|</span>

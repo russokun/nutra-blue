@@ -111,7 +111,7 @@ const Footer = ({ minimal = false }) => {
                   Preguntas Frecuentes (FAQs)
                 </Link>
                 <Link to="/seguimiento" className="text-sm text-natural-200 hover:text-white transition-colors duration-200 font-medium text-sky-200">
-                  Seguimiento de Envíos 📦
+                  Seguimiento de Envíos
                 </Link>
                 <Link to="/politica-de-devoluciones" className="text-sm text-natural-200 hover:text-white transition-colors duration-200">
                   Cambios, Devoluciones y Retracto
