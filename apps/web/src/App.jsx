@@ -17,6 +17,8 @@ import TermsOfServicePage from '@/pages/TermsOfServicePage';
 import ImpactPage from '@/pages/ImpactPage';
 import LoginPage from '@/pages/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
+import ForgotPasswordPage from '@/pages/ForgotPasswordPage';
+import ResetPasswordPage from '@/pages/ResetPasswordPage';
 import AccountPage from '@/pages/AccountPage';
 import HistoriaPage from '@/pages/HistoriaPage';
 import ContactoPage from '@/pages/ContactoPage';
@@ -62,6 +64,8 @@ function App() {
             <Route path="/impacto" element={<ImpactPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/olvide-contrasena" element={<ForgotPasswordPage />} />
+            <Route path="/restablecer-contrasena" element={<ResetPasswordPage />} />
             <Route path="/account" element={<AccountPage />} />
             <Route path="/admin" element={<RedirectToAdmin />} />
             <Route path="/historia" element={<HistoriaPage />} />
