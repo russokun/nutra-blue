@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Helmet } from '@/components/Meta';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -9,15 +9,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
-const LoginPage = () => {
+const ResetPasswordPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { login, authAvailable } = useAuth();
-  const [email, setEmail] = useState('');
+  const { resetPassword, authAvailable } = useAuth();
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const from = location.state?.from || '/account';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,13 +22,21 @@ const LoginPage = () => {
       toast.error('Autenticación no disponible. Configura Supabase en el entorno.');
       return;
     }
+    if (password.length < 6) {
+      toast.error('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+    if (password !== confirmPassword) {
+      toast.error('Las contraseñas no coinciden');
+      return;
+    }
     setLoading(true);
     try {
-      await login(email, password);
-      toast.success('Sesión iniciada');
-      navigate(from, { replace: true });
+      await resetPassword(password);
+      toast.success('Contraseña actualizada. Ya puedes iniciar sesión.');
+      navigate('/login', { replace: true });
     } catch (err) {
-      toast.error(err.message || 'Error al iniciar sesión');
+      toast.error(err.message || 'No pudimos actualizar tu contraseña. El enlace pudo haber expirado.');
     } finally {
       setLoading(false);
     }
@@ -40,33 +45,27 @@ const LoginPage = () => {
   return (
     <>
       <Helmet>
-        <title>Iniciar Sesión - NutraBlue</title>
+        <title>Restablecer Contraseña - NutraBlue</title>
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
       <Header />
       <main className="min-h-screen bg-background py-12">
         <div className="max-w-md mx-auto px-4">
           <h1 className="text-3xl font-display text-foreground mb-8 text-center">
-            Iniciar Sesión
+            Restablecer Contraseña
           </h1>
           <form onSubmit={handleSubmit} className="bg-card rounded-xl p-6 border border-border space-y-4">
             <div>
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="mt-1" />
+              <Label htmlFor="password">Nueva contraseña</Label>
+              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="mt-1" />
             </div>
             <div>
-              <Label htmlFor="password">Contraseña</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="mt-1" />
+              <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
+              <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required minLength={6} className="mt-1" />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Ingresando...' : 'Ingresar'}
+              {loading ? 'Guardando...' : 'Guardar nueva contraseña'}
             </Button>
-            <p className="text-sm text-center">
-              <Link to="/olvide-contrasena" className="text-primary hover:underline">¿Olvidaste tu contraseña?</Link>
-            </p>
-            <p className="text-sm text-center text-muted-foreground">
-              ¿No tienes cuenta? <Link to="/register" className="text-primary hover:underline">Regístrate</Link>
-            </p>
           </form>
         </div>
       </main>
@@ -75,4 +74,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default ResetPasswordPage;

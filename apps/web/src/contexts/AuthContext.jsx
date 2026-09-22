@@ -133,6 +133,28 @@ export const AuthProvider = ({ children }) => {
     setIsAdmin(false);
   };
 
+  const forgotPassword = async (email) => {
+    if (!supabase) {
+      const users = JSON.parse(localStorage.getItem('nutra_blue_mock_users') || '[]');
+      if (!users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+        throw new Error('No encontramos una cuenta con ese email.');
+      }
+      return;
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/restablecer-contrasena`,
+    });
+    if (error) throw error;
+  };
+
+  const resetPassword = async (newPassword) => {
+    if (!supabase) {
+      throw new Error('Autenticación no disponible. Configura Supabase en el entorno.');
+    }
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) throw error;
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -144,6 +166,8 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         register,
+        forgotPassword,
+        resetPassword,
       }}
     >
       {children}
