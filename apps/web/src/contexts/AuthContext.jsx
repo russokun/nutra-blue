@@ -10,6 +10,7 @@ export const ADMIN_EMAILS = [
   'fuentealba.diplan@gmail.com',
   'monsesantibanez.f@gmail.com',
   'f.santibanezfu@gmail.com',
+  'alejfuen@gmail.com',
 ];
 
 export const AuthProvider = ({ children }) => {

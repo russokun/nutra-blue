@@ -37,6 +37,7 @@ class Settings(BaseSettings):
             "fuentealba.diplan@gmail.com",
             "monsesantibanez.f@gmail.com",
             "f.santibanezfu@gmail.com",
+            "alejfuen@gmail.com",
         ]
         from_env = [
             e.strip().lower()
