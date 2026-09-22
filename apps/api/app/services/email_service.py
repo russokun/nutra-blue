@@ -60,7 +60,7 @@ async def send_order_confirmation(order: dict) -> bool:
 
     # El total de la orden es solo el de los productos (nunca se cobra flete), asi que
     # sirve directo para decidir si el despacho lo asume NutraBlue o va por pagar.
-    envio_gratis = has_free_shipping(order.get("total", 0))
+    envio_gratis = has_free_shipping(order.get("total", 0), order.get("region"))
 
     billing_html = ""
     if order.get("is_company"):

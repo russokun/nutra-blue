@@ -166,7 +166,7 @@ const CLAVE_BORRADOR = 'nutra_blue_checkout_borrador';
   // es el que manda en los totales, tambien lo calcula en cero.
   const shippingCost = 0;
   const total = cartTotalAmountAfterDiscount + shippingCost;
-  const envioGratis = isFreeShipping(cartTotalAmountAfterDiscount);
+  const envioGratis = isFreeShipping(cartTotalAmountAfterDiscount, formData.region);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -840,7 +840,7 @@ const CLAVE_BORRADOR = 'nutra_blue_checkout_borrador';
                         {envioGratis ? 'Envío gratis' : 'Envío por pagar'}
                       </span>
                       <span className="text-[11px] leading-snug text-muted-foreground">
-                        {shippingHint(cartTotalAmountAfterDiscount)}
+                        {shippingHint(cartTotalAmountAfterDiscount, formData.region)}
                       </span>
                     </div>
                     <div className="border-t border-border pt-3">

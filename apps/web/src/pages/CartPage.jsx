@@ -7,7 +7,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import dataClient from '@/lib/dataClient';
-import { isFreeShipping, shippingHint, shippingLabel } from '@/lib/shipping';
+import { FREE_SHIPPING_THRESHOLD, formatThreshold } from '@/lib/shipping';
 import { toast } from 'sonner';
 
 const CartPage = () => {
@@ -27,7 +27,9 @@ const CartPage = () => {
   const total = getCartTotal();
   const tax = Math.round(total - (total / 1.19)); // 19% IVA incluido
   const subtotal = total - tax;
-  const envioGratis = isFreeShipping(total);
+  // La region recien se pide en el checkout, asi que aca todavia no se sabe si el
+  // pedido califica para envio gratis (solo aplica dentro de la Region Metropolitana).
+  const puedeSerGratis = total >= FREE_SHIPPING_THRESHOLD;
 
   useEffect(() => {
     const loadUpsellProduct = async () => {
@@ -113,13 +115,13 @@ const CartPage = () => {
                   se encuentre con una condicion distinta una pantalla despues. */}
               <div className="bg-card rounded-2xl p-5 border border-border shadow-sm">
                 <span className="flex items-start gap-2 text-sm font-semibold text-card-foreground">
-                  <Truck className={`h-4 w-4 shrink-0 mt-0.5 ${envioGratis ? 'text-success' : 'text-amber-600'}`} />
+                  <Truck className={`h-4 w-4 shrink-0 mt-0.5 ${puedeSerGratis ? 'text-success' : 'text-amber-600'}`} />
                   <span>
-                    <span className={`block font-bold ${envioGratis ? 'text-success' : 'text-amber-700'}`}>
-                      {envioGratis ? 'Envío gratis a todo Chile' : 'Envío por pagar'}
+                    <span className={`block font-bold ${puedeSerGratis ? 'text-success' : 'text-amber-700'}`}>
+                      {puedeSerGratis ? 'Puedes calificar para envío gratis' : 'Envío por pagar'}
                     </span>
                     <span className="block text-xs font-normal text-muted-foreground mt-0.5">
-                      {shippingHint(total)}
+                      Envío gratis sobre {formatThreshold()} solo dentro de la Región Metropolitana. Fuera de la RM el despacho siempre se paga al recibir o retirar.
                     </span>
                   </span>
                 </span>
@@ -242,13 +244,14 @@ const CartPage = () => {
                     <span>IVA Incluido (19%)</span>
                     <span className="font-medium">{formatPrice(tax)}</span>
                   </div>
-                  {/* El monto nunca se cobra en la tienda; el umbral define quien paga el
-                      flete. Antes esta fila decia "Calculado en checkout" bajo los $50.000,
-                      lo que hacia pensar que se sumaria algo al total. */}
+                  {/* El monto nunca se cobra en la tienda; la region (recien se pide en el
+                      checkout) y el umbral definen quien paga el flete. Antes esta fila
+                      decia "Gratis" sin conocer la region, lo que prometia de mas fuera
+                      de la RM. */}
                   <div className="flex justify-between text-muted-foreground">
                     <span>Costo de Despacho</span>
-                    <span className={envioGratis ? 'text-success font-semibold' : 'text-amber-700 font-semibold'}>
-                      {shippingLabel(total)}
+                    <span className="font-semibold">
+                      Según región (definido en el checkout)
                     </span>
                   </div>
 
