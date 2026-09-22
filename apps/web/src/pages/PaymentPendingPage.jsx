@@ -198,13 +198,13 @@ const PaymentPendingPage = () => {
                     </span>
                     <span
                       className={`font-semibold ${
-                        isFreeShipping(order.total) ? 'text-success' : 'text-amber-700'
+                        isFreeShipping(order.total, order.region) ? 'text-success' : 'text-amber-700'
                       }`}
                     >
-                      {shippingLabel(order.total)}
+                      {shippingLabel(order.total, order.region)}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground">{shippingHint(order.total)}</p>
+                  <p className="text-xs text-muted-foreground">{shippingHint(order.total, order.region)}</p>
                   {order.address && (
                     <p className="text-xs text-muted-foreground">
                       {[order.address, order.city, order.region].filter(Boolean).join(', ')}

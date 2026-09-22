@@ -19,15 +19,17 @@ COURIERS = ["blue_express", "starken", "chilexpress", "correos_chile", "pullman"
 # que se coordina la entrega, no un insumo del precio.
 SHIPPING_COST_CLP = 0
 
-# Politica comercial, no un cobro: sobre este monto NutraBlue asume el flete y para el
-# cliente es envio gratis; bajo ese monto el pedido viaja "por pagar" y el cliente le
-# paga al courier al recibirlo. Se usa solo para decidir que MENSAJE mostrar, nunca para
-# sumar al total. El equivalente en el front vive en apps/web/src/lib/shipping.js.
+# Politica comercial, no un cobro: sobre este monto, y solo dentro de la Region
+# Metropolitana, NutraBlue asume el flete y para el cliente es envio gratis; fuera de la
+# RM el pedido siempre viaja "por pagar" y el cliente le paga al courier al recibirlo,
+# sin importar el monto. Se usa solo para decidir que MENSAJE mostrar, nunca para sumar
+# al total. El equivalente en el front vive en apps/web/src/lib/shipping.js.
 FREE_SHIPPING_THRESHOLD = 50000
+FREE_SHIPPING_REGION = "Metropolitana"
 
 
-def has_free_shipping(cart_total: int) -> bool:
-    return int(cart_total or 0) >= FREE_SHIPPING_THRESHOLD
+def has_free_shipping(cart_total: int, region: str) -> bool:
+    return region == FREE_SHIPPING_REGION and int(cart_total or 0) >= FREE_SHIPPING_THRESHOLD
 
 
 def calculate_shipping(region: str) -> int:
