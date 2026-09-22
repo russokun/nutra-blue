@@ -3,7 +3,7 @@ import { Helmet } from '@/components/Meta';
 import { absoluteUrl } from '@/lib/seo';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { ShieldCheck, RotateCcw, AlertTriangle, PackageCheck, HelpCircle, Mail, MessageCircle, ArrowLeft } from 'lucide-react';
+import { ShieldCheck, RotateCcw, AlertTriangle, PackageCheck, HelpCircle, Mail, MessageCircle, ArrowLeft, Truck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
@@ -11,15 +11,15 @@ const ReturnPolicyPage = () => {
   return (
     <>
       <Helmet>
-        <title>Política de Cambios, Devoluciones y Retracto — NutraBlue</title>
+        <title>Política de Despacho, Cambios, Devoluciones y Retracto — NutraBlue</title>
         <meta
           name="description"
-          content="Conoce nuestra política oficial de derecho a retracto de 10 días, devoluciones y garantía legal en NutraBlue conforme a la Ley N° 19.496 y Decreto N° 52 de 2024."
+          content="Conoce nuestra política oficial de despacho, derecho a retracto de 10 días, devoluciones y garantía legal en NutraBlue conforme a la Ley N° 19.496, el Decreto N° 6 de 2021 y el Decreto N° 52 de 2024."
         />
-        <meta property="og:title" content="Política de Devoluciones y Retracto — NutraBlue" />
+        <meta property="og:title" content="Política de Despacho, Devoluciones y Retracto — NutraBlue" />
         <meta
           property="og:description"
-          content="Derecho a retracto de 10 días para productos sellados, garantía legal y procedimientos claros de devolución."
+          content="Despacho vía BlueExpress con valor final antes de pagar, derecho a retracto de 10 días para productos sellados, garantía legal y procedimientos claros de devolución."
         />
         <meta property="og:url" content={absoluteUrl('/politica-de-devoluciones')} />
         <link rel="canonical" href={absoluteUrl('/politica-de-devoluciones')} />
@@ -42,13 +42,13 @@ const ReturnPolicyPage = () => {
           {/* Encabezado Principal */}
           <div className="text-center mb-12 space-y-3">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20 uppercase tracking-widest">
-              <ShieldCheck className="h-3.5 w-3.5" /> Ley N° 19.496 & Decreto N° 52 de 2024
+              <ShieldCheck className="h-3.5 w-3.5" /> Ley N° 19.496 · Decreto N° 6 de 2021 · Decreto N° 52 de 2024
             </span>
             <h1
               className="text-3xl md:text-5xl font-extrabold text-foreground tracking-tight"
               style={{ fontFamily: 'Impact, sans-serif' }}
             >
-              Política de Cambios, Devoluciones y Derecho a Retracto
+              Política de Despacho, Cambios, Devoluciones y Derecho a Retracto
             </h1>
             <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
               NutraBlue SpA · Concepción, Región del Biobío, Chile · Alimentos naturales y funcionales
@@ -64,7 +64,7 @@ const ReturnPolicyPage = () => {
               <PackageCheck className="h-5 w-5 shrink-0" />
               <span>Resumen de tus derechos en NutraBlue</span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs md:text-sm text-foreground/90">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs md:text-sm text-foreground/90">
               <div className="bg-white/80 rounded-xl p-4 border border-primary/10">
                 <p className="font-bold text-primary mb-1">1. Derecho a Retracto (10 días)</p>
                 <p className="text-muted-foreground">
@@ -77,6 +77,12 @@ const ReturnPolicyPage = () => {
                   Si el producto llega dañado, vencido o incorrecto, tú eliges libremente entre el cambio, la devolución total del dinero o la reposición sin ningún costo para ti.
                 </p>
               </div>
+              <div className="bg-white/80 rounded-xl p-4 border border-primary/10">
+                <p className="font-bold text-primary mb-1">3. Despacho (BlueExpress)</p>
+                <p className="text-muted-foreground">
+                  El valor de envío se calcula antes de pagar y es definitivo: nunca cobramos una diferencia después. Despacho gratis sobre $50.000 en la Región Metropolitana.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -85,7 +91,7 @@ const ReturnPolicyPage = () => {
             {/* Introducción */}
             <section className="space-y-3">
               <p className="text-sm md:text-base leading-relaxed text-muted-foreground">
-                Esta política forma parte integrante de los Términos y Condiciones de <strong className="text-foreground">nutrablue.cl</strong> y se rige íntegramente por la <strong className="text-foreground">Ley N° 19.496</strong> sobre Protección de los Derechos de los Consumidores y por el <strong className="text-foreground">Decreto N° 52 de 2024 del Ministerio de Economía, Fomento y Turismo</strong>. Ninguna disposición de este documento restringe o menoscaba los derechos que la legislación chilena reconoce a los consumidores.
+                Esta política forma parte integrante de los Términos y Condiciones de <strong className="text-foreground">nutrablue.cl</strong> y se rige íntegramente por la <strong className="text-foreground">Ley N° 19.496</strong> sobre Protección de los Derechos de los Consumidores, por el <strong className="text-foreground">Decreto N° 6 de 2021</strong> (Reglamento de Comercio Electrónico) y por el <strong className="text-foreground">Decreto N° 52 de 2024 del Ministerio de Economía, Fomento y Turismo</strong>. Ninguna disposición de este documento restringe o menoscaba los derechos que la legislación chilena reconoce a los consumidores.
               </p>
             </section>
 
@@ -191,11 +197,76 @@ const ReturnPolicyPage = () => {
               </div>
             </section>
 
-            {/* 3. Daño o Extravío en Despacho */}
+            {/* 3. Despacho y Costo de Envío */}
+            <section className="space-y-4">
+              <h2 className="text-xl md:text-2xl font-bold text-foreground border-b border-border pb-2 flex items-center gap-2">
+                <Truck className="h-5 w-5 text-primary shrink-0" />
+                <span>3. Despacho y Costo de Envío</span>
+              </h2>
+              <p className="text-sm md:text-base leading-relaxed text-slate-700">
+                Despachamos a todo Chile mediante <strong className="text-foreground">BlueExpress</strong>. El costo de envío se calcula automáticamente según la comuna de destino y el peso y volumen de tu pedido. Mientras no hayas ingresado tu dirección completa, el valor que ves en el carrito es <strong className="text-foreground">referencial</strong> y puede ajustarse.
+              </p>
+
+              <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 space-y-2">
+                <p className="text-sm font-bold text-primary">El valor que pagas es el valor final</p>
+                <p className="text-xs md:text-sm text-foreground/90 leading-relaxed">
+                  Al ingresar tu dirección de despacho en el checkout, calculamos el costo definitivo, desglosado del precio de los productos, antes de que confirmes el pago. Ese es el monto final: <strong className="text-foreground">no realizamos cobros adicionales por despacho después de tu compra</strong>, aunque el costo real del transporte resulte mayor. Esa diferencia la asumimos nosotros.
+                </p>
+              </div>
+
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                <strong className="text-foreground">Por qué el valor referencial puede diferir del final:</strong> depende del peso volumétrico del bulto, la localidad exacta dentro de la comuna y eventuales recargos del operador logístico por zonas apartadas o de difícil acceso.
+              </p>
+
+              <div className="mt-2 p-4 rounded-xl bg-amber-500/10 border border-amber-500/25 space-y-2">
+                <div className="flex items-center gap-2 text-amber-900 font-bold text-sm">
+                  <AlertTriangle className="h-4 w-4 text-amber-700 shrink-0" />
+                  <span>Único caso de cobro adicional</span>
+                </div>
+                <p className="text-xs md:text-sm text-amber-950 leading-relaxed">
+                  Solo puede generarse un cobro adicional cuando la causa es atribuible a los datos que entregaste: dirección incompleta o errónea, o entrega fallida por ausencia en el domicilio que obligue a un segundo despacho. En esos casos te contactaremos primero para informarte el monto; si no aceptas, puedes optar por retirar el pedido sin costo o anular la compra con reembolso íntegro. Nunca realizamos cargos sin tu autorización previa.
+                </p>
+              </div>
+
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                <strong className="text-foreground">Zonas fuera de cobertura:</strong> si tu dirección queda fuera de la cobertura de BlueExpress o en una localidad de acceso restringido, el sistema no te permitirá completar la compra y te invitará a contactarnos para cotizar una alternativa antes de que pagues.
+              </p>
+
+              <div className="bg-natural-50 p-4 rounded-xl border border-natural-200 space-y-2">
+                <p className="text-sm font-bold text-natural-900">Despacho gratis en la Región Metropolitana</p>
+                <p className="text-xs md:text-sm text-natural-800 leading-relaxed">
+                  Las compras iguales o superiores a <strong className="text-natural-950">$50.000</strong> tienen despacho sin costo en las comunas de la Región Metropolitana con cobertura estándar de BlueExpress. El monto se calcula sobre el valor de los productos, con IVA incluido y después de descuentos, sin considerar el costo de despacho. Para el resto del país el despacho se cobra según la comuna de destino y se muestra desglosado antes de que confirmes el pago. Este beneficio rige hasta nuevo aviso y cualquier modificación no afecta las compras ya realizadas.
+                </p>
+              </div>
+
+              <div className="space-y-3 pt-2">
+                <h3 className="font-bold text-base text-foreground">Plazos de entrega:</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Preparamos y despachamos tu pedido dentro de los 3 días hábiles siguientes a la confirmación del pago. Los plazos se cuentan en días hábiles y no incluyen sábados, domingos ni festivos. Te enviaremos el número de seguimiento por correo al momento del despacho.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-center text-xs">
+                  <div className="bg-white p-3 rounded-lg border border-border">
+                    <p className="font-bold text-foreground mb-1">Región Metropolitana</p>
+                    <p className="text-muted-foreground">3 días hábiles de preparación + hasta 3 días hábiles de tránsito</p>
+                    <p className="font-semibold text-primary mt-1">Hasta 6 días hábiles en total</p>
+                  </div>
+                  <div className="bg-white p-3 rounded-lg border border-border">
+                    <p className="font-bold text-foreground mb-1">Regiones</p>
+                    <p className="text-muted-foreground">3 días hábiles de preparación + hasta 5 días hábiles de tránsito</p>
+                    <p className="font-semibold text-primary mt-1">Hasta 8 días hábiles en total</p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Si tu pedido no llega dentro del plazo informado, puedes escribirnos y optar por esperar la entrega o anular la compra con reembolso íntegro.
+                </p>
+              </div>
+            </section>
+
+            {/* 4. Daño o Extravío en Despacho */}
             <section className="space-y-4">
               <h2 className="text-xl md:text-2xl font-bold text-foreground border-b border-border pb-2 flex items-center gap-2">
                 <PackageCheck className="h-5 w-5 text-primary shrink-0" />
-                <span>3. Producto Dañado o Extraviado en el Transporte</span>
+                <span>4. Producto Dañado o Extraviado en el Transporte</span>
               </h2>
               <p className="text-sm md:text-base leading-relaxed text-slate-700">
                 Te recomendamos revisar tu encomienda al momento de recibirla. Si el paquete presenta daños visibles por el transporte, comunícate con nosotros dentro de los <strong className="text-foreground">5 días corridos posteriores a la entrega</strong> a <a href="mailto:info.nutrablue@gmail.com" className="text-primary font-semibold hover:underline">info.nutrablue@gmail.com</a> adjuntando fotografías del embalaje. Procederemos a reponer el producto o reembolsar el dinero según tu preferencia, sin ningún costo adicional.
@@ -205,21 +276,21 @@ const ReturnPolicyPage = () => {
               </p>
             </section>
 
-            {/* 4. Cambios Voluntarios por Preferencia */}
+            {/* 5. Cambios Voluntarios por Preferencia */}
             <section className="space-y-4">
               <h2 className="text-xl md:text-2xl font-bold text-foreground border-b border-border pb-2 flex items-center gap-2">
                 <HelpCircle className="h-5 w-5 text-primary shrink-0" />
-                <span>4. Política Comercial de Cambios por Preferencia</span>
+                <span>5. Política Comercial de Cambios por Preferencia</span>
               </h2>
               <p className="text-sm md:text-base leading-relaxed text-slate-700">
                 Como beneficio comercial voluntario y complementario a tus derechos legales, si adquiriste un producto y prefieres cambiarlo por otra variedad o presentación de nuestro catálogo dentro de los <strong className="text-foreground">10 días siguientes a la recepción</strong>, podemos realizar el cambio siempre que el envase se mantenga íntegro y sellado. Las diferencias de precio a favor o en contra se liquidarán de forma transparente.
               </p>
             </section>
 
-            {/* 5. Canales de Reclamo Oficial */}
+            {/* 6. Canales de Reclamo Oficial */}
             <section className="space-y-4">
               <h2 className="text-xl md:text-2xl font-bold text-foreground border-b border-border pb-2">
-                5. Vías de Consulta y Reclamos
+                6. Vías de Consulta y Reclamos
               </h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 Ante cualquier duda o disconformidad respecto de una solicitud, puedes acudir a los canales institucionales:
