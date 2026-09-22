@@ -651,9 +651,9 @@ const ShopPage = () => {
 
                           {/* Micro-copy de Confianza */}
                           <div className="flex flex-wrap gap-1 mt-3 pt-2 border-t border-border/30 text-[9px] text-muted-foreground justify-center">
-                            <span className="bg-slate-100 px-1.5 py-0.5 rounded-md font-medium">✨ Máxima absorción</span>
-                            <span className="bg-slate-100 px-1.5 py-0.5 rounded-md font-medium">🇨🇱 Envío rápido a todo Chile</span>
-                            <span className="bg-slate-100 px-1.5 py-0.5 rounded-md font-medium">🛡️ Calidad garantizada</span>
+                            <span className="bg-slate-100 px-1.5 py-0.5 rounded-md font-medium">Máxima absorción</span>
+                            <span className="bg-slate-100 px-1.5 py-0.5 rounded-md font-medium">Envío rápido a todo Chile</span>
+                            <span className="bg-slate-100 px-1.5 py-0.5 rounded-md font-medium">Calidad garantizada</span>
                           </div>
                         </div>
                       </div>
