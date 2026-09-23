@@ -197,7 +197,6 @@ const CLAVE_BORRADOR = 'nutra_blue_checkout_borrador';
     if (!formData.number.trim()) newErrors.number = 'El número es requerido';
     if (!formData.city.trim()) newErrors.city = 'La ciudad es requerida';
     if (!formData.region) newErrors.region = 'La región es requerida';
-    if (!formData.postalCode.trim()) newErrors.postalCode = 'El código postal es requerido';
 
     if (esEmpresa) {
       if (!formData.taxId.trim()) {
@@ -498,7 +497,7 @@ const CLAVE_BORRADOR = 'nutra_blue_checkout_borrador';
                       {errors.region && <p className="text-sm text-destructive mt-1">{errors.region}</p>}
                     </div>
                     <div className="md:col-span-2">
-                      <Label htmlFor="postalCode" className="text-card-foreground">Código Postal *</Label>
+                      <Label htmlFor="postalCode" className="text-card-foreground">Código Postal (opcional)</Label>
                       <Input
                         id="postalCode"
                         name="postalCode"
