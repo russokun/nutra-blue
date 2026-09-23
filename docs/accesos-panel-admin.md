@@ -2,15 +2,16 @@
 
 ## Cuentas autorizadas
 
-Son las **únicas tres** cuentas con acceso al panel:
+Son las **únicas cuatro** cuentas con acceso al panel:
 
 | Correo | Rol |
 |---|---|
 | `fuentealba.diplan@gmail.com` | Administración |
 | `monsesantibanez.f@gmail.com` | Administración |
 | `f.santibanezfu@gmail.com` | Administración |
+| `alejfuen@gmail.com` | Administración |
 
-Las tres comparten la misma contraseña, definida por NutraBlue y **nunca guardada en
+Las cuatro comparten la misma contraseña, definida por NutraBlue y **nunca guardada en
 este repositorio**. Se entrega por el canal acordado y se carga en la variable de
 entorno `ADMIN_SETUP_PASSWORD` sólo al momento de crearlas o resetearlas.
 
@@ -26,7 +27,7 @@ La lista está en cuatro lugares, y los cuatro deben decir lo mismo:
 | `schema_updates.sql` (policies de `leads` y `coupons`) | RLS de Supabase |
 
 La variable `ADMIN_EMAILS` (API) y `VITE_ADMIN_EMAILS` (panel) **suman** correos a la
-lista base. En producción deben contener exactamente estos tres correos.
+lista base. En producción deben contener exactamente estos cuatro correos.
 
 > La autorización de verdad la hace la API: el panel consulta `/auth/me` y la API
 > compara contra `ADMIN_EMAILS`. Un correo fuera de la lista puede autenticarse en
@@ -70,9 +71,9 @@ antiguo.
 
 ## Checklist de producción
 
-- [ ] `ADMIN_EMAILS` en la API = los tres correos.
-- [ ] `VITE_ADMIN_EMAILS` en el panel = los tres correos.
+- [ ] `ADMIN_EMAILS` en la API = los cuatro correos.
+- [ ] `VITE_ADMIN_EMAILS` en el panel = los cuatro correos.
 - [ ] `VITE_ALLOW_MOCK_AUTH` = `false` (o sin definir) y `ALLOW_MOCK_AUTH` = `false`.
 - [ ] `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` configurados en el panel.
-- [ ] `schema_updates.sql` aplicado en Supabase con los tres correos.
-- [ ] Probado el login de las tres cuentas.
+- [ ] `schema_updates.sql` aplicado en Supabase con los cuatro correos.
+- [ ] Probado el login de las cuatro cuentas.

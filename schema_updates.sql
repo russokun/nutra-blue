@@ -23,8 +23,8 @@ CREATE POLICY "Permitir registro público de leads" ON public.leads
 DROP POLICY IF EXISTS "Permitir lectura de leads solo a admins" ON public.leads;
 CREATE POLICY "Permitir lectura de leads solo a admins" ON public.leads
     FOR SELECT USING (
-        auth.role() = 'service_role' 
-        OR auth.jwt()->>'email' IN ('fuentealba.diplan@gmail.com', 'monsesantibanez.f@gmail.com', 'f.santibanezfu@gmail.com')
+        auth.role() = 'service_role'
+        OR auth.jwt()->>'email' IN ('fuentealba.diplan@gmail.com', 'monsesantibanez.f@gmail.com', 'f.santibanezfu@gmail.com', 'alejfuen@gmail.com')
     );
 
 
@@ -49,8 +49,8 @@ CREATE POLICY "Permitir lectura pública de cupones" ON public.coupons
 DROP POLICY IF EXISTS "Permitir control de cupones solo a admins" ON public.coupons;
 CREATE POLICY "Permitir control de cupones solo a admins" ON public.coupons
     FOR ALL USING (
-        auth.role() = 'service_role' 
-        OR auth.jwt()->>'email' IN ('fuentealba.diplan@gmail.com', 'monsesantibanez.f@gmail.com', 'f.santibanezfu@gmail.com')
+        auth.role() = 'service_role'
+        OR auth.jwt()->>'email' IN ('fuentealba.diplan@gmail.com', 'monsesantibanez.f@gmail.com', 'f.santibanezfu@gmail.com', 'alejfuen@gmail.com')
     );
 
 
