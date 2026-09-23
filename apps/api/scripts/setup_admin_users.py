@@ -1,8 +1,8 @@
 """Crea (o resetea) las cuentas de administracion de Nutra Blue en Supabase.
 
-Deja exactamente las cuentas de `settings.admin_emails` operativas con la contrasena
-que se entrega por variable de entorno, y reporta cualquier otro usuario de Supabase
-que estuviera usandose como acceso administrativo para poder limpiarlo.
+Por defecto deja exactamente las cuentas de `settings.admin_emails` operativas con la
+contrasena que se entrega por variable de entorno, y reporta cualquier otro usuario de
+Supabase que estuviera usandose como acceso administrativo para poder limpiarlo.
 
 Uso (desde apps/api, con el .env que apunte al proyecto Supabase correcto):
 
@@ -13,10 +13,21 @@ Uso (desde apps/api, con el .env que apunte al proyecto Supabase correcto):
     # bash
     ADMIN_SETUP_PASSWORD='<la contrasena compartida>' python scripts/setup_admin_users.py
 
+Para tocar solo una cuenta (por ejemplo, un admin recien agregado) sin resetear la
+contrasena de las demas, pasa --email:
+
+    $env:ADMIN_SETUP_PASSWORD = "<la contrasena de esa cuenta>"
+    python scripts/setup_admin_users.py --email nuevo@gmail.com
+
+El correo pasado por --email debe estar en `settings.admin_emails`; si no lo esta, el
+script se corta sin crear nada (no es una forma de dar acceso a alguien fuera de la
+lista).
+
 Requiere SUPABASE_URL y SUPABASE_SERVICE_KEY (service role) en el entorno: la API de
 admin de Supabase no funciona con la anon key. La contrasena nunca se guarda en el
 repositorio ni se imprime en pantalla.
 """
+import argparse
 import os
 import sys
 
@@ -55,6 +66,15 @@ def list_existing_users(client) -> dict:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--email",
+        default=None,
+        help="Si se pasa, solo crea/actualiza esta cuenta (debe estar en settings.admin_emails) "
+        "en vez de tocar la lista completa.",
+    )
+    args = parser.parse_args()
+
     password = os.getenv("ADMIN_SETUP_PASSWORD", "")
     if not password:
         sys.exit(
@@ -64,16 +84,28 @@ def main() -> int:
     if len(password) < 8:
         sys.exit("ERROR: la contrasena debe tener al menos 8 caracteres.")
 
-    admins = sorted(settings.admin_emails)
-    if not admins:
+    declared_admins = settings.admin_emails
+    if not declared_admins:
         sys.exit("ERROR: ADMIN_EMAILS esta vacio; no hay a quien darle acceso.")
+
+    if args.email:
+        target = args.email.strip().lower()
+        if target not in declared_admins:
+            sys.exit(
+                f"ERROR: {target} no esta en settings.admin_emails.\n"
+                "       Agregalo primero a la lista (API, panel, tienda y RLS) antes de crear la cuenta."
+            )
+        admins = [target]
+    else:
+        admins = sorted(declared_admins)
 
     client = build_admin_client()
     existing = list_existing_users(client)
 
     print(f"Proyecto Supabase: {settings.supabase_url}")
     print(f"Entorno: {settings.environment}")
-    print(f"Administradores declarados ({len(admins)}):")
+    etiqueta = "Cuenta a crear/actualizar" if args.email else f"Administradores declarados ({len(admins)})"
+    print(f"{etiqueta}:")
     for email in admins:
         print(f"  - {email}")
     print()
@@ -99,7 +131,7 @@ def main() -> int:
         except Exception as exc:  # noqa: BLE001 - se reporta y se sigue con el resto
             print(f"[ERROR]       {email}: {exc}")
 
-    otros = sorted(set(existing) - set(admins))
+    otros = sorted(set(existing) - set(declared_admins))
     if otros:
         print()
         print("Usuarios de Supabase que NO estan en la lista de administracion.")
