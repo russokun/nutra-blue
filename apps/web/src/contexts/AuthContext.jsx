@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/dataClient';
 import { getAccessToken } from '@/lib/authClient';
 
@@ -14,6 +15,7 @@ export const ADMIN_EMAILS = [
 ];
 
 export const AuthProvider = ({ children }) => {
+  const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -71,12 +73,20 @@ export const AuthProvider = ({ children }) => {
       syncSession(session);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       syncSession(session);
+      // El link del correo de recuperacion puede llegar a cualquier ruta si el "Site
+      // URL" configurado en Supabase no coincide con nuestro dominio (le pasa a Supabase
+      // ignorar el redirectTo pedido y usar ese default). Supabase igual detecta el token
+      // de la URL y dispara este evento sea cual sea la pagina donde cargo la app, asi que
+      // forzamos la navegacion al formulario en vez de depender de esa configuracion.
+      if (event === 'PASSWORD_RECOVERY') {
+        navigate('/restablecer-contrasena', { replace: true });
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, [syncSession]);
+  }, [syncSession, navigate]);
 
   const login = async (email, password) => {
     if (!supabase) {
